@@ -1,3 +1,5 @@
+name = "pygeom"
+
 from .point2d import *
 from .vector2d import *
 from .line2d import *
