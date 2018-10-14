@@ -9,3 +9,4 @@ from .vector import *
 from .line import *
 from .coordinate import *
 from .plane import *
+from .infline2D import *
