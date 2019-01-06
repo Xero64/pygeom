@@ -1,4 +1,3 @@
-# from .point2d import Point2D
 from math import atan2, cos, sin
 
 class Vector2D(object):
@@ -29,6 +28,7 @@ class Vector2D(object):
         return cplx
     def to_point(self):
         """Returns the end point position of this vector"""
+        from pygeom import Point2D
         return Point2D(self.x, self.y)
     def rotate(self, rot):
         """Rotates this vector by an input angle in radians"""
@@ -50,16 +50,15 @@ class Vector2D(object):
     def __mul__(self, obj):
         if isinstance(obj, Vector2D):
             return self.x*obj.x+self.y*obj.y
-        if isinstance(obj, (int, float, complex)):
+        else:
             return Vector2D(self.x*obj, self.y*obj)
     def __pow__(self, obj):
         if isinstance(obj, Vector2D):
             return self.x*obj.y-self.y*obj.x
     def __truediv__(self, obj):
-        if isinstance(obj, int) or isinstance(obj, float):
-            x = self.x/obj
-            y = self.y/obj
-            return Vector2D(x, y)
+        x = self.x/obj
+        y = self.y/obj
+        return Vector2D(x, y)
     def __repr__(self):
         chx = isinstance(self.x, float)
         chy = isinstance(self.y, float)
@@ -91,8 +90,8 @@ def vector2d_from_points(pnta, pntb):
 
 def vector2d_from_magang(mag, ang):
     """Create a Vector2D from magnatude and angle from x direction"""
-    x = mag*math.cos(ang)
-    y = mag*math.sin(ang)
+    x = mag*cos(ang)
+    y = mag*sin(ang)
     return Vector2D(x, y)
 
 def vector2d_from_lists(x, y):
