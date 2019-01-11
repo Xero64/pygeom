@@ -52,6 +52,8 @@ class Vector2D(object):
             return self.x*obj.x+self.y*obj.y
         else:
             return Vector2D(self.x*obj, self.y*obj)
+    def __rmul__(self, obj):
+        return self.__mul__(obj)
     def __pow__(self, obj):
         if isinstance(obj, Vector2D):
             return self.x*obj.y-self.y*obj.x
@@ -60,21 +62,9 @@ class Vector2D(object):
         y = self.y/obj
         return Vector2D(x, y)
     def __repr__(self):
-        chx = isinstance(self.x, float)
-        chy = isinstance(self.y, float)
-        if chx and chy:
-            frmstr = '<Vector2D: {:.8g}, {:.8g}>'
-        else:
-            frmstr = '<Vector2D: {:}, {:}>'
-        return frmstr.format(self.x, self.y)
+        return '<Vector2D: {:}, {:}>'.format(self.x, self.y)
     def __str__(self):
-        chx = isinstance(self.x, float)
-        chy = isinstance(self.y, float)
-        if chx and chy:
-            frmstr = '{:.8g}\t{:.8g}'
-        else:
-            frmstr = '{:}\t{:}'
-        return frmstr.format(self.x, self.y)
+        return '<{:}, {:}>'.format(self.x, self.y)
 
 def vector2d_from_complex(cplx):
     """Create a Vector2D from a complex number"""
