@@ -1,5 +1,3 @@
-# from .vector2d import Vector2D
-
 class Point2D(object):
     """Point2D Class"""
     x = None
@@ -9,6 +7,7 @@ class Point2D(object):
         self.y = y
     def to_vector(self):
         """Returns the vector from origin to this point"""
+        from .vector2d import Vector2D
         x = self.x
         y = self.y
         return Vector2D(x, y)
@@ -20,26 +19,22 @@ class Point2D(object):
         if isinstance(obj, Point2D):
             return self.x == obj.x and self.y == obj.y
     def __add__(self, obj):
+        from .vector2d import Vector2D
         if isinstance(obj, Vector2D):
             return Point2D(self.x+obj.x, self.y+obj.y)
     def __sub__(self, obj):
+        from .vector2d import Vector2D
         if isinstance(obj, Vector2D):
             return Point2D(self.x-obj.x, self.y-obj.y)
+        if isinstance(obj, Point2D):
+            return Vector2D(self.x-obj.x, self.y-obj.y)
     def __repr__(self):
-        chx = isinstance(self.x, float)
-        chy = isinstance(self.y, float)
-        if chx and chy:
-            frmstr = '<Point2D: {:.8g}, {:.8g}>'
-        else:
-            frmstr = '<Point2D: {:}, {:}>'
-        return frmstr.format(self.x, self.y)
+        return '<Point2D: {:}, {:}>'.format(self.x, self.y)
     def __str__(self):
-        chx = isinstance(self.x, float)
-        chy = isinstance(self.y, float)
-        if chx and chy:
-            frmstr = '{:.8g}\t{:.8g}'
-        else:
-            frmstr = '{:}\t{:}'
+        frmstr = '({:}, {:})'
+        return frmstr.format(self.x, self.y)
+    def __format__(self, format_spec: str):
+        frmstr = '({:'+format_spec+'}, {:'+format_spec+'})'
         return frmstr.format(self.x, self.y)
 
 def point2d_from_lists(x, y):

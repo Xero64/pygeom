@@ -28,7 +28,7 @@ class Vector2D(object):
         return cplx
     def to_point(self):
         """Returns the end point position of this vector"""
-        from pygeom import Point2D
+        from .point2d import Point2D
         return Point2D(self.x, self.y)
     def rotate(self, rot):
         """Rotates this vector by an input angle in radians"""
@@ -65,6 +65,9 @@ class Vector2D(object):
         return '<Vector2D: {:}, {:}>'.format(self.x, self.y)
     def __str__(self):
         return '<{:}, {:}>'.format(self.x, self.y)
+    def __format__(self, format_spec):
+        frmstr = '<{:'+format_spec+'}, {:'+format_spec+'}>'
+        return frmstr.format(self.x, self.y)
 
 def vector2d_from_complex(cplx):
     """Create a Vector2D from a complex number"""

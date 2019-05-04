@@ -1,5 +1,3 @@
-from .point import Point
-
 class Vector(object):
     """Vector Class"""
     x = None
@@ -21,6 +19,7 @@ class Vector(object):
             return Vector(x, y, z)
     def to_point(self):
         """Returns the end point position of this vector"""
+        from .point import Point
         return Point(self.x, self.y, self.z)
     def return_magnitude(self):
         """Returns the magnitude of this vector"""
@@ -67,6 +66,9 @@ class Vector(object):
         return '<Vector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
     def __str__(self):
         return '<{:}, {:}, {:}>'.format(self.x, self.y, self.z)
+    def __format__(self, format_spec):
+        frmstr = '<{:'+format_spec+'}, {:'+format_spec+'}, {:'+format_spec+'}>'
+        return frmstr.format(self.x, self.y, self.z)
 
 def vector_from_points(pnta, pntb):
     """Create a Vector from two Points"""
@@ -74,3 +76,7 @@ def vector_from_points(pnta, pntb):
     y = pntb.y-pnta.y
     z = pntb.z-pnta.z
     return Vector(x, y, z)
+
+ihat = Vector(1.0, 0.0, 0.0)
+jhat = Vector(0.0, 1.0, 0.0)
+khat = Vector(0.0, 0.0, 1.0)
