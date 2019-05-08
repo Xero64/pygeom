@@ -40,6 +40,11 @@ class Vector2D(object):
     def __add__(self, obj):
         if isinstance(obj, Vector2D):
             return Vector2D(self.x+obj.x, self.y+obj.y)
+    def __radd__(self, obj):
+        if obj == 0:
+            return self
+        else:
+            return self.__add__(obj)
     def __sub__(self, obj):
         if isinstance(obj, Vector2D):
             return Vector2D(self.x-obj.x, self.y-obj.y)
@@ -93,3 +98,7 @@ def vector2d_from_lists(x, y):
     if len(y) == n:
         vecs = [Vector2D(x[i], y[i]) for i in range(n)]
         return vecs
+
+ihat = Vector2D(1.0, 0.0)
+jhat = Vector2D(0.0, 1.0)
+zerovec = Vector2D(0.0, 0.0)
