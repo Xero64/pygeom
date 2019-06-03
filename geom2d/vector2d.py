@@ -41,7 +41,7 @@ class Vector2D(object):
         if isinstance(obj, Vector2D):
             return Vector2D(self.x+obj.x, self.y+obj.y)
     def __radd__(self, obj):
-        if obj == 0:
+        if obj == 0 or obj is None:
             return self
         else:
             return self.__add__(obj)
@@ -99,6 +99,6 @@ def vector2d_from_lists(x, y):
         vecs = [Vector2D(x[i], y[i]) for i in range(n)]
         return vecs
 
-ihat = Vector2D(1.0, 0.0)
-jhat = Vector2D(0.0, 1.0)
-zerovec = Vector2D(0.0, 0.0)
+ihat2d = Vector2D(1.0, 0.0)
+jhat2d = Vector2D(0.0, 1.0)
+zero_vector2d = Vector2D(0.0, 0.0)

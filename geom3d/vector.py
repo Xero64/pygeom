@@ -53,7 +53,7 @@ class Vector(object):
             z = self.z+obj.z
             return Vector(x, y, z)
     def __radd__(self, obj):
-        if obj == 0:
+        if obj == 0 or obj is None:
             return self
         else:
             return self.__add__(obj)
@@ -85,4 +85,4 @@ def vector_from_points(pnta, pntb):
 ihat = Vector(1.0, 0.0, 0.0)
 jhat = Vector(0.0, 1.0, 0.0)
 khat = Vector(0.0, 0.0, 1.0)
-zerovec = Vector(0.0, 0.0, 0.0)
+zero_vector = Vector(0.0, 0.0, 0.0)
