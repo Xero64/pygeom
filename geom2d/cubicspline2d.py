@@ -1,4 +1,5 @@
 from .line2d import Line2D
+from .point2d import Point2D
 from .vector2d import Vector2D
 from numpy.matlib import zeros
 from numpy.linalg import solve
@@ -296,6 +297,43 @@ class CubicSpline2D(object):
             d2x.append(self.d2r[-1].x)
             d2y.append(self.d2r[-1].y)
         return d2x, d2y
+    # def line_intersection_points(self, line):
+    #     from pymath.roots import cubic_equation
+    #     pnts = []
+    #     xP = line.pnt.x
+    #     yP = line.pnt.y
+    #     dxdl = line.uvec.x
+    #     dydl = line.uvec.y
+    #     for i in range(self.npnls):
+    #         ia = i
+    #         xA = self.pnts[ia].x
+    #         yA = self.pnts[ia].y
+    #         d2xA = self.d2r[ia].x
+    #         d2yA = self.d2r[ia].y
+    #         ib = i+1
+    #         if ib == self.npnts:
+    #             ib = 0
+    #         xB = self.pnts[ib].x
+    #         yB = self.pnts[ib].y
+    #         d2xB = self.d2r[ib].x
+    #         d2yB = self.d2r[ib].y
+    #         sP = self.pnls[i].length
+    #         a = (-d2xA*dydl + d2xB*dydl + d2yA*dxdl - d2yB*dxdl)/(6*dxdl*dydl*sP)
+    #         b = (d2xA*dydl - d2yA*dxdl)/(2*dxdl*dydl)
+    #         c = (-2*d2xA*dydl*sP**2 - d2xB*dydl*sP**2 + 2*d2yA*dxdl*sP**2 + d2yB*dxdl*sP**2 + 6*dxdl*yA - 6*dxdl*yB - 6*dydl*xA + 6*dydl*xB)/(6*dxdl*dydl*sP)
+    #         d = (-dxdl*yA + dxdl*yP + dydl*xA - dydl*xP)/(dxdl*dydl)
+    #         slst = cubic_equation(a, b, c, d)
+    #         for s in slst:
+    #             if isinstance(s, float):
+    #                 if s >= 0.0 and s <= sP:
+    #                     A = (sP-s)/sP
+    #                     B = s/sP
+    #                     C = sP**2/6*(A**3-A)
+    #                     D = sP**2/6*(B**3-B)
+    #                     x = A*xA+B*xB+C*d2xA+D*d2xB
+    #                     y = A*yA+B*yB+C*d2yA+D*d2yB
+    #                     pnts.append(Point2D(x, y))
+    #     return pnts
     def scatter(self, ax=None, label=False):
         u"""This function plots the points of the spline."""
         if ax == None:
