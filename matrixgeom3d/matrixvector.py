@@ -64,14 +64,14 @@ class MatrixVector(object):
             y = self.y*obj
             z = self.z*obj
             return MatrixVector(x, y, z)
-    def __matmul__(self, obj):
-        if isinstance(obj, matrix):
-            x = self.x@obj
-            y = self.y@obj
-            z = self.z@obj
-            return MatrixVector(x, y, z)
-    def __rmatmul__(self, obj):
-        return self.__matmul__(obj)
+    # def __matmul__(self, obj):
+    #     if isinstance(obj, matrix):
+    #         x = self.x@obj
+    #         y = self.y@obj
+    #         z = self.z@obj
+    #         return MatrixVector(x, y, z)
+    # def __rmatmul__(self, obj):
+    #     return self.__matmul__(obj)
     def __truediv__(self, obj):
         if isinstance(obj, (int, float, complex)):
             x = self.x/obj

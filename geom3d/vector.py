@@ -41,11 +41,17 @@ class Vector(object):
             z = self.z/obj
             return Vector(x, y, z)
     def __pow__(self, obj):
+        from pygeom.matrixgeom3d import MatrixVector
         if isinstance(obj, Vector):
             x = self.y*obj.z-self.z*obj.y
             y = self.z*obj.x-self.x*obj.z
             z = self.x*obj.y-self.y*obj.x
             return Vector(x, y, z)
+        elif isinstance(obj, MatrixVector):
+            x = self.y*obj.z-self.z*obj.y
+            y = self.z*obj.x-self.x*obj.z
+            z = self.x*obj.y-self.y*obj.x
+            return MatrixVector(x, y, z)
     def __add__(self, obj):
         if isinstance(obj, Vector):
             x = self.x+obj.x
