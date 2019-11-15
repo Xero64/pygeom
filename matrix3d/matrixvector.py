@@ -1,5 +1,5 @@
 from pygeom.geom3d import Vector
-from numpy.matlib import matrix
+from numpy.matlib import matrix, zeros, multiply
 
 class MatrixVector(object):
     """Vector Class"""
@@ -10,6 +10,29 @@ class MatrixVector(object):
         self.x = x
         self.y = y
         self.z = z
+    def to_unit(self):
+        """Returns the unit matrixvector of this matrixvector"""
+        mag = self.return_magnitude()
+        x = zeros(self.shape)
+        y = zeros(self.shape)
+        z = zeros(self.shape)
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                if mag[i, j] != 0:
+                    x[i, j] = self.x[i, j]/mag[i, j]
+                    y[i, j] = self.y[i, j]/mag[i, j]
+                    z[i, j] = self.z[i, j]/mag[i, j]
+        return MatrixVector(x, y, z)
+    def return_magnitude(self):
+        """Returns the magnitude matrix of this matrixvector"""
+        mag = zeros(self.shape)
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                mag[i, j] += self.x[i, j]**2
+                mag[i, j] += self.y[i, j]**2
+                mag[i, j] += self.z[i, j]**2
+                mag[i, j] = mag[i, j]**0.5
+        return mag
     def __getitem__(self, key):
         x = self.x[key]
         y = self.y[key]
@@ -48,14 +71,24 @@ class MatrixVector(object):
                 y += self.y[i, j]
                 z += self.z[i, j]
         return Vector(x, y, z)
-    def __rmul__(self, obj):
-        if isinstance(obj, (Vector, MatrixVector)):
-            return obj.x*self.x+obj.y*self.y+obj.z*self.z
-        else:
-            x = obj*self.x
-            y = obj*self.y
-            z = obj*self.z
-            return MatrixVector(x, y, z)
+    def tolist(self):
+        lst = []
+        for i in range(self.shape[0]):
+            lst.append([])
+            for j in range(self.shape[1]):
+                x = self.x[i, j]
+                y = self.y[i, j]
+                z = self.z[i, j]
+                lst[-1].append(Vector(x, y, z))
+        return lst
+    # def __rmul__(self, obj):
+    #     if isinstance(obj, (Vector, MatrixVector)):
+    #         return obj.x*self.x+obj.y*self.y+obj.z*self.z
+    #     else:
+    #         x = obj*self.x
+    #         y = obj*self.y
+    #         z = obj*self.z
+    #         return MatrixVector(x, y, z)
     def __mul__(self, obj):
         if isinstance(obj, (Vector, MatrixVector)):
             return self.x*obj.x+self.y*obj.y+self.z*obj.z
@@ -64,6 +97,8 @@ class MatrixVector(object):
             y = self.y*obj
             z = self.z*obj
             return MatrixVector(x, y, z)
+    def __rmul__(self, obj):
+        return self.__mul__(obj)
     # def __matmul__(self, obj):
     #     if isinstance(obj, matrix):
     #         x = self.x@obj
@@ -119,7 +154,6 @@ class MatrixVector(object):
         return frmstr.format(self.x, self.y, self.z)
 
 def zero_matrix_vector(shape: tuple):
-    from numpy.matlib import zeros
     x = zeros(shape)
     y = zeros(shape)
     z = zeros(shape)
@@ -127,7 +161,6 @@ def zero_matrix_vector(shape: tuple):
 
 def solve_matrix_vector(a: matrix, b: MatrixVector):
     from numpy.linalg import solve
-    from numpy.matlib import zeros
     newb = zeros((b.shape[0], b.shape[1]*3))
     for i in range(b.shape[1]):
         newb[:, 3*i+0] = b[:, i].x
@@ -139,10 +172,31 @@ def solve_matrix_vector(a: matrix, b: MatrixVector):
         c[:, i] = MatrixVector(newc[:, 3*i+0], newc[:, 3*i+1], newc[:, 3*i+2])
     return c
 
-def elementwise_multiply(a: matrix, b: MatrixVector):
+def elementwise_multiply(a: matrix, b: MatrixVector) -> MatrixVector:
     if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
         c = zero_matrix_vector(a.shape)
         for i in range(a.shape[0]):
             for j in range(a.shape[1]):
                 c[i, j] = a[i, j]*b[i, j]
-    return c
+        return c
+
+def elementwise_dot_product(a: MatrixVector, b: MatrixVector):
+    if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
+        c = multiply(a.x, b.x) + multiply(a.y, b.y) + multiply(a.z, b.z)
+        # c = zeros(a.shape)
+        # for i in range(a.shape[0]):
+        #     for j in range(a.shape[1]):
+        #         c[i, j] = a[i, j]*b[i, j]
+        return c
+
+def elementwise_cross_product(a: MatrixVector, b: MatrixVector):
+    if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
+        x = multiply(a.y, b.z)-multiply(a.z, b.y)
+        y = multiply(a.z, b.x)-multiply(a.x, b.z)
+        z = multiply(a.x, b.y)-multiply(a.y, b.x)
+        return MatrixVector(x, y, z)
+        # c = zero_matrix_vector(a.shape)
+        # for i in range(a.shape[0]):
+        #     for j in range(a.shape[1]):
+        #         c[i, j] = a[i, j]**b[i, j]
+        # return c

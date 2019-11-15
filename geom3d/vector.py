@@ -25,8 +25,15 @@ class Vector(object):
         """Returns the magnitude of this vector"""
         return (self.x**2+self.y**2+self.z**2)**0.5
     def __mul__(self, obj):
-        if isinstance(obj, Vector):
+        from numpy.matlib import matrix
+        from pygeom.matrix3d import MatrixVector
+        if isinstance(obj, (Vector, MatrixVector)):
             return self.x*obj.x+self.y*obj.y+self.z*obj.z
+        elif isinstance(obj, matrix):
+            x = obj*self.x
+            y = obj*self.y
+            z = obj*self.z
+            return MatrixVector(x, y, z)
         else:
             x = obj*self.x
             y = obj*self.y
@@ -41,7 +48,7 @@ class Vector(object):
             z = self.z/obj
             return Vector(x, y, z)
     def __pow__(self, obj):
-        from pygeom.matrixgeom3d import MatrixVector
+        from pygeom.matrix3d import MatrixVector
         if isinstance(obj, Vector):
             x = self.y*obj.z-self.z*obj.y
             y = self.z*obj.x-self.x*obj.z
