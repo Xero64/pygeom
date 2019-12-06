@@ -297,43 +297,63 @@ class CubicSpline2D(object):
             d2x.append(self.d2r[-1].x)
             d2y.append(self.d2r[-1].y)
         return d2x, d2y
-    # def line_intersection_points(self, line):
-    #     from pymath.roots import cubic_equation
-    #     pnts = []
-    #     xP = line.pnt.x
-    #     yP = line.pnt.y
-    #     dxdl = line.uvec.x
-    #     dydl = line.uvec.y
-    #     for i in range(self.npnls):
-    #         ia = i
-    #         xA = self.pnts[ia].x
-    #         yA = self.pnts[ia].y
-    #         d2xA = self.d2r[ia].x
-    #         d2yA = self.d2r[ia].y
-    #         ib = i+1
-    #         if ib == self.npnts:
-    #             ib = 0
-    #         xB = self.pnts[ib].x
-    #         yB = self.pnts[ib].y
-    #         d2xB = self.d2r[ib].x
-    #         d2yB = self.d2r[ib].y
-    #         sP = self.pnls[i].length
-    #         a = (-d2xA*dydl + d2xB*dydl + d2yA*dxdl - d2yB*dxdl)/(6*dxdl*dydl*sP)
-    #         b = (d2xA*dydl - d2yA*dxdl)/(2*dxdl*dydl)
-    #         c = (-2*d2xA*dydl*sP**2 - d2xB*dydl*sP**2 + 2*d2yA*dxdl*sP**2 + d2yB*dxdl*sP**2 + 6*dxdl*yA - 6*dxdl*yB - 6*dydl*xA + 6*dydl*xB)/(6*dxdl*dydl*sP)
-    #         d = (-dxdl*yA + dxdl*yP + dydl*xA - dydl*xP)/(dxdl*dydl)
-    #         slst = cubic_equation(a, b, c, d)
-    #         for s in slst:
-    #             if isinstance(s, float):
-    #                 if s >= 0.0 and s <= sP:
-    #                     A = (sP-s)/sP
-    #                     B = s/sP
-    #                     C = sP**2/6*(A**3-A)
-    #                     D = sP**2/6*(B**3-B)
-    #                     x = A*xA+B*xB+C*d2xA+D*d2xB
-    #                     y = A*yA+B*yB+C*d2yA+D*d2yB
-    #                     pnts.append(Point2D(x, y))
-    #     return pnts
+    def line_intersection_points(self, line):
+        # from pymath.roots import cubic_equation
+        pnts = []
+        xP = line.pnt.x
+        yP = line.pnt.y
+        dxdl = line.uvec.x
+        dydl = line.uvec.y
+        for i in range(self.npnls):
+            ia = i
+            xA = self.pnts[ia].x
+            yA = self.pnts[ia].y
+            d2xA = self.d2r[ia].x
+            d2yA = self.d2r[ia].y
+            ib = i+1
+            if ib == self.npnts:
+                ib = 0
+            xB = self.pnts[ib].x
+            yB = self.pnts[ib].y
+            d2xB = self.d2r[ib].x
+            d2yB = self.d2r[ib].y
+            sP = self.pnls[i].length
+            # a = (-d2xA*dydl + d2xB*dydl + d2yA*dxdl - d2yB*dxdl)/(6*dxdl*dydl*sP)
+            # b = (d2xA*dydl - d2yA*dxdl)/(2*dxdl*dydl)
+            # c = (-2*d2xA*dydl*sP**2 - d2xB*dydl*sP**2 + 2*d2yA*dxdl*sP**2 + d2yB*dxdl*sP**2 + 6*dxdl*yA - 6*dxdl*yB - 6*dydl*xA + 6*dydl*xB)/(6*dxdl*dydl*sP)
+            # d = (-dxdl*yA + dxdl*yP + dydl*xA - dydl*xP)/(dxdl*dydl)
+            a = -d2xA*dydl/(6*sP) + d2xB*dydl/(6*sP) + d2yA*dxdl/(6*sP) - d2yB*dxdl/(6*sP)
+            b = d2xA*dydl/2 - d2yA*dxdl/2
+            c = -d2xA*dydl*sP/3 - d2xB*dydl*sP/6 + d2yA*dxdl*sP/3 + d2yB*dxdl*sP/6 + dxdl*yA/sP - dxdl*yB/sP - dydl*xA/sP + dydl*xB/sP
+            d = -dxdl*yA + dxdl*yP + dydl*xA - dydl*xP
+            # Common Subexpressions
+            # x0 = d2xA*dydl
+            # x1 = 1/sP
+            # x2 = x1/6
+            # x3 = dydl*x1
+            # x4 = d2xB/6
+            # x5 = d2yA*dxdl
+            # x6 = dxdl*x1
+            # x7 = d2yB/6
+            # x8 = sP/3
+            # x9 = dxdl*yA
+            # x10 = dydl*xA
+            # a = -x0*x2 + x2*x5 + x3*x4 - x6*x7
+            # b = x0/2 - x5/2
+            # c = dxdl*sP*x7 - dydl*sP*x4 - x0*x8 - x1*x10 + x1*x9 + x3*xB + x5*x8 - x6*yB
+            # d = dxdl*yP - dydl*xP + x10 - x9
+            slst = cubic_roots(a, b, c, d)
+            for s in slst:
+                if isinstance(s, float):
+                    if s >= 0.0 and s < sP:
+                        A = (sP-s)/sP
+                        B = s/sP
+                        C = sP**2/6*(A**3-A)
+                        D = sP**2/6*(B**3-B)
+                        x = A*xA+B*xB+C*d2xA+D*d2xB
+                        y = A*yA+B*yB+C*d2yA+D*d2yB
+                        pnts.append(Point2D(x, y))
+        return pnts
     def scatter(self, ax=None, label=False):
         u"""This function plots the points of the spline."""
         if ax == None:
@@ -453,3 +473,29 @@ class CubicSpline2D(object):
         for i in range(self.npnts):
             outstr = frmstr.format(i, round(self.d2r[i].x, 6), round(self.d2r[i].x, 6), round(self.R[i], 6))
             print(outstr)
+
+def cubic_roots(a: float, b: float, c: float, d: float):
+    from math import acos, sqrt, cos, pi, copysign
+    tmp = a
+    a = b/tmp
+    b = c/tmp
+    c = d/tmp
+    Q = (a**2-3*b)/9
+    R = (2*a**3-9*a*b+27*c)/54
+    Q3 = Q**3
+    R2 = R**2
+    if R2 < Q3:
+        th = acos(R/sqrt(Q3))
+        x1 = -2*sqrt(Q)*cos(th/3)-a/3
+        x2 = -2*sqrt(Q)*cos((th+2*pi)/3)-a/3
+        x3 = -2*sqrt(Q)*cos((th-2*pi)/3)-a/3
+    else:
+        A = -copysign((abs(R)+sqrt(R2-Q3))**(1/3), R)
+        if A == 0.0:
+            B = 0.0
+        else:
+            B = Q/A
+        x1 = (A+B)-a/3
+        x2 = complex(-0.5*(A+B)-a/3, sqrt(3)/2*(A-B))
+        x3 = complex(x2.real, 0.0-x2.imag)
+    return x1, x2, x3
