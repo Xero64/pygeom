@@ -7,7 +7,7 @@ class Line2D(object):
     pntb = None
     vec = None
     length = None
-    def __init__(self, pnta, pntb):
+    def __init__(self, pnta: Point2D, pntb: Point2D):
         self.pnta = pnta
         self.pntb = pntb
         self.update()
@@ -20,7 +20,7 @@ class Line2D(object):
         x = (self.pnta.x+self.pntb.x)/2
         y = (self.pnta.y+self.pntb.y)/2
         return Point2D(x, y)
-    def ratio_point(self, ratio):
+    def ratio_point(self, ratio: float):
         """Returns a point a certain ratio along the line"""
         vec = vector2d_from_points(self.pnta, self.pntb)
         return self.pnta+ratio*vec

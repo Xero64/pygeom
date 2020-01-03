@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pygeom",
-    version="0.0.2",
+    version="0.0.3",
     author="Xero64",
     author_email="xero64@gmail.com",
     description="Basic Vector Geometry Package for Python",
@@ -18,4 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
+    python_requires='>=3.7'
 )

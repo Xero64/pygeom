@@ -112,7 +112,7 @@ class MatrixVector(object):
             x = self.x/obj
             y = self.y/obj
             z = self.z/obj
-            return Vector(x, y, z)
+            return MatrixVector(x, y, z)
     def __pow__(self, obj):
         if isinstance(obj, Vector):
             x = self.y*obj.z-self.z*obj.y
@@ -174,19 +174,19 @@ def solve_matrix_vector(a: matrix, b: MatrixVector):
 
 def elementwise_multiply(a: matrix, b: MatrixVector) -> MatrixVector:
     if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
-        c = zero_matrix_vector(a.shape)
-        for i in range(a.shape[0]):
-            for j in range(a.shape[1]):
-                c[i, j] = a[i, j]*b[i, j]
-        return c
+        x = multiply(a, b.x)
+        y = multiply(a, b.y)
+        z = multiply(a, b.z)
+        return MatrixVector(x, y, z)
+        # c = zero_matrix_vector(a.shape)
+        # for i in range(a.shape[0]):
+        #     for j in range(a.shape[1]):
+        #         c[i, j] = a[i, j]*b[i, j]
+        # return c
 
 def elementwise_dot_product(a: MatrixVector, b: MatrixVector):
     if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
         c = multiply(a.x, b.x) + multiply(a.y, b.y) + multiply(a.z, b.z)
-        # c = zeros(a.shape)
-        # for i in range(a.shape[0]):
-        #     for j in range(a.shape[1]):
-        #         c[i, j] = a[i, j]*b[i, j]
         return c
 
 def elementwise_cross_product(a: MatrixVector, b: MatrixVector):
