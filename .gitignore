@@ -25,6 +25,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Shell scripts
+*.sh
+
 # Test scripts
 scripts/
 sympy/
