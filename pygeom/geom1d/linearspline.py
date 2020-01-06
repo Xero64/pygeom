@@ -36,7 +36,7 @@ class LinearSpline(object):
             return ValueError
         for piece in self.pieces:
             if piece.contains(x):
-                y = piece.interpolate_spline(x)
+                y = piece.interpolate_spline(x=x)
                 break
         return y
     def single_interpolate_gradient(self, x: float):
@@ -44,9 +44,9 @@ class LinearSpline(object):
             return ValueError
         for piece in self.pieces:
             if piece.contains(x):
-                y = piece.interpolate_gradient(x)
+                dydx = piece.interpolate_gradient(x=x)
                 break
-        return y
+        return dydx
     def list_interpolation(self, x: list):
         if max(x) > self.xmax or min(x) < self.xmin:
             return ValueError
@@ -57,22 +57,24 @@ class LinearSpline(object):
             found = False
             if not found:
                 for i in range(j, num):
-                    piece = self.pieces[j]
+                    piece = self.pieces[i]
                     if piece.contains(xi):
-                        yi = piece.interpolate(xi)
+                        yi = piece.interpolate_spline(x=xi)
                         j = i
                         found = True
                         break
             if not found:
                 for i in range(0, j):
-                    piece = self.pieces[j]
+                    piece = self.pieces[i]
                     if piece.contains(xi):
-                        yi = piece.interpolate(xi)
+                        yi = piece.interpolate_spline(x=xi)
                         j = i
                         found = True
                         break
             if found:
                 y.append(yi)
+            else:
+                y.append(float('nan'))
         return y
     def plot_spline(self, num: int, ax=None, **kwargs):
         if ax is None:

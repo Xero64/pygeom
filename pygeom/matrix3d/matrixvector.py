@@ -81,6 +81,11 @@ class MatrixVector(object):
                 z = self.z[i, j]
                 lst[-1].append(Vector(x, y, z))
         return lst
+    def copy(self):
+        x = self.x.copy()
+        y = self.y.copy()
+        z = self.z.copy()
+        return MatrixVector(x, y, z)
     # def __rmul__(self, obj):
     #     if isinstance(obj, (Vector, MatrixVector)):
     #         return obj.x*self.x+obj.y*self.y+obj.z*self.z

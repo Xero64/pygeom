@@ -59,7 +59,7 @@ class CubicSpline(LinearSpline):
             return ValueError
         for piece in self.pieces:
             if piece.contains(x):
-                y = piece.interpolate_curvature(x)
+                y = piece.interpolate_curvature(x=x)
                 break
         return y
     def plot_curvature(self, num: int, ax=None, **kwargs):
