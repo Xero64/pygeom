@@ -1,5 +1,5 @@
-from pygeom.geom3d import Vector
-from numpy.matlib import matrix, zeros, multiply
+from pygeom.geom3d import Vector, Point
+from numpy.matlib import matrix, zeros, multiply, divide
 
 class MatrixVector(object):
     """Vector Class"""
@@ -13,48 +13,26 @@ class MatrixVector(object):
     def to_unit(self):
         """Returns the unit matrixvector of this matrixvector"""
         mag = self.return_magnitude()
-        x = zeros(self.shape)
-        y = zeros(self.shape)
-        z = zeros(self.shape)
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                if mag[i, j] != 0:
-                    x[i, j] = self.x[i, j]/mag[i, j]
-                    y[i, j] = self.y[i, j]/mag[i, j]
-                    z[i, j] = self.z[i, j]/mag[i, j]
-        return MatrixVector(x, y, z)
+        return elementwise_divide(self, mag)
     def return_magnitude(self):
         """Returns the magnitude matrix of this matrixvector"""
-        mag = zeros(self.shape)
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                mag[i, j] += self.x[i, j]**2
-                mag[i, j] += self.y[i, j]**2
-                mag[i, j] += self.z[i, j]**2
-                mag[i, j] = mag[i, j]**0.5
-        return mag
+        from numpy.matlib import sqrt
+        return sqrt(elementwise_dot_product(self, self))
     def __getitem__(self, key):
         x = self.x[key]
         y = self.y[key]
         z = self.z[key]
-        if isinstance(x, matrix):
+        if isinstance(x, matrix) and isinstance(y, matrix) and isinstance(z, matrix):
             return MatrixVector(x, y, z)
-        elif isinstance(x, float):
-            return Vector(x, y, z)
         else:
-            print('Did nothing!')
+            return Vector(x, y, z)
     def __setitem__(self, key, value):
-        if isinstance(value, Vector) and isinstance(key, tuple):
-            if len(key) == 2:
-                if isinstance(key[0], int) and isinstance(key[1], int):
-                    self.x[key] = value.x
-                    self.y[key] = value.y
-                    self.z[key] = value.z
-        elif isinstance(value, MatrixVector) and isinstance(key, tuple):
-            if len(key) == 2:
-                self.x[key] = value.x
-                self.y[key] = value.y
-                self.z[key] = value.z
+        if isinstance(key, tuple):
+            self.x[key] = value.x
+            self.y[key] = value.y
+            self.z[key] = value.z
+        else:
+            raise IndexError()
     @property
     def shape(self):
         return self.x.shape
@@ -63,14 +41,14 @@ class MatrixVector(object):
         y = self.y.transpose()
         z = self.z.transpose()
         return MatrixVector(x, y, z)
-    def sumall(self):
-        x, y, z = 0.0, 0.0, 0.0
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                x += self.x[i, j]
-                y += self.y[i, j]
-                z += self.z[i, j]
-        return Vector(x, y, z)
+    def sum(self, axis=None, dtype=None, out=None):
+        x = self.x.sum(axis=axis, dtype=dtype, out=out)
+        y = self.y.sum(axis=axis, dtype=dtype, out=out)
+        z = self.z.sum(axis=axis, dtype=dtype, out=out)
+        if isinstance(x, matrix) and isinstance(y, matrix) and isinstance(z, matrix):
+            return MatrixVector(x, y, z)
+        else:
+            return Vector(x, y, z)
     def tolist(self):
         lst = []
         for i in range(self.shape[0]):
@@ -81,19 +59,11 @@ class MatrixVector(object):
                 z = self.z[i, j]
                 lst[-1].append(Vector(x, y, z))
         return lst
-    def copy(self):
-        x = self.x.copy()
-        y = self.y.copy()
-        z = self.z.copy()
+    def copy(self, order='C'):
+        x = self.x.copy(order=order)
+        y = self.y.copy(order=order)
+        z = self.z.copy(order=order)
         return MatrixVector(x, y, z)
-    # def __rmul__(self, obj):
-    #     if isinstance(obj, (Vector, MatrixVector)):
-    #         return obj.x*self.x+obj.y*self.y+obj.z*self.z
-    #     else:
-    #         x = obj*self.x
-    #         y = obj*self.y
-    #         z = obj*self.z
-    #         return MatrixVector(x, y, z)
     def __mul__(self, obj):
         if isinstance(obj, (Vector, MatrixVector)):
             return self.x*obj.x+self.y*obj.y+self.z*obj.z
@@ -104,20 +74,14 @@ class MatrixVector(object):
             return MatrixVector(x, y, z)
     def __rmul__(self, obj):
         return self.__mul__(obj)
-    # def __matmul__(self, obj):
-    #     if isinstance(obj, matrix):
-    #         x = self.x@obj
-    #         y = self.y@obj
-    #         z = self.z@obj
-    #         return MatrixVector(x, y, z)
-    # def __rmatmul__(self, obj):
-    #     return self.__matmul__(obj)
     def __truediv__(self, obj):
         if isinstance(obj, (int, float, complex)):
             x = self.x/obj
             y = self.y/obj
             z = self.z/obj
             return MatrixVector(x, y, z)
+        else:
+            raise TypeError()
     def __pow__(self, obj):
         if isinstance(obj, Vector):
             x = self.y*obj.z-self.z*obj.y
@@ -129,6 +93,8 @@ class MatrixVector(object):
             y = self.z*obj.x-self.x*obj.z
             z = self.x*obj.y-self.y*obj.x
             return MatrixVector(x, y, z)
+        else:
+            raise TypeError()
     def __add__(self, obj):
         if isinstance(obj, MatrixVector):
             x = self.x+obj.x
@@ -146,6 +112,8 @@ class MatrixVector(object):
             y = self.y-obj.y
             z = self.z-obj.z
             return MatrixVector(x, y, z)
+        else:
+            raise TypeError()
     def __pos__(self):
         return MatrixVector(self.x, self.y, self.z)
     def __neg__(self):
@@ -158,10 +126,10 @@ class MatrixVector(object):
         frmstr = 'x:\n{:'+format_spec+'}\ny:\n{:'+format_spec+'}\nz:\n{:'+format_spec+'}'
         return frmstr.format(self.x, self.y, self.z)
 
-def zero_matrix_vector(shape: tuple):
-    x = zeros(shape)
-    y = zeros(shape)
-    z = zeros(shape)
+def zero_matrix_vector(shape: tuple, dtype=float, order='C'):
+    x = zeros(shape, dtype=dtype, order=order)
+    y = zeros(shape, dtype=dtype, order=order)
+    z = zeros(shape, dtype=dtype, order=order)
     return MatrixVector(x, y, z)
 
 def solve_matrix_vector(a: matrix, b: MatrixVector):
@@ -177,31 +145,35 @@ def solve_matrix_vector(a: matrix, b: MatrixVector):
         c[:, i] = MatrixVector(newc[:, 3*i+0], newc[:, 3*i+1], newc[:, 3*i+2])
     return c
 
-def elementwise_multiply(a: matrix, b: MatrixVector) -> MatrixVector:
-    if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
-        x = multiply(a, b.x)
-        y = multiply(a, b.y)
-        z = multiply(a, b.z)
+def elementwise_multiply(a: MatrixVector, b: matrix) -> MatrixVector:
+    if a.shape == b.shape:
+        x = multiply(a.x, b)
+        y = multiply(a.y, b)
+        z = multiply(a.z, b)
         return MatrixVector(x, y, z)
-        # c = zero_matrix_vector(a.shape)
-        # for i in range(a.shape[0]):
-        #     for j in range(a.shape[1]):
-        #         c[i, j] = a[i, j]*b[i, j]
-        # return c
+    else:
+        raise ValueError()
 
-def elementwise_dot_product(a: MatrixVector, b: MatrixVector):
-    if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
-        c = multiply(a.x, b.x) + multiply(a.y, b.y) + multiply(a.z, b.z)
-        return c
+def elementwise_divide(a: MatrixVector, b: matrix) -> MatrixVector:
+    if a.shape == b.shape:
+        x = divide(a.x, b)
+        y = divide(a.y, b)
+        z = divide(a.z, b)
+        return MatrixVector(x, y, z)
+    else:
+        raise ValueError()
 
-def elementwise_cross_product(a: MatrixVector, b: MatrixVector):
-    if a.shape[0] == b.shape[0] and a.shape[0] == b.shape[0]:
+def elementwise_dot_product(a: MatrixVector, b: MatrixVector) -> matrix:
+    if a.shape == b.shape:
+        return multiply(a.x, b.x) + multiply(a.y, b.y) + multiply(a.z, b.z)
+    else:
+        raise ValueError()
+
+def elementwise_cross_product(a: MatrixVector, b: MatrixVector) -> MatrixVector:
+    if a.shape == b.shape:
         x = multiply(a.y, b.z)-multiply(a.z, b.y)
         y = multiply(a.z, b.x)-multiply(a.x, b.z)
         z = multiply(a.x, b.y)-multiply(a.y, b.x)
         return MatrixVector(x, y, z)
-        # c = zero_matrix_vector(a.shape)
-        # for i in range(a.shape[0]):
-        #     for j in range(a.shape[1]):
-        #         c[i, j] = a[i, j]**b[i, j]
-        # return c
+    else:
+        raise ValueError()
