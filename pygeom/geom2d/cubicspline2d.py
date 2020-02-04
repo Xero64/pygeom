@@ -530,9 +530,9 @@ class CubicSpline2D(object):
             ax.grid(True)
         x = [self.pnts[i].x for i in range(self.npnts)]
         y = [self.pnts[i].y for i in range(self.npnts)]
-        dx = [-self.dr[i].x for i in range(self.npnts)]
-        dy = [self.dr[i].y for i in range(self.npnts)]
-        ax.quiver(x, y, dy, dx, color=color)
+        dx = [-self.dr[i].y for i in range(self.npnts)]
+        dy = [self.dr[i].x for i in range(self.npnts)]
+        ax.quiver(x, y, dx, dy, color=color)
         return ax
     def print_gradient(self, frmstr='.6f'):
         u"""This function prints the gradient of the spline."""
@@ -543,17 +543,12 @@ class CubicSpline2D(object):
         table.add_column('dyds', frmstr)
         table.add_column('Tangent X', frmstr)
         table.add_column('Tangent Y', frmstr)
-        # outstr = '\nGradient\nID\tdxds\tdyds\tTangent'
-        # print(outstr)
-        # frmstr = '{:d}\t{:g}\t{:g}'
         for i in range(self.npnts):
             dxds = self.dr[i].x
             dyds = self.dr[i].y
             tanx = cos(atan2(dyds, dxds))
             tany = sin(atan2(dyds, dxds))
             table.add_row([i, dxds, dyds, tanx, tany])
-            # outstr = frmstr.format(i, round(self.dr[i].x, 6), round(self.dr[i].y, 6))
-            # print(outstr)
         print(table)
     def print_curvature(self):
         u"""This function prints the curvature of the spline."""
