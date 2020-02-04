@@ -84,3 +84,13 @@ class SymbolicVector(Vector):
         return SymbolicVector(self.x, self.y, self.z)
     def __neg__(self):
         return SymbolicVector(-self.x, -self.y, -self.z)
+
+def symple_vector(label, **kwargs):
+    x = Symbol(f'{label:s}.x', **kwargs)
+    y = Symbol(f'{label:s}.y', **kwargs)
+    z = Symbol(f'{label:s}.z', **kwargs)
+    return SymbolicVector(x, y, z)
+
+ihat = SymbolicVector(1, 0, 0)
+jhat = SymbolicVector(0, 1, 0)
+khat = SymbolicVector(0, 0, 1)

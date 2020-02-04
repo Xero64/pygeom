@@ -1,1 +1,1 @@
-from .symbolicvector import SymbolicVector
+from .symbolicvector import SymbolicVector, symple_vector, ihat, jhat, khat
