@@ -49,6 +49,16 @@ class MatrixVector(object):
             return MatrixVector(x, y, z)
         else:
             return Vector(x, y, z)
+    def repeat(self, repeats, axis=None):
+        x = self.x.repeat(repeats, axis=axis)
+        y = self.y.repeat(repeats, axis=axis)
+        z = self.z.repeat(repeats, axis=axis)
+        return MatrixVector(x, y, z)
+    def reshape(self, shape, order='C'):
+        x = self.x.reshape(shape, order=order)
+        y = self.y.reshape(shape, order=order)
+        z = self.z.reshape(shape, order=order)
+        return MatrixVector(x, y, z)
     def tolist(self):
         lst = []
         for i in range(self.shape[0]):
