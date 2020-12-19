@@ -18,6 +18,9 @@ class Point(object):
         """Returns the distance from origin to this point"""
         vec = self.to_vector()
         return vec.return_magnitude()
+    def to_xyz(self):
+        """Returns the x, y and z values of this point"""
+        return self.x, self.y, self.z
     def __eq__(self, obj):
         if isinstance(obj, Point):
             return self.x == obj.x and self.y == obj.y and self.z == obj.z

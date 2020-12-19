@@ -37,6 +37,9 @@ class Vector2D(object):
         x = mag*cos(ang+rot)
         y = mag*sin(ang+rot)
         return Vector2D(x, y)
+    def to_xy(self):
+        """Returns the x, y values of this vector"""
+        return self.x, self.y
     def __add__(self, obj):
         if isinstance(obj, Vector2D):
             return Vector2D(self.x+obj.x, self.y+obj.y)

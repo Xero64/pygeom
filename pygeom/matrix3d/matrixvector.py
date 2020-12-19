@@ -74,6 +74,9 @@ class MatrixVector(object):
         y = self.y.copy(order=order)
         z = self.z.copy(order=order)
         return MatrixVector(x, y, z)
+    def to_xyz(self):
+        """Returns the x, y and z values of this matrix vector"""
+        return self.x, self.y, self.z
     def __mul__(self, obj):
         if isinstance(obj, (Vector, MatrixVector)):
             return self.x*obj.x+self.y*obj.y+self.z*obj.z
@@ -83,7 +86,13 @@ class MatrixVector(object):
             z = self.z*obj
             return MatrixVector(x, y, z)
     def __rmul__(self, obj):
-        return self.__mul__(obj)
+        if isinstance(obj, (Vector, MatrixVector)):
+            return obj.x*self.x+obj.y*self.y+obj.z*self.z
+        else:
+            x = obj*self.x
+            y = obj*self.y
+            z = obj*self.z
+            return MatrixVector(x, y, z)
     def __truediv__(self, obj):
         if isinstance(obj, (int, float, complex)):
             x = self.x/obj
@@ -106,7 +115,7 @@ class MatrixVector(object):
         else:
             raise TypeError()
     def __add__(self, obj):
-        if isinstance(obj, MatrixVector):
+        if isinstance(obj, (MatrixVector, Vector)):
             x = self.x+obj.x
             y = self.y+obj.y
             z = self.z+obj.z
@@ -117,7 +126,7 @@ class MatrixVector(object):
         else:
             return self.__add__(obj)
     def __sub__(self, obj):
-        if isinstance(obj, MatrixVector):
+        if isinstance(obj, (MatrixVector, Vector)):
             x = self.x-obj.x
             y = self.y-obj.y
             z = self.z-obj.z

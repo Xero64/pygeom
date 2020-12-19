@@ -24,6 +24,9 @@ class Vector(object):
     def return_magnitude(self):
         """Returns the magnitude of this vector"""
         return (self.x**2+self.y**2+self.z**2)**0.5
+    def to_xyz(self):
+        """Returns the x, y and z values of this vector"""
+        return self.x, self.y, self.z
     def __mul__(self, obj):
         from numpy.matlib import matrix
         from pygeom.matrix3d import MatrixVector

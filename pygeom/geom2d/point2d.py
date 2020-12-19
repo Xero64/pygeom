@@ -15,6 +15,9 @@ class Point2D(object):
         """Returns the distance from origin to this point"""
         vec = self.to_vector()
         return vec.return_magnitude()
+    def to_xy(self):
+        """Returns the x, y values of this point"""
+        return self.x, self.y
     def __eq__(self, obj):
         if isinstance(obj, Point2D):
             return self.x == obj.x and self.y == obj.y
