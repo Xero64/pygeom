@@ -16,16 +16,6 @@ class Vector2D(object):
             x = self.x/mag
             y = self.y/mag
             return Vector2D(x, y)
-    def return_magnitude(self):
-        """Returns the magnitude of this vector"""
-        return (self.x**2+self.y**2)**0.5
-    def return_angle(self):
-        """Returns the angle of this vector from the x axis"""
-        return atan2(self.y, self.x)
-    def to_complex(self):
-        """Returns the complex number of this vector"""
-        cplx = self.x+1j*self.y
-        return cplx
     def to_point(self):
         """Returns the end point position of this vector"""
         from .point2d import Point2D
@@ -37,38 +27,82 @@ class Vector2D(object):
         x = mag*cos(ang+rot)
         y = mag*sin(ang+rot)
         return Vector2D(x, y)
+    def return_angle(self):
+        """Returns the angle of this vector from the x axis"""
+        return atan2(self.y, self.x)
+    def to_complex(self):
+        """Returns the complex number of this vector"""
+        cplx = self.x+1j*self.y
+        return cplx
+    def return_magnitude(self):
+        """Returns the magnitude of this vector"""
+        return (self.x**2+self.y**2)**0.5
     def to_xy(self):
         """Returns the x, y values of this vector"""
         return self.x, self.y
+    def __mul__(self, obj):
+        from numpy.matlib import matrix
+        from pygeom.matrix2d import MatrixVector2D
+        if isinstance(obj, (Vector2D, MatrixVector2D)):
+            return self.x*obj.x+self.y*obj.y
+        elif isinstance(obj, matrix):
+            x = self.x*obj
+            y = self.y*obj
+            return MatrixVector2D(x, y)
+        else:
+            x = self.x*obj
+            y = self.y*obj
+            return Vector2D(x, y)
+    def __rmul__(self, obj):
+        from numpy.matlib import matrix
+        from pygeom.matrix2d import MatrixVector2D
+        if isinstance(obj, (Vector2D, MatrixVector2D)):
+            return self.x*obj.x+self.y*obj.y
+        elif isinstance(obj, matrix):
+            x = obj*self.x
+            y = obj*self.y
+            return MatrixVector2D(x, y)
+        else:
+            x = obj*self.x
+            y = obj*self.y
+            return Vector2D(x, y)
+    def __truediv__(self, obj):
+        x = self.x/obj
+        y = self.y/obj
+        return Vector2D(x, y)
+    def __pow__(self, obj):
+        from pygeom.matrix2d import MatrixVector2D
+        if isinstance(obj, (Vector2D, MatrixVector2D)):
+            return self.x*obj.y-self.y*obj.x
     def __add__(self, obj):
+        from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, Vector2D):
-            return Vector2D(self.x+obj.x, self.y+obj.y)
+            x = self.x+obj.x
+            y = self.y+obj.y
+            return Vector2D(x, y)
+        elif isinstance(obj, MatrixVector2D):
+            x = self.x+obj.x
+            y = self.y+obj.y
+            return MatrixVector2D(x, y)
     def __radd__(self, obj):
         if obj == 0 or obj is None:
             return self
         else:
             return self.__add__(obj)
     def __sub__(self, obj):
+        from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, Vector2D):
-            return Vector2D(self.x-obj.x, self.y-obj.y)
+            x = self.x-obj.x
+            y = self.y-obj.y
+            return Vector2D(x, y)
+        elif isinstance(obj, MatrixVector2D):
+            x = self.x-obj.x
+            y = self.y-obj.y
+            return MatrixVector2D(x, y)
     def __pos__(self):
         return Vector2D(self.x, self.y)
     def __neg__(self):
         return Vector2D(-self.x, -self.y)
-    def __mul__(self, obj):
-        if isinstance(obj, Vector2D):
-            return self.x*obj.x+self.y*obj.y
-        else:
-            return Vector2D(self.x*obj, self.y*obj)
-    def __rmul__(self, obj):
-        return self.__mul__(obj)
-    def __pow__(self, obj):
-        if isinstance(obj, Vector2D):
-            return self.x*obj.y-self.y*obj.x
-    def __truediv__(self, obj):
-        x = self.x/obj
-        y = self.y/obj
-        return Vector2D(x, y)
     def __repr__(self):
         return '<Vector2D: {:}, {:}>'.format(self.x, self.y)
     def __str__(self):

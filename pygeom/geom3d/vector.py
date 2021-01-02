@@ -33,6 +33,21 @@ class Vector(object):
         if isinstance(obj, (Vector, MatrixVector)):
             return self.x*obj.x+self.y*obj.y+self.z*obj.z
         elif isinstance(obj, matrix):
+            x = self.x*obj
+            y = self.y*obj
+            z = self.z*obj
+            return MatrixVector(x, y, z)
+        else:
+            x = self.x*obj
+            y = self.y*obj
+            z = self.z*obj
+            return Vector(x, y, z)
+    def __rmul__(self, obj):
+        from numpy.matlib import matrix
+        from pygeom.matrix3d import MatrixVector
+        if isinstance(obj, (Vector, MatrixVector)):
+            return self.x*obj.x+self.y*obj.y+self.z*obj.z
+        elif isinstance(obj, matrix):
             x = obj*self.x
             y = obj*self.y
             z = obj*self.z
@@ -42,8 +57,6 @@ class Vector(object):
             y = obj*self.y
             z = obj*self.z
             return Vector(x, y, z)
-    def __rmul__(self, obj):
-        return self.__mul__(obj)
     def __truediv__(self, obj):
         if isinstance(obj, (int, float, complex)):
             x = self.x/obj
@@ -63,22 +76,34 @@ class Vector(object):
             z = self.x*obj.y-self.y*obj.x
             return MatrixVector(x, y, z)
     def __add__(self, obj):
+        from pygeom.matrix3d import MatrixVector
         if isinstance(obj, Vector):
             x = self.x+obj.x
             y = self.y+obj.y
             z = self.z+obj.z
             return Vector(x, y, z)
+        elif isinstance(obj, MatrixVector):
+            x = self.x+obj.x
+            y = self.y+obj.y
+            z = self.z+obj.z
+            return MatrixVector(x, y, z)
     def __radd__(self, obj):
         if obj == 0 or obj is None:
             return self
         else:
             return self.__add__(obj)
     def __sub__(self, obj):
+        from pygeom.matrix3d import MatrixVector
         if isinstance(obj, Vector):
             x = self.x-obj.x
             y = self.y-obj.y
             z = self.z-obj.z
             return Vector(x, y, z)
+        elif isinstance(obj, MatrixVector):
+            x = self.x-obj.x
+            y = self.y-obj.y
+            z = self.z-obj.z
+            return MatrixVector(x, y, z)
     def __pos__(self):
         return Vector(self.x, self.y, self.z)
     def __neg__(self):
