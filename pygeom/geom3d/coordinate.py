@@ -22,7 +22,7 @@ class Coordinate(object):
         z = dirz*vec
         return Vector(x, y, z)
     def vector_to_local(self, vec):
-        """Transforms a vector from global  to this local coordinate system"""
+        """Transforms a vector from global to this local coordinate system"""
         dirx = Vector(self.dirx.x, self.dirx.y, self.dirx.z)
         diry = Vector(self.diry.x, self.diry.y, self.diry.z)
         dirz = Vector(self.dirz.x, self.dirz.y, self.dirz.z)
