@@ -1,28 +1,31 @@
-from pygeom.geom2d import Vector2D, Point2D, Coordinate2D
-from numpy.matlib import matrix, zeros, multiply, divide
+from pygeom.geom2d import Vector2D, Coordinate2D
+from numpy.matlib import matrix, zeros, multiply, divide, arctan2, sqrt, square
 
 class MatrixVector2D(object):
-    """Vector2D Class"""
+    """MatrixVector2D Class"""
     x = None
     y = None
     def __init__(self, x: matrix, y: matrix):
         self.x = x
         self.y = y
     def to_unit(self):
-        """Returns the unit matrixvector of this matrixvector"""
+        """Returns the unit matrix vector of this matrix vector"""
         mag = self.return_magnitude()
         return elementwise_divide(self, mag)
     def return_magnitude(self):
-        """Returns the magnitude matrix of this matrixvector"""
-        from numpy.matlib import sqrt
-        return sqrt(elementwise_dot_product(self, self))
+        """Returns the magnitude matrix of this matrix vector"""
+        return sqrt(square(self.x) + square(self.y))
+    def return_angle(self):
+        """Returns the angle matrix of this matrix vector from the x axis"""
+        return arctan2(self.y, self.x)
     def __getitem__(self, key):
         x = self.x[key]
         y = self.y[key]
         if isinstance(x, matrix) and isinstance(y, matrix):
-            return MatrixVector2D(x, y)
+            output = MatrixVector2D(x, y)
         else:
-            return Vector2D(x, y)
+            output = Vector2D(x, y)
+        return output
     def __setitem__(self, key, value):
         if isinstance(key, tuple):
             self.x[key] = value.x
@@ -64,7 +67,7 @@ class MatrixVector2D(object):
         x = self.x.copy(order=order)
         y = self.y.copy(order=order)
         return MatrixVector2D(x, y)
-    def to_xyz(self):
+    def to_xy(self):
         """Returns the x and y values of this matrix vector"""
         return self.x, self.y
     def __mul__(self, obj):
@@ -161,7 +164,7 @@ def elementwise_divide(a: MatrixVector2D, b: matrix) -> MatrixVector2D:
 
 def elementwise_dot_product(a: MatrixVector2D, b: MatrixVector2D) -> matrix:
     if a.shape == b.shape:
-        return multiply(a.x, b.x) + multiply(a.y, b.y) 
+        return multiply(a.x, b.x) + multiply(a.y, b.y)
     else:
         raise ValueError()
 
@@ -179,6 +182,7 @@ def vector2d_to_global(self: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2
     x = dirx*vec
     y = diry*vec
     return MatrixVector2D(x, y)
+
 def vector2d_to_local(self: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
     """Transforms a vector from global  to this local coordinate system"""
     dirx = self.dirx
