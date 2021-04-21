@@ -5,8 +5,6 @@ class CubicSpline(LinearSpline):
     _grad = None # Gradient
     _curv = None # Curvature
     _pieces = None # Spline Pieces
-    def __init__(self, x: list, y: list):
-        super(CubicSpline, self).__init__(x, y)
     @property
     def curv(self):
         if self._curv is None:
@@ -56,11 +54,14 @@ class CubicSpline(LinearSpline):
         return self._pieces
     def single_interpolate_curvature(self, x: float):
         if x > self.xmax or x < self.xmin:
-            return ValueError
+            return ValueError('Lookup value not in range.')
+        y = None
         for piece in self.pieces:
             if piece.contains(x):
                 y = piece.interpolate_curvature(x=x)
                 break
+        if y is None:
+            return ValueError('Lookup value not found.')
         return y
     def plot_curvature(self, num: int, ax=None, **kwargs):
         if ax is None:
