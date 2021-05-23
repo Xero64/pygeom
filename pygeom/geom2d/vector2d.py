@@ -20,6 +20,9 @@ class Vector2D(object):
         """Returns the end point position of this vector"""
         from .point2d import Point2D
         return Point2D(self.x, self.y)
+    def to_vector(self):
+        """Returns a copy of this vector"""
+        return Vector2D(self.x, self.y)
     def rotate(self, rot):
         """Rotates this vector by an input angle in radians"""
         mag = self.return_magnitude()

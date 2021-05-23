@@ -21,6 +21,9 @@ class Vector(object):
         """Returns the end point position of this vector"""
         from .point import Point
         return Point(self.x, self.y, self.z)
+    def to_vector(self):
+        """Returns a copy of this vector"""
+        return Vector(self.x, self.y, self.z)
     def return_magnitude(self):
         """Returns the magnitude of this vector"""
         return (self.x**2+self.y**2+self.z**2)**0.5

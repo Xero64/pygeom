@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pygeom",
-    version="0.0.10",
+    version="0.0.12",
     author="Xero64",
     author_email="xero64@gmail.com",
-    description="Basic Vector Geometry Package for Python",
+    description="Geometry Definition and Calculation Package for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Xero64/pygeom",

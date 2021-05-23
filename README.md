@@ -1,6 +1,6 @@
 # pygeom
 
-Basic Geometry Package for Python
+Geometry Definition and Calculation Package for Python
 
 Contains:
 
