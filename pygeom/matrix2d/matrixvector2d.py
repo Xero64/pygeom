@@ -175,18 +175,18 @@ def elementwise_cross_product(a: MatrixVector2D, b: MatrixVector2D) -> matrix:
     else:
         raise ValueError()
 
-def vector2d_to_global(self: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
+def vector2d_to_global(crd: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
     """Transforms a vector from this local coordinate system to global"""
-    dirx = Vector2D(self.dirx.x, self.diry.x)
-    diry = Vector2D(self.dirx.y, self.diry.y)
+    dirx = Vector2D(crd.dirx.x, crd.diry.x)
+    diry = Vector2D(crd.dirx.y, crd.diry.y)
     x = dirx*vec
     y = diry*vec
     return MatrixVector2D(x, y)
 
-def vector2d_to_local(self: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
+def vector2d_to_local(crd: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
     """Transforms a vector from global  to this local coordinate system"""
-    dirx = self.dirx
-    diry = self.diry
+    dirx = crd.dirx
+    diry = crd.diry
     x = dirx*vec
     y = diry*vec
     return MatrixVector2D(x, y)
