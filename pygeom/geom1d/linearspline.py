@@ -33,29 +33,29 @@ class LinearSpline(object):
         return self._xmax
     def single_interpolate_spline(self, x: float):
         if x > self.xmax or x < self.xmin:
-            return ValueError('Lookup value not in range.')
+            raise ValueError('Lookup value not in range.')
         y = None
         for piece in self.pieces:
             if piece.contains(x):
                 y = piece.interpolate_spline(x=x)
                 break
         if y is None:
-            return ValueError('Lookup value not found.')
+            raise ValueError('Lookup value not found.')
         return y
     def single_interpolate_gradient(self, x: float):
         if x > self.xmax or x < self.xmin:
-            return ValueError('Lookup value not in range.')
+            raise ValueError('Lookup value not in range.')
         dydx = None
         for piece in self.pieces:
             if piece.contains(x):
                 dydx = piece.interpolate_gradient(x=x)
                 break
         if dydx is None:
-            return ValueError('Lookup value not found.')
+            raise ValueError('Lookup value not found.')
         return dydx
     def list_interpolation(self, x: list):
         if max(x) > self.xmax or min(x) < self.xmin:
-            return ValueError('One or more lookup valus not in range.')
+            raise ValueError('One or more lookup valus not in range.')
         num = len(self.pieces)
         y = []
         j = 0
