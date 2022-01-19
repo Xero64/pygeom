@@ -1,7 +1,8 @@
-from pygeom.geom3d import Vector, Point, Coordinate
+from typing import Tuple
+from pygeom.geom3d import Vector, Coordinate
 from numpy.matlib import matrix, zeros, multiply, divide
 
-class MatrixVector(object):
+class MatrixVector():
     """Vector Class"""
     x = None
     y = None
@@ -34,9 +35,9 @@ class MatrixVector(object):
         else:
             raise IndexError()
     @property
-    def shape(self):
+    def shape(self) -> Tuple[int]:
         return self.x.shape
-    def transpose(self):
+    def transpose(self) -> 'MatrixVector':
         x = self.x.transpose()
         y = self.y.transpose()
         z = self.z.transpose()
@@ -49,12 +50,12 @@ class MatrixVector(object):
             return MatrixVector(x, y, z)
         else:
             return Vector(x, y, z)
-    def repeat(self, repeats, axis=None):
+    def repeat(self, repeats, axis=None) -> 'MatrixVector':
         x = self.x.repeat(repeats, axis=axis)
         y = self.y.repeat(repeats, axis=axis)
         z = self.z.repeat(repeats, axis=axis)
         return MatrixVector(x, y, z)
-    def reshape(self, shape, order='C'):
+    def reshape(self, shape, order='C') -> 'MatrixVector':
         x = self.x.reshape(shape, order=order)
         y = self.y.reshape(shape, order=order)
         z = self.z.reshape(shape, order=order)
@@ -69,7 +70,7 @@ class MatrixVector(object):
                 z = self.z[i, j]
                 lst[-1].append(Vector(x, y, z))
         return lst
-    def copy(self, order='C'):
+    def copy(self, order='C') -> 'MatrixVector':
         x = self.x.copy(order=order)
         y = self.y.copy(order=order)
         z = self.z.copy(order=order)
@@ -145,13 +146,13 @@ class MatrixVector(object):
         frmstr = 'x:\n{:'+format_spec+'}\ny:\n{:'+format_spec+'}\nz:\n{:'+format_spec+'}'
         return frmstr.format(self.x, self.y, self.z)
 
-def zero_matrix_vector(shape: tuple, dtype=float, order='C'):
+def zero_matrix_vector(shape: tuple, dtype=float, order='C') -> MatrixVector:
     x = zeros(shape, dtype=dtype, order=order)
     y = zeros(shape, dtype=dtype, order=order)
     z = zeros(shape, dtype=dtype, order=order)
     return MatrixVector(x, y, z)
 
-def solve_matrix_vector(a: matrix, b: MatrixVector):
+def solve_matrix_vector(a: matrix, b: MatrixVector) -> MatrixVector:
     from numpy.linalg import solve
     newb = zeros((b.shape[0], b.shape[1]*3))
     for i in range(b.shape[1]):
@@ -171,7 +172,7 @@ def elementwise_multiply(a: MatrixVector, b: matrix) -> MatrixVector:
         z = multiply(a.z, b)
         return MatrixVector(x, y, z)
     else:
-        raise ValueError()
+        raise ValueError('The shape of a and b need to be the same.')
 
 def elementwise_divide(a: MatrixVector, b: matrix) -> MatrixVector:
     if a.shape == b.shape:
@@ -180,7 +181,7 @@ def elementwise_divide(a: MatrixVector, b: matrix) -> MatrixVector:
         z = divide(a.z, b)
         return MatrixVector(x, y, z)
     else:
-        raise ValueError()
+        raise ValueError('The shape of a and b need to be the same.')
 
 def elementwise_dot_product(a: MatrixVector, b: MatrixVector) -> matrix:
     if a.shape == b.shape:
@@ -195,7 +196,7 @@ def elementwise_cross_product(a: MatrixVector, b: MatrixVector) -> MatrixVector:
         z = multiply(a.x, b.y)-multiply(a.y, b.x)
         return MatrixVector(x, y, z)
     else:
-        raise ValueError()
+        raise ValueError('The shape of a and b need to be the same.')
 
 def vector_to_global(crd: Coordinate, vec: MatrixVector) -> MatrixVector:
     """Transforms a matrix vector from this local coordinate system to global"""
