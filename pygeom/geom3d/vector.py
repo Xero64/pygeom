@@ -66,7 +66,7 @@ class Vector(object):
             y = self.y/obj
             z = self.z/obj
             return Vector(x, y, z)
-    def __pow__(self, obj):
+    def __pow__(self, obj) -> 'Vector':
         from pygeom.matrix3d import MatrixVector
         if isinstance(obj, Vector):
             x = self.y*obj.z-self.z*obj.y

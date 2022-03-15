@@ -54,14 +54,14 @@ class CubicSpline(LinearSpline):
         return self._pieces
     def single_interpolate_curvature(self, x: float):
         if x > self.xmax or x < self.xmin:
-            return ValueError('Lookup value not in range.')
+            raise ValueError('Lookup value not in range.')
         y = None
         for piece in self.pieces:
             if piece.contains(x):
                 y = piece.interpolate_curvature(x=x)
                 break
         if y is None:
-            return ValueError('Lookup value not found.')
+            raise ValueError('Lookup value not found.')
         return y
     def plot_curvature(self, num: int, ax=None, **kwargs):
         if ax is None:
