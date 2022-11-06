@@ -112,6 +112,8 @@ class MatrixVector2D():
     def __radd__(self, obj) -> 'MatrixVector2D':
         if obj is None:
             return self
+        elif obj == 0:
+            return self
         else:
             if isinstance(obj, (MatrixVector2D, Vector2D)):
                 return self.__add__(obj)

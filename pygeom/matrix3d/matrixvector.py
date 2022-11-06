@@ -124,6 +124,8 @@ class MatrixVector():
     def __radd__(self, obj):
         if obj is None:
             return self
+        elif obj == 0:
+            return self
         else:
             return self.__add__(obj)
     def __sub__(self, obj):

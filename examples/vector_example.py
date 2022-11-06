@@ -1,4 +1,5 @@
-#%% Import Vector Class
+#%%
+# Import Vector Class
 from pygeom import Vector
 
 # Vector object creation
