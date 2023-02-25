@@ -1,13 +1,19 @@
+from typing import TYPE_CHECKING, Tuple, Union, Optional, Any
 from math import atan2, cos, sin
+from ..geom3d.vector import Vector
 
-class Vector2D(object):
+if TYPE_CHECKING:
+    from numpy.matlib import matrix
+    from pygeom.matrix2d import MatrixVector2D
+
+class Vector2D():
     """Vector2D Class"""
-    x = None
-    y = None
-    def __init__(self, x, y):
+    x: 'float' = None
+    y: 'float' = None
+    def __init__(self, x: 'float', y: 'float') -> None:
         self.x = x
         self.y = y
-    def to_unit(self):
+    def to_unit(self) -> 'Vector2D':
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
         if mag == 0:
@@ -16,34 +22,36 @@ class Vector2D(object):
             x = self.x/mag
             y = self.y/mag
             return Vector2D(x, y)
-    def to_point(self):
+    def to_point(self) -> 'Vector2D':
         """Returns the end point position of this vector"""
-        from .point2d import Point2D
-        return Point2D(self.x, self.y)
-    def to_vector(self):
+        return Vector2D(self.x, self.y)
+    def copy(self) -> 'Vector2D':
         """Returns a copy of this vector"""
         return Vector2D(self.x, self.y)
-    def rotate(self, rot):
+    def return_magnitude(self):
+        """Returns the magnitude of this vector"""
+        return (self.x**2 + self.y**2)**0.5
+    def return_angle(self) -> 'float':
+        """Returns the angle of this vector from the x axis"""
+        return atan2(self.y, self.x)
+    def rotate(self, rot: 'float') -> 'Vector2D':
         """Rotates this vector by an input angle in radians"""
         mag = self.return_magnitude()
         ang = self.return_angle()
-        x = mag*cos(ang+rot)
-        y = mag*sin(ang+rot)
+        x = mag*cos(ang + rot)
+        y = mag*sin(ang + rot)
         return Vector2D(x, y)
-    def return_angle(self):
-        """Returns the angle of this vector from the x axis"""
-        return atan2(self.y, self.x)
-    def to_complex(self):
+    def to_complex(self) -> 'complex':
         """Returns the complex number of this vector"""
-        cplx = self.x+1j*self.y
+        cplx = self.x + 1j*self.y
         return cplx
-    def return_magnitude(self):
-        """Returns the magnitude of this vector"""
-        return (self.x**2+self.y**2)**0.5
-    def to_xy(self):
+    def to_xy(self) -> Tuple['float', 'float']:
         """Returns the x, y values of this vector"""
         return self.x, self.y
-    def __mul__(self, obj):
+    def to_3d(self) -> 'Vector':
+        """Returns the 2D vector as 3D vector with zero z value"""
+        return Vector(self.x, self.y, 0.0)
+    def __mul__(self, obj: Any) -> Union['Vector2D', 'MatrixVector2D']:
         from numpy.matlib import matrix
         from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, (Vector2D, MatrixVector2D)):
@@ -56,7 +64,7 @@ class Vector2D(object):
             x = self.x*obj
             y = self.y*obj
             return Vector2D(x, y)
-    def __rmul__(self, obj):
+    def __rmul__(self, obj: Any) -> Union['Vector2D', 'MatrixVector2D']:
         from numpy.matlib import matrix
         from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, (Vector2D, MatrixVector2D)):
@@ -69,15 +77,20 @@ class Vector2D(object):
             x = obj*self.x
             y = obj*self.y
             return Vector2D(x, y)
-    def __truediv__(self, obj):
+    def __truediv__(self, obj: 'float') -> 'Vector2D':
         x = self.x/obj
         y = self.y/obj
         return Vector2D(x, y)
-    def __pow__(self, obj):
+    def __pow__(self, obj: Union['Vector2D', 'MatrixVector2D']) -> Union['float',
+                                                                         'matrix']:
         from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, (Vector2D, MatrixVector2D)):
             return self.x*obj.y-self.y*obj.x
-    def __add__(self, obj):
+        else:
+            err = 'Can only cross product Vector2D to Vector2D or MatrixVector2D.'
+            raise ValueError(err)
+    def __add__(self, obj: Union['Vector2D', 'MatrixVector2D']) -> Union['Vector2D',
+                                                                         'MatrixVector2D']:
         from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, Vector2D):
             x = self.x+obj.x
@@ -87,12 +100,14 @@ class Vector2D(object):
             x = self.x+obj.x
             y = self.y+obj.y
             return MatrixVector2D(x, y)
-    def __radd__(self, obj):
+        else:
+            raise ValueError('Can only add Vector2D to Vector2D or MatrixVector2D.')
+    def __radd__(self, obj: Optional[Union['Vector2D', 'MatrixVector2D']]):
         if obj == 0 or obj is None:
             return self
         else:
             return self.__add__(obj)
-    def __sub__(self, obj):
+    def __sub__(self, obj: Union['Vector2D', 'MatrixVector2D']):
         from pygeom.matrix2d import MatrixVector2D
         if isinstance(obj, Vector2D):
             x = self.x-obj.x
@@ -102,43 +117,23 @@ class Vector2D(object):
             x = self.x-obj.x
             y = self.y-obj.y
             return MatrixVector2D(x, y)
-    def __pos__(self):
-        return Vector2D(self.x, self.y)
-    def __neg__(self):
+    def __pos__(self) -> 'Vector2D':
+        return self
+    def __neg__(self) -> 'Vector2D':
         return Vector2D(-self.x, -self.y)
-    def __repr__(self):
+    def __repr__(self) -> 'str':
         return '<Vector2D: {:}, {:}>'.format(self.x, self.y)
-    def __str__(self):
+    def __str__(self) -> 'str':
         return '<{:}, {:}>'.format(self.x, self.y)
-    def __format__(self, format_spec):
-        frmstr = '<{:'+format_spec+'}, {:'+format_spec+'}>'
+    def __format__(self, format_spec) -> 'str':
+        frmstr: 'str' = '<{:'+format_spec+'}, {:'+format_spec+'}>'
         return frmstr.format(self.x, self.y)
 
-def vector2d_from_complex(cplx):
-    """Create a Vector2D from a complex number"""
-    x = cplx.real
-    y = cplx.imag
-    return Vector2D(x, y)
+def zero_vector2d() -> 'Vector2D':
+    return Vector2D(0.0, 0.0)
 
-def vector2d_from_points(pnta, pntb):
+def vector2d_from_points(pnta: 'Vector2D', pntb: 'Vector2D') -> 'Vector2D':
     """Create a Vector2D from two Point2Ds"""
     x = pntb.x-pnta.x
     y = pntb.y-pnta.y
     return Vector2D(x, y)
-
-def vector2d_from_magang(mag, ang):
-    """Create a Vector2D from magnatude and angle from x direction"""
-    x = mag*cos(ang)
-    y = mag*sin(ang)
-    return Vector2D(x, y)
-
-def vector2d_from_lists(x, y):
-    """Create a list of Vector2D objects"""
-    n = len(x)
-    if len(y) == n:
-        vecs = [Vector2D(x[i], y[i]) for i in range(n)]
-        return vecs
-
-ihat2d = Vector2D(1.0, 0.0)
-jhat2d = Vector2D(0.0, 1.0)
-zero_vector2d = Vector2D(0.0, 0.0)

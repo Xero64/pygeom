@@ -1,6 +1,6 @@
 from typing import Tuple, Union, List
 from pygeom.geom2d import Tensor2D, Coordinate2D
-from numpy.matlib import matrix, zeros, multiply, divide, arctan2, sqrt, square
+from numpy.matlib import matrix, zeros, multiply, divide
 
 class MatrixTensor2D():
     """MatrixTensor2D Class"""
@@ -13,9 +13,6 @@ class MatrixTensor2D():
         self.xy = xy
         self.yx = yx
         self.yy = yy
-    # def return_angle(self) -> matrix:
-    #     """Returns the angle matrix of this matrix tensor from the x axis"""
-    #     return arctan2(self.y, self.x)
     def __getitem__(self, key) -> Union['Tensor2D', 'MatrixTensor2D']:
         xx = self.xx[key]
         xy = self.xy[key]
@@ -26,7 +23,8 @@ class MatrixTensor2D():
         else:
             output = Tensor2D(xx, xy, yx, yy)
         return output
-    def __setitem__(self, key, value: Tensor2D) -> Union['Tensor2D', 'MatrixTensor2D']:
+    def __setitem__(self, key, value: Tensor2D) -> Union['Tensor2D',
+                                                         'MatrixTensor2D']:
         if isinstance(key, tuple):
             self.xx[key] = value.xx
             self.xy[key] = value.xy
@@ -43,13 +41,15 @@ class MatrixTensor2D():
         yx = self.yx.transpose()
         yy = self.yy.transpose()
         return MatrixTensor2D(xx, xy, yx, yy)
-    def sum(self, axis=None, dtype=None, out=None) -> Union['Tensor2D', 'MatrixTensor2D']:
+    def sum(self, axis=None, dtype=None, out=None) -> Union['Tensor2D',
+                                                            'MatrixTensor2D']:
         xx = self.xx.sum(axis=axis, dtype=dtype, out=out)
         xy = self.xy.sum(axis=axis, dtype=dtype, out=out)
         yx = self.yx.sum(axis=axis, dtype=dtype, out=out)
         yy = self.yy.sum(axis=axis, dtype=dtype, out=out)
-        if isinstance(xx, matrix) and isinstance(xy, matrix) and isinstance(yx, matrix) and isinstance(yy, matrix):
-            return MatrixTensor2D(xx, xy, yx, yy)
+        if isinstance(xx, matrix) and isinstance(xy, matrix):
+            if isinstance(yx, matrix) and isinstance(yy, matrix):
+                return MatrixTensor2D(xx, xy, yx, yy)
         else:
             return Tensor2D(xx, xy, yx, yy)
     def repeat(self, repeats, axis=None) -> 'MatrixTensor2D':
@@ -82,7 +82,7 @@ class MatrixTensor2D():
         yx = self.yx.copy(order=order)
         yy = self.yy.copy(order=order)
         return MatrixTensor2D(xx, xy, yx, yy)
-    def to_xy(self) -> Tuple[matrix]:
+    def to_xy(self) -> Tuple['matrix']:
         """Returns the xx, xy, yx and yy values of this matrix tensor"""
         return self.xx, self.xy, self.yx, self.yy
     def __mul__(self, obj) -> 'MatrixTensor2D':
@@ -148,14 +148,16 @@ class MatrixTensor2D():
         frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
-def zero_matrix_tensor(shape: tuple, dtype=float, order='C') -> 'MatrixTensor2D':
+def zero_matrix_tensor(shape: Tuple['int', 'int'],
+                       dtype=float, order='C') -> 'MatrixTensor2D':
     xx = zeros(shape, dtype=dtype, order=order)
     xy = zeros(shape, dtype=dtype, order=order)
     yx = zeros(shape, dtype=dtype, order=order)
     yy = zeros(shape, dtype=dtype, order=order)
     return MatrixTensor2D(xx, xy, yx, yy)
 
-def elementwise_multiply(a: MatrixTensor2D, b: 'matrix') -> 'MatrixTensor2D':
+def elementwise_multiply(a: 'MatrixTensor2D',
+                         b: 'matrix') -> 'MatrixTensor2D':
     if a.shape == b.shape:
         xx = multiply(a.xx, b)
         xy = multiply(a.xy, b)
@@ -165,7 +167,8 @@ def elementwise_multiply(a: MatrixTensor2D, b: 'matrix') -> 'MatrixTensor2D':
     else:
         raise ValueError('MatrixTensor2D and matrix shapes not the same.')
 
-def elementwise_divide(a: MatrixTensor2D, b: 'matrix') -> 'MatrixTensor2D':
+def elementwise_divide(a: 'MatrixTensor2D',
+                       b: 'matrix') -> 'MatrixTensor2D':
     if a.shape == b.shape:
         xx = divide(a.xx, b)
         xy = divide(a.xy, b)

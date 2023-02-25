@@ -1,25 +1,25 @@
-from typing import Tuple, Union, List
-from pygeom.geom2d import Vector2D, Coordinate2D
-from numpy.matlib import matrix, zeros, multiply, divide, arctan2, sqrt, square
+from typing import List, Tuple, Union
+from numpy.matlib import arctan2, divide, matrix, multiply, sqrt, square
+from ..geom2d.vector2d import Vector2D
 
 class MatrixVector2D():
     """MatrixVector2D Class"""
-    x: matrix = None
-    y: matrix = None
-    def __init__(self, x: matrix, y: matrix) -> None:
+    x: 'matrix' = None
+    y: 'matrix' = None
+    def __init__(self, x: 'matrix', y: 'matrix') -> None:
         self.x = x
         self.y = y
     def to_unit(self) -> 'MatrixVector2D':
         """Returns the unit matrix vector of this matrix vector"""
         mag = self.return_magnitude()
         return elementwise_divide(self, mag)
-    def return_magnitude(self) -> matrix:
+    def return_magnitude(self) -> 'matrix':
         """Returns the magnitude matrix of this matrix vector"""
         return sqrt(square(self.x) + square(self.y))
-    def return_angle(self) -> matrix:
+    def return_angle(self) -> 'matrix':
         """Returns the angle matrix of this matrix vector from the x axis"""
         return arctan2(self.y, self.x)
-    def __getitem__(self, key) -> Union[Vector2D, 'MatrixVector2D']:
+    def __getitem__(self, key) -> Union['Vector2D', 'MatrixVector2D']:
         x = self.x[key]
         y = self.y[key]
         if isinstance(x, matrix) and isinstance(y, matrix):
@@ -27,15 +27,25 @@ class MatrixVector2D():
         else:
             output = Vector2D(x, y)
         return output
-    def __setitem__(self, key, value: Vector2D) -> Union[Vector2D, 'MatrixVector2D']:
+    def __setitem__(self, key, value: 'Vector2D') -> Union['Vector2D',
+                                                           'MatrixVector2D']:
         if isinstance(key, tuple):
             self.x[key] = value.x
             self.y[key] = value.y
         else:
             raise IndexError()
     @property
-    def shape(self) -> Tuple[int]:
-        return self.x.shape
+    def shape(self) -> Tuple['int']:
+        if self.x.shape == self.y.shape:
+            return self.x.shape
+        else:
+            raise ValueError('MatrixVector2D x and y should have the same shape.')
+    @property
+    def dtype(self):
+        if self.x.dtype is self.y.dtype:
+            return self.x.dtype
+        else:
+            raise ValueError('MatrixVector2D x and y should have the same dtype.')
     def transpose(self) -> 'MatrixVector2D':
         x = self.x.transpose()
         y = self.y.transpose()
@@ -55,7 +65,7 @@ class MatrixVector2D():
         x = self.x.reshape(shape, order=order)
         y = self.y.reshape(shape, order=order)
         return MatrixVector2D(x, y)
-    def tolist(self) -> List[List[Vector2D]]:
+    def tolist(self) -> List[List['Vector2D']]:
         lst = []
         for i in range(self.shape[0]):
             lstj = []
@@ -69,9 +79,11 @@ class MatrixVector2D():
         x = self.x.copy(order=order)
         y = self.y.copy(order=order)
         return MatrixVector2D(x, y)
-    def to_xy(self) -> Tuple[matrix]:
+    def to_xy(self) -> Tuple['matrix']:
         """Returns the x and y values of this matrix vector"""
         return self.x, self.y
+    def astype(self, type) -> 'MatrixVector2D':
+        return MatrixVector2D(self.x.astype(type), self.y.astype(type))
     def __mul__(self, obj) -> 'MatrixVector2D':
         if isinstance(obj, (Vector2D, MatrixVector2D)):
             return self.x*obj.x+self.y*obj.y
@@ -130,32 +142,16 @@ class MatrixVector2D():
         return MatrixVector2D(self.x, self.y)
     def __neg__(self) -> 'MatrixVector2D':
         return MatrixVector2D(-self.x, -self.y)
-    def __repr__(self) -> str:
+    def __repr__(self) -> 'str':
         return '<MatrixVector2D: {:}, {:}>'.format(self.x, self.y)
-    def __str__(self) -> str:
-        return 'x:\n{:}\ny:\n{:}'.format(self.x, self.y)
-    def __format__(self, format_spec: str) -> str:
-        frmstr = 'x:\n{:'+format_spec+'}\ny:\n{:'+format_spec+'}'
+    def __str__(self) -> 'str':
+        return '\nx:\n{:}\ny:\n{:}'.format(self.x, self.y)
+    def __format__(self, format_spec: str) -> 'str':
+        frmstr = '\nx:\n{:'+format_spec+'}\ny:\n{:'+format_spec+'}'
         return frmstr.format(self.x, self.y)
 
-def zero_matrix_vector(shape: tuple, dtype=float, order='C') -> MatrixVector2D:
-    x = zeros(shape, dtype=dtype, order=order)
-    y = zeros(shape, dtype=dtype, order=order)
-    return MatrixVector2D(x, y)
-
-def solve_matrix_vector(a: matrix, b: MatrixVector2D) -> MatrixVector2D:
-    from numpy.linalg import solve
-    newb = zeros((b.shape[0], b.shape[1]*2))
-    for i in range(b.shape[1]):
-        newb[:, 2*i+0] = b[:, i].x
-        newb[:, 2*i+1] = b[:, i].y
-    newc = solve(a, newb)
-    c = zero_matrix_vector(b.shape)
-    for i in range(b.shape[1]):
-        c[:, i] = MatrixVector2D(newc[:, 2*i+0], newc[:, 2*i+1])
-    return c
-
-def elementwise_multiply(a: MatrixVector2D, b: matrix) -> MatrixVector2D:
+def elementwise_multiply(a: 'MatrixVector2D',
+                         b: 'matrix') -> 'MatrixVector2D':
     if a.shape == b.shape:
         x = multiply(a.x, b)
         y = multiply(a.y, b)
@@ -163,7 +159,8 @@ def elementwise_multiply(a: MatrixVector2D, b: matrix) -> MatrixVector2D:
     else:
         raise ValueError('MatrixVector2D and matrix shapes not the same.')
 
-def elementwise_divide(a: MatrixVector2D, b: matrix) -> MatrixVector2D:
+def elementwise_divide(a: 'MatrixVector2D',
+                       b: 'matrix') -> 'MatrixVector2D':
     if a.shape == b.shape:
         x = divide(a.x, b)
         y = divide(a.y, b)
@@ -171,31 +168,17 @@ def elementwise_divide(a: MatrixVector2D, b: matrix) -> MatrixVector2D:
     else:
         raise ValueError('MatrixVector2D and matrix shapes not the same.')
 
-def elementwise_dot_product(a: MatrixVector2D, b: MatrixVector2D) -> matrix:
+def elementwise_dot_product(a: 'MatrixVector2D',
+                            b: 'MatrixVector2D') -> 'matrix':
     if a.shape == b.shape:
         return multiply(a.x, b.x) + multiply(a.y, b.y)
     else:
         raise ValueError('MatrixVector2D shapes not the same.')
 
-def elementwise_cross_product(a: MatrixVector2D, b: MatrixVector2D) -> matrix:
+def elementwise_cross_product(a: 'MatrixVector2D',
+                              b: 'MatrixVector2D') -> 'matrix':
     if a.shape == b.shape:
-        z = multiply(a.x, b.y)-multiply(a.y, b.x)
+        z = multiply(a.x, b.y) - multiply(a.y, b.x)
         return z
     else:
         raise ValueError('MatrixVector2D shapes not the same.')
-
-def vector2d_to_global(crd: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
-    """Transforms a vector from this local coordinate system to global"""
-    dirx = Vector2D(crd.dirx.x, crd.diry.x)
-    diry = Vector2D(crd.dirx.y, crd.diry.y)
-    x = dirx*vec
-    y = diry*vec
-    return MatrixVector2D(x, y)
-
-def vector2d_to_local(crd: Coordinate2D, vec: MatrixVector2D) -> MatrixVector2D:
-    """Transforms a vector from global  to this local coordinate system"""
-    dirx = crd.dirx
-    diry = crd.diry
-    x = dirx*vec
-    y = diry*vec
-    return MatrixVector2D(x, y)

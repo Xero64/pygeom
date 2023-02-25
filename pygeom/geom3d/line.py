@@ -1,29 +1,39 @@
-from .point import Point
-from .vector import vector_from_points
+from typing import TYPE_CHECKING
 
-class Line(object):
+from .point import Point
+from . import vector_from_points
+
+if TYPE_CHECKING:
+    from .vector import Vector
+
+class Line():
     """Line Class"""
-    pnta = None
-    pntb = None
-    vec = None
-    length = None
-    def __init__(self, pnta, pntb):
+    pnta: 'Point' = None
+    pntb: 'Point' = None
+    _vec: 'Vector' = None
+    _length: 'float' = None
+    def __init__(self, pnta: 'Point', pntb: 'Point') -> None:
         self.pnta = pnta
         self.pntb = pntb
-        self.update()
-    def update(self):
-        """Updates this line if the point definition changes"""
-        self.vec = vector_from_points(self.pnta, self.pntb)
-        self.length = self.vec.return_magnitude()
-    def centre_point(self):
+    @property
+    def vec(self) -> 'Vector':
+        if self._vec is None:
+            self._vec = vector_from_points(self.pnta, self.pntb)
+        return self._vec
+    @property
+    def length(self) -> 'float':
+        if self._length is None:
+            self._length = self.vec.return_magnitude()
+        return self._length
+    def centre_point(self) -> 'Point':
         """Returns the centre point of this line"""
         x = (self.pnta.x+self.pntb.x)/2
         y = (self.pnta.y+self.pntb.y)/2
         z = (self.pnta.z+self.pntb.z)/2
         return Point(x, y, z)
-    def ratio_point(self, ratio):
+    def ratio_point(self, ratio) -> 'Point':
         """Returns a point a certain ratio along the line"""
         vec = vector_from_points(self.pnta, self.pntb)
         return self.pnta+ratio*vec
-    def __repr__(self):
+    def __repr__(self) -> 'str':
         return '<Line>'

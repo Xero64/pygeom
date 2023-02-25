@@ -1,12 +1,13 @@
-from .vector2d import Vector2D, vector2d_from_points
+from .vector2d import Vector2D
+from . import vector2d_from_points
 from .tensor2d import Tensor2D
 from .point2d import Point2D
 
 class Coordinate2D():
     """Coordinate2D Class"""
-    pnt = None
-    dirx = None
-    diry = None
+    pnt: 'Point2D' = None
+    dirx: 'Vector2D' = None
+    diry: 'Vector2D' = None
     def __init__(self, pnt: 'Point2D', dirx: 'Vector2D') -> None:
         self.pnt = pnt
         self.dirx = dirx.to_unit()
@@ -55,19 +56,5 @@ class Coordinate2D():
         exy = qxx*qyx*sxx + qxx*qyy*sxy + qxy*qyx*syx + qxy*qyy*syy
         eyx = qxx*qyx*sxx + qxx*qyy*syx + qxy*qyx*sxy + qxy*qyy*syy
         return Tensor2D(exx, exy, eyx, eyy)
-    def __repr__(self):
+    def __repr__(self) -> 'str':
         return '<Coordinate2D>'
-
-def coordinate2d_from_points(pnta: Point2D, pntb: Point2D):
-    """Create a Coordinate2D from two Point2Ds."""
-    pnt = pnta
-    dirx = vector2d_from_points(pnta, pntb)
-    diry = Vector2D(-dirx.y, dirx.x)
-    return Coordinate2D(pnt, dirx, diry)
-
-def coordinate2d_from_angle(pnt: Point2D, angle: float):
-    """Create a Coordinate2D from a Point2D and an Angle."""
-    from math import cos, sin
-    dirx = Vector2D(cos(angle), sin(angle))
-    diry = Vector2D(-dirx.y, dirx.x)
-    return Coordinate2D(pnt, dirx, diry)

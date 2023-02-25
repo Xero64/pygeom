@@ -1,90 +1,125 @@
+from typing import TYPE_CHECKING, Optional, Tuple, List
+
+from numpy import asarray, sqrt, square, cumsum
+from numpy.matlib import zeros as zero_matrix
+from numpy.linalg import solve
+from matplotlib.pyplot import figure
+
 from .line2d import Line2D
 from .point2d import Point2D
 from .vector2d import Vector2D
-from numpy.matlib import zeros
-from numpy.linalg import solve
-from matplotlib.pyplot import figure
-from py2md.classes import MDTable
+from ..tools import cubic_roots
 
-class CubicSpline2D(object):
+if TYPE_CHECKING:
+    from numpy import ndarray
+    from .infiniteline2d import InfiniteLine2D
+
+class CubicSpline2D():
     u"""This class stores a 2D parametric cubic spline."""
-    pnts = None
-    npnts = None
-    clsd = False
-    pnls = None
-    npnls = None
-    d2r = None
-    dr = None
-    tanA = None
-    tanB = None
-    R = None
-    def __init__(self, pnts, clsd=False, tanA=None, tanB=None):
+    pnts: List['Point2D'] = None
+    clsd: 'bool' = False
+    tanA: Optional['Vector2D'] = None
+    tanB: Optional['Vector2D'] = None
+    _numpnt: 'int' = None
+    _pnls: List['SplineLine2D'] = None
+    _numpnl: 'int' = None
+    _d2r: List['Vector2D'] = None
+    _dr: List['Vector2D'] = None
+    _r: List['Vector2D'] = None
+    def __init__(self, pnts: List['Line2D'], clsd: 'bool'=False,
+                 tanA: 'Vector2D'=None, tanB: 'Vector2D'=None) -> None:
         u"""This function initialises the object."""
         self.pnts = pnts
         self.clsd = clsd
         self.tanA = tanA
         self.tanB = tanB
-        self.update()
-    def update(self):
-        u"""This function calculates the other parameters of the object."""
-        self.npnts = len(self.pnts)
-        if self.clsd:
-            indas = [i for i in range(self.npnts)]
-            indbs = [i+1 for i in range(self.npnts)]
-            indbs[-1] = 0
-            self.npnls = self.npnts
-        else:
-            indas = [i for i in range(self.npnts-1)]
-            indbs = [i+1 for i in range(self.npnts-1)]
-            self.npnls = self.npnts-1
-        self.pnls = []
-        for i in range(self.npnls):
-            inda = indas[i]
-            indb = indbs[i]
-            self.pnls.append(SplineLine2D(self.pnts[inda], self.pnts[indb]))
-        if self.clsd:
-            self.d2r = self.calc_d2r_closed()
-            self.dr = self.calc_dr_closed()
-        else:
-            self.d2r = self.calc_d2r_open(tanA=self.tanA, tanB=self.tanB)
-            self.dr = self.calc_dr_open()
-        self.R = self.calc_R()
+    @property
+    def numpnt(self) -> 'int':
+        if self._numpnt is None:
+            self._numpnt = len(self.pnts)
+        return self._numpnt
+    @property
+    def pnls(self) -> List['SplineLine2D']:
+        if self._pnls is None:
+            if self.clsd:
+                indas = [i for i in range(self.numpnt)]
+                indbs = [i+1 for i in range(self.numpnt)]
+                indbs[-1] = 0
+                numpnl = self.numpnt
+            else:
+                indas = [i for i in range(self.numpnt-1)]
+                indbs = [i+1 for i in range(self.numpnt-1)]
+                numpnl = self.numpnt-1
+            self._pnls = []
+            for i in range(numpnl):
+                inda = indas[i]
+                indb = indbs[i]
+                self._pnls.append(SplineLine2D(self.pnts[inda], self.pnts[indb]))
+        return self._pnls
+    @property
+    def numpnl(self) -> 'int':
+        if self._numpnl is None:
+            self._numpnl = len(self.pnls)
+        return self._numpnl
+    @property
+    def d2r(self) -> List['Vector2D']:
+        if self._d2r is None:
+            if self.clsd:
+                self._d2r = self.calc_d2r_closed()
+            else:
+                self._d2r = self.calc_d2r_open(self.tanA, self.tanB)
+        return self._d2r
+    def set_panel_d2r(self):
         for i, pnl in enumerate(self.pnls):
             ia, ib = i, i+1
-            if ib == self.npnts and self.clsd:
+            if ib == self.numpnt and self.clsd:
                 ib = 0
             pnl.set_d2r(self.d2r[ia], self.d2r[ib])
-    def calc_d2r_open(self, tanA=None, tanB=None):
+    @property
+    def dr(self) -> List['Vector2D']:
+        if self._dr is None:
+            if self.clsd:
+                self._dr = self.calc_dr_closed()
+            else:
+                self._dr = self.calc_dr_open()
+        return self._dr
+    @property
+    def r(self) -> List['Vector2D']:
+        if self._r is None:
+            self._r = self.calc_r()
+        return self._dr
+    def calc_d2r_open(self, tanA: 'Vector2D'=None,
+                      tanB: 'Vector2D'=None) -> List['Vector2D']:
         u"""This function calculates the curvature of an open ended spline."""
         pnl_dx = [pnl.vec.x/pnl.length for pnl in self.pnls]
         pnl_dy = [pnl.vec.y/pnl.length for pnl in self.pnls]
-        del_dx = [0.0]*self.npnts
-        del_dy = [0.0]*self.npnts
-        if tanA != None:
+        del_dx = [0.0]*self.numpnt
+        del_dy = [0.0]*self.numpnt
+        if tanA is not None:
             dxA = tanA.x
             dyA = tanA.y
             del_dx[0] = pnl_dx[0]-dxA
             del_dy[0] = pnl_dy[0]-dyA
-        for i in range(1, self.npnts-1):
+        for i in range(1, self.numpnt-1):
             del_dx[i] = pnl_dx[i]-pnl_dx[i-1]
             del_dy[i] = pnl_dy[i]-pnl_dy[i-1]
-        if tanB != None:
+        if tanB is not None:
             dxB = tanB.x
             dyB = tanB.y
             del_dx[-1] = dxB-pnl_dx[-1]
             del_dy[-1] = dyB-pnl_dy[-1]
-        a = [0.0]*self.npnts
-        b = [1.0]*self.npnts
-        c = [0.0]*self.npnts
-        rx = [0.0]*self.npnts
-        ry = [0.0]*self.npnts
-        if tanA != None:
+        a = [0.0]*self.numpnt
+        b = [1.0]*self.numpnt
+        c = [0.0]*self.numpnt
+        rx = [0.0]*self.numpnt
+        ry = [0.0]*self.numpnt
+        if tanA is not None:
             sB = self.pnls[0].length
             b[0] = sB/3
             c[0] = sB/6
             rx[0] = del_dx[0]
             ry[0] = del_dy[0]
-        for i in range(1, self.npnts-1):
+        for i in range(1, self.numpnt-1):
             sA = self.pnls[i-1].length
             sB = self.pnls[i].length
             a[i] = sA/6
@@ -92,43 +127,43 @@ class CubicSpline2D(object):
             c[i] = sB/6
             rx[i] = del_dx[i]
             ry[i] = del_dy[i]
-        if tanB != None:
+        if tanB is not None:
             sA = self.pnls[-1].length
             a[-1] = sA/6
             b[-1] = sA/3
             rx[-1] = del_dx[-1]
             ry[-1] = del_dy[-1]
-        Γ = [0.]*self.npnts
-        d2x = [0.0]*self.npnts
-        d2y = [0.0]*self.npnts
+        Γ = [0.]*self.numpnt
+        d2x = [0.0]*self.numpnt
+        d2y = [0.0]*self.numpnt
         β = b[0]
         d2x[0] = rx[0]/β
         d2y[0] = ry[0]/β
-        for i in range(1, self.npnts):
+        for i in range(1, self.numpnt):
             Γ[i] = c[i-1]/β
             β = b[i]-a[i]*Γ[i]
             d2x[i] = (rx[i]-a[i]*d2x[i-1])/β
             d2y[i] = (ry[i]-a[i]*d2y[i-1])/β
-        for i in range(self.npnts-2, -1, -1):
+        for i in range(self.numpnt-2, -1, -1):
             d2x[i] -= Γ[i+1]*d2x[i+1]
             d2y[i] -= Γ[i+1]*d2y[i+1]
-        d2r = [Vector2D(d2x[i], d2y[i]) for i in range(self.npnts)]
+        d2r = [Vector2D(d2x[i], d2y[i]) for i in range(self.numpnt)]
         return d2r
-    def calc_d2r_closed(self):
+    def calc_d2r_closed(self) -> List['Vector2D']:
         u"""This function calculates the curvature of a closed spline."""
-        n = self.npnts
+        n = self.numpnt
         inda = [i-1 for i in range(n)]
         indb = [i for i in range(n)]
         inda[0] = n-1
         pnl_dx = [pnl.vec.x/pnl.length for pnl in self.pnls]
         pnl_dy = [pnl.vec.y/pnl.length for pnl in self.pnls]
-        del_dx = [0.]*n
-        del_dy = [0.]*n
+        del_dx = [0.0]*n
+        del_dy = [0.0]*n
         for i in range(n):
             del_dx[i] = pnl_dx[indb[i]]-pnl_dx[inda[i]]
             del_dy[i] = pnl_dy[indb[i]]-pnl_dy[inda[i]]
-        A = zeros((n, n))
-        B = zeros((n, 2))
+        A = zero_matrix((n, n), dtype=float)
+        B = zero_matrix((n, 2), dtype=float)
         for i in range(n):
             sA = self.pnls[inda[i]].length
             sB = self.pnls[indb[i]].length
@@ -146,13 +181,13 @@ class CubicSpline2D(object):
         X = solve(A, B)
         d2x = [X[i, 0] for i in range(n)]
         d2y = [X[i, 1] for i in range(n)]
-        d2r = [Vector2D(d2x[i], d2y[i]) for i in range(self.npnts)]
+        d2r = [Vector2D(d2x[i], d2y[i]) for i in range(self.numpnt)]
         return d2r
-    def calc_dr_open(self):
+    def calc_dr_open(self) -> List['Vector2D']:
         u"""This function calculates the gradient of an open ended spline."""
         dx = []
         dy = []
-        for i in range(self.npnls):
+        for i in range(self.numpnl):
             xA = self.pnts[i].x
             xB = self.pnts[i+1].x
             d2xA = self.d2r[i].x
@@ -170,17 +205,17 @@ class CubicSpline2D(object):
         dyB = (yB-yA)/sP+sP/6*d2yA+sP/3*d2yB
         dx.append(dxB)
         dy.append(dyB)
-        dr = [Vector2D(dx[i], dy[i]) for i in range(self.npnts)]
+        dr = [Vector2D(dx[i], dy[i]) for i in range(self.numpnt)]
         return dr
-    def calc_dr_closed(self):
+    def calc_dr_closed(self) -> List['Vector2D']:
         u"""This function calculates the gradient of a closed spline."""
-        n = self.npnts
+        n = self.numpnt
         inda = [i for i in range(n)]
         indb = [i+1 for i in range(n)]
         indb[-1] = 0
         dx = []
         dy = []
-        for i in range(self.npnls):
+        for i in range(self.numpnl):
             ia = inda[i]
             ib = indb[i]
             xA = self.pnts[ia].x
@@ -196,26 +231,27 @@ class CubicSpline2D(object):
             dyA = (yB-yA)/sP-sP/3*d2yA-sP/6*d2yB
             dx.append(dxA)
             dy.append(dyA)
-        dr = [Vector2D(dx[i], dy[i]) for i in range(self.npnts)]
+        dr = [Vector2D(dx[i], dy[i]) for i in range(self.numpnt)]
         return dr
-    def calc_R(self):
+    def calc_r(self) -> List['float']:
         u"""This function calculates the radius of curvature of the spline."""
-        R = []
-        for i in range(self.npnts):
+        r = []
+        for i in range(self.numpnt):
             dx = self.dr[i].x
             dy = self.dr[i].y
             d2x = self.d2r[i].x
             d2y = self.d2r[i].y
             k = (dx*d2y-dy*d2x)/(dx**2+dy**2)**1.5
             if k == 0.:
-                R.append(float('inf'))
+                r.append(float('inf'))
             else:
-                R.append(1/k)
-        return R
-    def spline_points(self, num: int):
+                r.append(1/k)
+        return r
+    def spline_points(self, num: 'int') -> Tuple[List['float'], List['float']]:
         u"""This function interpolates the spline with a number of points."""
         x = []
         y = []
+        self.set_panel_d2r()
         for pnl in self.pnls:
             for i in range(num):
                 s = float(i*pnl.length/num)
@@ -229,10 +265,11 @@ class CubicSpline2D(object):
             x.append(self.pnts[-1].x)
             y.append(self.pnts[-1].y)
         return x, y
-    def spline_gradient(self, num: int):
+    def spline_gradient(self, num: 'int') -> Tuple[List['float'], List['float']]:
         u"""This function interpolates the gradient of the spline."""
         dx = []
         dy = []
+        self.set_panel_d2r()
         for pnl in self.pnls:
             for i in range(num):
                 s = float(i*pnl.length/num)
@@ -246,10 +283,11 @@ class CubicSpline2D(object):
             dx.append(self.dr[-1].x)
             dy.append(self.dr[-1].y)
         return dx, dy
-    def spline_curvature(self, num: int):
+    def spline_curvature(self, num: 'int') -> Tuple[List['float'], List['float']]:
         u"""This function interpolates the curvature of the spline."""
         d2x = []
         d2y = []
+        self.set_panel_d2r()
         for pnl in self.pnls:
             for i in range(num):
                 s = float(i*pnl.length/num)
@@ -263,33 +301,36 @@ class CubicSpline2D(object):
             d2x.append(self.d2r[-1].x)
             d2y.append(self.d2r[-1].y)
         return d2x, d2y
-    def line_intersection(self, line, all_roots=False):
+    def line_intersection(self, line: 'InfiniteLine2D',
+                          all_roots=False):
         edct = {}
         xP = line.pnt.x
         yP = line.pnt.y
         dxdl = line.uvec.x
         dydl = line.uvec.y
-        for i in range(self.npnls):
+        for i in range(self.numpnl):
             ia = i
             xA = self.pnts[ia].x
             yA = self.pnts[ia].y
             d2xA = self.d2r[ia].x
             d2yA = self.d2r[ia].y
             ib = i+1
-            if ib == self.npnts:
+            if ib == self.numpnt:
                 ib = 0
             xB = self.pnts[ib].x
             yB = self.pnts[ib].y
             d2xB = self.d2r[ib].x
             d2yB = self.d2r[ib].y
             sP = self.pnls[i].length
-            a = -d2xA*dydl/(6*sP) + d2xB*dydl/(6*sP) + d2yA*dxdl/(6*sP) - d2yB*dxdl/(6*sP)
+            a = -d2xA*dydl/(6*sP) + d2xB*dydl/(6*sP)
+            a += (d2yA*dxdl/(6*sP) - d2yB*dxdl/(6*sP))
             b = d2xA*dydl/2 - d2yA*dxdl/2
-            c = -d2xA*dydl*sP/3 - d2xB*dydl*sP/6 + d2yA*dxdl*sP/3 + d2yB*dxdl*sP/6 + dxdl*yA/sP - dxdl*yB/sP - dydl*xA/sP + dydl*xB/sP
+            c = -d2xA*dydl*sP/3 - d2xB*dydl*sP/6 + d2yA*dxdl*sP/3 + d2yB*dxdl*sP/6
+            c += (dxdl*yA/sP - dxdl*yB/sP - dydl*xA/sP + dydl*xB/sP)
             d = -dxdl*yA + dxdl*yP + dydl*xA - dydl*xP
             s1, s2, s3 = cubic_roots(a, b, c, d)
             if all_roots:
-                edct[i] = [s1/sP, s2/sP, s3/sP]
+                edct[i] = (s1/sP, s2/sP, s3/sP)
                 continue
             elst = []
             if isinstance(s1, float):
@@ -307,7 +348,8 @@ class CubicSpline2D(object):
             if len(elst) > 0:
                 edct[i] = elst
         return edct
-    def line_intersection_points(self, line, all_roots=False):
+    def line_intersection_points(self, line: 'InfiniteLine2D',
+                                 all_roots=False) -> List['Point2D']:
         edct = self.line_intersection(line, all_roots=all_roots)
         print(f'edct = {edct}')
         pnts = []
@@ -318,13 +360,14 @@ class CubicSpline2D(object):
             d2xA = self.d2r[ia].x
             d2yA = self.d2r[ia].y
             ib = i+1
-            if ib == self.npnts:
+            if ib == self.numpnt:
                 ib = 0
             xB = self.pnts[ib].x
             yB = self.pnts[ib].y
             d2xB = self.d2r[ib].x
             d2yB = self.d2r[ib].y
-            sP = self.pnls[i].length
+            pnl: 'SplineLine2D' = self.pnls[i]
+            sP = pnl.length
             elst = edct[i]
             for e in elst:
                 s = e*sP
@@ -340,24 +383,24 @@ class CubicSpline2D(object):
         return pnts
     def scatter(self, ax=None, label=False):
         u"""This function plots the points of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.set_aspect('equal')
             ax.grid(True)
         x = []
         y = []
-        for i in range(self.npnts):
+        for i in range(self.numpnt):
             x.append(self.pnts[i].x)
             y.append(self.pnts[i].y)
         ax.scatter(x,y)
         if label:
-            for i in range(self.npnts):
+            for i in range(self.numpnt):
                 ax.text(x[i], y[i], i)
         return ax
     def plot_spline(self, num=1, ax=None, color='blue'):
         u"""This function plots the spline using the interpolated points."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.set_aspect('equal')
@@ -369,7 +412,7 @@ class CubicSpline2D(object):
         u"""This function calculates the arc length of the spline."""
         s = []
         sc = 0.0
-        for i in range(self.npnls):
+        for i in range(self.numpnl):
             sP = self.pnls[i].length
             for j in range(num):
                 sj = j*sP/num
@@ -386,7 +429,7 @@ class CubicSpline2D(object):
         for si in slst:
             found = False
             if not found:
-                for j in range(i, self.npnls):
+                for j in range(i, self.numpnl):
                     if si >= s[j] and si <= s[j+1]:
                         ploc.append(j)
                         sloc.append(si-s[j])
@@ -403,7 +446,7 @@ class CubicSpline2D(object):
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
-            pnl = self.pnls[j]
+            pnl: 'SplineLine2D' = self.pnls[j]
             xi, yi = pnl.interpolate_point(s)
             x.append(xi)
             y.append(yi)
@@ -417,7 +460,7 @@ class CubicSpline2D(object):
         for si in slst:
             found = False
             if not found:
-                for j in range(i, self.npnls):
+                for j in range(i, self.numpnl):
                     if si >= s[j] and si <= s[j+1]:
                         ploc.append(j)
                         sloc.append(si-s[j])
@@ -434,7 +477,7 @@ class CubicSpline2D(object):
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
-            pnl = self.pnls[j]
+            pnl: 'SplineLine2D' = self.pnls[j]
             dxi, dyi = pnl.interpolate_gradient(s)
             dx.append(dxi)
             dy.append(dyi)
@@ -448,7 +491,7 @@ class CubicSpline2D(object):
         for si in slst:
             found = False
             if not found:
-                for j in range(i, self.npnls):
+                for j in range(i, self.numpnl):
                     if si >= s[j] and si <= s[j+1]:
                         ploc.append(j)
                         sloc.append(si-s[j])
@@ -465,14 +508,14 @@ class CubicSpline2D(object):
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
-            pnl = self.pnls[j]
+            pnl: 'SplineLine2D' = self.pnls[j]
             d2xi, d2yi = pnl.interpolate_curvature(s)
             d2x.append(d2xi)
             d2y.append(d2yi)
         return d2x, d2y
     def plot_gradient(self, ax=None, num=5):
         u"""This function plots the gradient of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.grid(True)
@@ -484,20 +527,20 @@ class CubicSpline2D(object):
         return ax
     def quiver_tangent(self, ax=None, color='green'):
         u"""This function quiver plots the tangent of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.set_aspect('equal')
             ax.grid(True)
-        x = [self.pnts[i].x for i in range(self.npnts)]
-        y = [self.pnts[i].y for i in range(self.npnts)]
-        dx = [self.dr[i].x for i in range(self.npnts)]
-        dy = [self.dr[i].y for i in range(self.npnts)]
+        x = [self.pnts[i].x for i in range(self.numpnt)]
+        y = [self.pnts[i].y for i in range(self.numpnt)]
+        dx = [self.dr[i].x for i in range(self.numpnt)]
+        dy = [self.dr[i].y for i in range(self.numpnt)]
         ax.quiver(x, y, dx, dy, color=color)
         return ax
     def plot_curvature(self, ax=None, num=1):
         u"""This function plots the curvature of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.grid(True)
@@ -509,7 +552,7 @@ class CubicSpline2D(object):
         return ax
     def plot_inverse_radius(self, ax=None, num=5):
         u"""This function plots the inverse radius of curvature of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.grid(True)
@@ -523,122 +566,110 @@ class CubicSpline2D(object):
         return ax
     def quiver_normal(self, ax=None, color='red'):
         u"""This function quiver plots the normal of the spline."""
-        if ax == None:
+        if ax is None:
             fig = figure()
             ax = fig.gca()
             ax.set_aspect('equal')
             ax.grid(True)
-        x = [self.pnts[i].x for i in range(self.npnts)]
-        y = [self.pnts[i].y for i in range(self.npnts)]
-        dx = [-self.dr[i].y for i in range(self.npnts)]
-        dy = [self.dr[i].x for i in range(self.npnts)]
+        x = [self.pnts[i].x for i in range(self.numpnt)]
+        y = [self.pnts[i].y for i in range(self.numpnt)]
+        dx = [-self.dr[i].y for i in range(self.numpnt)]
+        dy = [self.dr[i].x for i in range(self.numpnt)]
         ax.quiver(x, y, dx, dy, color=color)
         return ax
-    def print_gradient(self, frmstr='.6f'):
-        u"""This function prints the gradient of the spline."""
-        from math import cos, sin, atan2, pi
-        table = MDTable()
-        table.add_column('ID', 'd')
-        table.add_column('dxds', frmstr)
-        table.add_column('dyds', frmstr)
-        table.add_column('Tangent X', frmstr)
-        table.add_column('Tangent Y', frmstr)
-        for i in range(self.npnts):
-            dxds = self.dr[i].x
-            dyds = self.dr[i].y
-            tanx = cos(atan2(dyds, dxds))
-            tany = sin(atan2(dyds, dxds))
-            table.add_row([i, dxds, dyds, tanx, tany])
-        print(table)
-    def print_curvature(self):
-        u"""This function prints the curvature of the spline."""
-        outstr = '\nCurvature\nID\td2xds2\td2yds2\tRadius'
-        print(outstr)
-        frmstr = '{:d}\t{:g}\t{:g}\t{:g}'
-        for i in range(self.npnts):
-            outstr = frmstr.format(i, round(self.d2r[i].x, 6), round(self.d2r[i].x, 6), round(self.R[i], 6))
-            print(outstr)
+    # def print_gradient(self, frmstr='.6f'):
+    #     u"""This function prints the gradient of the spline."""
+    #     from math import cos, sin, atan2
+    #     table = MDTable()
+    #     table.add_column('ID', 'd')
+    #     table.add_column('dxds', frmstr)
+    #     table.add_column('dyds', frmstr)
+    #     table.add_column('Tangent X', frmstr)
+    #     table.add_column('Tangent Y', frmstr)
+    #     for i in range(self.numpnt):
+    #         dxds = self.dr[i].x
+    #         dyds = self.dr[i].y
+    #         tanx = cos(atan2(dyds, dxds))
+    #         tany = sin(atan2(dyds, dxds))
+    #         table.add_row([i, dxds, dyds, tanx, tany])
+    #     print(table)
+    # def print_curvature(self):
+    #     u"""This function prints the curvature of the spline."""
+    #     outstr = '\nCurvature\nID\td2xds2\td2yds2\tRadius'
+    #     print(outstr)
+    #     frmstr = '{:d}\t{:g}\t{:g}\t{:g}'
+    #     for i in range(self.numpnt):
+    #         outstr = frmstr.format(i, round(self.d2r[i].x, 6),
+    #                                   round(self.d2r[i].x, 6),
+    #                                   round(self.r[i], 6))
+    #         print(outstr)
+    def arc_length_approximation(self, num: 'int') -> 'ndarray':
+        x, y = self.spline_points(num)
+        x = asarray(x, dtype=float)
+        y = asarray(y, dtype=float)
+        dx = x[1:] - x[:-1]
+        dy = y[1:] - y[:-1]
+        ds = sqrt(square(dx) + square(dy))
+        s = cumsum(ds)
+        svals = [0.0]
+        for i in range(self.numpnl):
+            svals.append(s[(i+1)*num-1])
+        return asarray(svals, dtype=float)
 
 class SplineLine2D(Line2D):
-    d2ra = None
-    d2rb = None
-    def __init__(self, pnta: Point2D, pntb: Point2D):
+    d2ra: 'Vector2D' = None
+    d2rb: 'Vector2D' = None
+    def __init__(self, pnta: 'Point2D', pntb: 'Point2D'):
         super(SplineLine2D, self).__init__(pnta, pntb)
     @property
-    def xa(self):
+    def xa(self) -> 'float':
         return self.pnta.x
     @property
-    def ya(self):
+    def ya(self) -> 'float':
         return self.pnta.y
     @property
-    def xb(self):
+    def xb(self) -> 'float':
         return self.pntb.x
     @property
-    def yb(self):
+    def yb(self) -> 'float':
         return self.pntb.y
-    def set_d2r(self, d2ra: Vector2D, d2rb: Vector2D):
+    def set_d2r(self, d2ra: 'Vector2D', d2rb: 'Vector2D'):
         self.d2ra = d2ra
         self.d2rb = d2rb
     @property
-    def d2xa(self):
+    def d2xa(self) -> 'float':
         return self.d2ra.x
     @property
-    def d2ya(self):
+    def d2ya(self) -> 'float':
         return self.d2ra.y
     @property
-    def d2xb(self):
+    def d2xb(self) -> 'float':
         return self.d2rb.x
     @property
-    def d2yb(self):
+    def d2yb(self) -> 'float':
         return self.d2rb.y
-    def interpolate_point(self, s: float):
+    def interpolate_point(self, s: 'float') -> Tuple['float', 'float']:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP
         C = (A**3-A)*sP**2/6
         D = (B**3-B)*sP**2/6
-        x = A*self.xa+B*self.xb+C*self.d2xa+D*self.d2xb
-        y = A*self.ya+B*self.yb+C*self.d2ya+D*self.d2yb
+        x = A*self.xa + B*self.xb + C*self.d2xa + D*self.d2xb
+        y = A*self.ya + B*self.yb + C*self.d2ya + D*self.d2yb
         return x, y
-    def interpolate_gradient(self, s: float):
+    def interpolate_gradient(self, s: 'float') -> Tuple['float', 'float']:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP
         E = 3*A**2-1
         F = 3*B**2-1
-        dx = (self.xb-self.xa)/sP+(F*self.d2xb-E*self.d2xa)*sP/6
-        dy = (self.yb-self.ya)/sP+(F*self.d2yb-E*self.d2ya)*sP/6
+        dx = (self.xb-self.xa)/sP + (F*self.d2xb-E*self.d2xa)*sP/6
+        dy = (self.yb-self.ya)/sP + (F*self.d2yb-E*self.d2ya)*sP/6
         return dx, dy
-    def interpolate_curvature(self, s: float):
+    def interpolate_curvature(self, s: 'float') -> Tuple['float', 'float']:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP
-        d2x = A*self.d2xa+B*self.d2xb
-        d2y = A*self.d2ya+B*self.d2yb
+        d2x = A*self.d2xa + B*self.d2xb
+        d2y = A*self.d2ya + B*self.d2yb
         return d2x, d2y
-
-def cubic_roots(a: float, b: float, c: float, d: float):
-    from math import acos, sqrt, cos, pi, copysign
-    tmp = a
-    a = b/tmp
-    b = c/tmp
-    c = d/tmp
-    Q = (a**2-3*b)/9
-    R = (2*a**3-9*a*b+27*c)/54
-    Q3 = Q**3
-    R2 = R**2
-    if R2 < Q3:
-        th = acos(R/sqrt(Q3))
-        x1 = -2*sqrt(Q)*cos(th/3)-a/3
-        x2 = -2*sqrt(Q)*cos((th+2*pi)/3)-a/3
-        x3 = -2*sqrt(Q)*cos((th-2*pi)/3)-a/3
-    else:
-        A = -copysign((abs(R)+sqrt(R2-Q3))**(1/3), R)
-        if A == 0.0:
-            B = 0.0
-        else:
-            B = Q/A
-        x1 = (A+B)-a/3
-        x2 = complex(-0.5*(A+B)-a/3, sqrt(3)/2*(A-B))
-        x3 = complex(x2.real, 0.0-x2.imag)
-    return x1, x2, x3
