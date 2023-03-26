@@ -11,7 +11,7 @@ class Line():
     pnta: 'Point' = None
     pntb: 'Point' = None
     _vec: 'Vector' = None
-    _length: 'float' = None
+    _length: float = None
     def __init__(self, pnta: 'Point', pntb: 'Point') -> None:
         self.pnta = pnta
         self.pntb = pntb
@@ -21,7 +21,7 @@ class Line():
             self._vec = vector_from_points(self.pnta, self.pntb)
         return self._vec
     @property
-    def length(self) -> 'float':
+    def length(self) -> float:
         if self._length is None:
             self._length = self.vec.return_magnitude()
         return self._length
@@ -35,5 +35,5 @@ class Line():
         """Returns a point a certain ratio along the line"""
         vec = vector_from_points(self.pnta, self.pntb)
         return self.pnta+ratio*vec
-    def __repr__(self) -> 'str':
+    def __repr__(self) -> str:
         return '<Line>'

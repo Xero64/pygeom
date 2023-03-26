@@ -1,29 +1,39 @@
-from typing import TYPE_CHECKING, Union, Tuple, List, Any
+from typing import TYPE_CHECKING, Any, List, Tuple, Union
+
+from numpy.matlib import divide, matrix, multiply, sqrt, square
+
 from pygeom.geom3d.vector import Vector
 
-from numpy.matlib import matrix, multiply, divide
-
 if TYPE_CHECKING:
-    VectorType = Union['Vector', 'MatrixVector']
+    VectorLike = Union['Vector', 'MatrixVector']
 
 class MatrixVector():
-    """Vector Class"""
+    """MatrixVector Class"""
     x: 'matrix' = None
     y: 'matrix' = None
     z: 'matrix' = None
     def __init__(self, x: 'matrix', y: 'matrix', z: 'matrix') -> None:
-        self.x = x
-        self.y = y
-        self.z = z
+        """Initialise matrixvector object
+
+        Args:
+            x (matrix): x component of vector
+            y (matrix): y component of vector
+            z (matrix): z component of vector
+        """
+        if isinstance(x, matrix) and isinstance(y, matrix) and isinstance(z, matrix):
+            self.x = x
+            self.y = y
+            self.z = z
+        else:
+            raise TypeError('Vector arguments must all be matrix.')
     def return_magnitude(self) -> 'matrix':
         """Returns the magnitude matrix of this matrixvector"""
-        from numpy.matlib import sqrt
-        return sqrt(elementwise_dot_product(self, self))
+        return sqrt(square(self.x) + square(self.y) + square(self.z))
     def to_unit(self) -> 'MatrixVector':
         """Returns the unit matrixvector of this matrixvector"""
         mag = self.return_magnitude()
         return elementwise_divide(self, mag)
-    def __getitem__(self, key) -> 'VectorType':
+    def __getitem__(self, key) -> 'VectorLike':
         x = self.x[key]
         y = self.y[key]
         z = self.z[key]
@@ -31,7 +41,7 @@ class MatrixVector():
             return MatrixVector(x, y, z)
         else:
             return Vector(x, y, z)
-    def __setitem__(self, key, value: 'VectorType') -> None:
+    def __setitem__(self, key, value: 'VectorLike') -> None:
         if isinstance(key, tuple):
             self.x[key] = value.x
             self.y[key] = value.y
@@ -39,7 +49,7 @@ class MatrixVector():
         else:
             raise IndexError()
     @property
-    def shape(self) -> Tuple['int']:
+    def shape(self) -> Tuple[int, int]:
         if self.x.shape == self.y.shape and self.y.shape == self.z.shape:
             return self.x.shape
         else:
@@ -55,7 +65,7 @@ class MatrixVector():
         y = self.y.transpose()
         z = self.z.transpose()
         return MatrixVector(x, y, z)
-    def sum(self, axis=None, dtype=None, out=None) -> 'VectorType':
+    def sum(self, axis=None, dtype=None, out=None) -> 'VectorLike':
         x = self.x.sum(axis=axis, dtype=dtype, out=out)
         y = self.y.sum(axis=axis, dtype=dtype, out=out)
         z = self.z.sum(axis=axis, dtype=dtype, out=out)
@@ -89,76 +99,109 @@ class MatrixVector():
         y = self.y.copy(order=order)
         z = self.z.copy(order=order)
         return MatrixVector(x, y, z)
-    def to_xyz(self) -> Tuple['float', 'float', 'float']:
+    def to_xyz(self) -> Tuple['matrix', 'matrix', 'matrix']:
         """Returns the x, y and z values of this matrix vector"""
         return self.x, self.y, self.z
-    def __mul__(self, obj: Any):
+    def dot(self, vec: 'VectorLike') -> 'matrix':
+        if isinstance(vec, (MatrixVector, Vector)):
+            return self.x*vec.x + self.y*vec.y + self.z*vec.z
+        else:
+            err = 'MatrixVector dot product must be with VectorLike object.'
+            raise TypeError(err)
+    def cross(self, vec: 'Vector') -> 'MatrixVector':
+        if isinstance(vec, (Vector, MatrixVector)):
+            x = self.y*vec.z - self.z*vec.y
+            y = self.z*vec.x - self.x*vec.z
+            z = self.x*vec.y - self.y*vec.x
+            return MatrixVector(x, y, z)
+        else:
+            err = 'MatrixVector cross product must be with VectorLike object.'
+            raise TypeError(err)
+    def __abs__(self) -> 'matrix':
+        return self.return_magnitude()
+    def __mul__(self, obj: Any) -> Union['matrix', 'MatrixVector']:
         if isinstance(obj, (Vector, MatrixVector)):
-            return self.x*obj.x+self.y*obj.y+self.z*obj.z
+            return self.x*obj.x + self.y*obj.y + self.z*obj.z
         else:
             x = self.x*obj
             y = self.y*obj
             z = self.z*obj
             return MatrixVector(x, y, z)
-    def __rmul__(self, obj: Any):
+    def __rmul__(self, obj: Any) -> Union['matrix', 'MatrixVector']:
         if isinstance(obj, (Vector, MatrixVector)):
-            return obj.x*self.x+obj.y*self.y+obj.z*self.z
+            return obj.x*self.x + obj.y*self.y + obj.z*self.z
         else:
             x = obj*self.x
             y = obj*self.y
             z = obj*self.z
             return MatrixVector(x, y, z)
     def __truediv__(self, obj: Any):
-        if isinstance(obj, (int, float, complex)):
-            x = self.x/obj
-            y = self.y/obj
-            z = self.z/obj
+        x = self.x/obj
+        y = self.y/obj
+        z = self.z/obj
+        return MatrixVector(x, y, z)
+    def __pow__(self, obj: Any)  -> 'MatrixVector':
+        if isinstance(obj, (Vector, MatrixVector)):
+            x = self.y*obj.z - self.z*obj.y
+            y = self.z*obj.x - self.x*obj.z
+            z = self.x*obj.y - self.y*obj.x
             return MatrixVector(x, y, z)
         else:
-            raise TypeError()
-    def __pow__(self, obj: Any):
-        if isinstance(obj, Vector):
-            x = self.y*obj.z-self.z*obj.y
-            y = self.z*obj.x-self.x*obj.z
-            z = self.x*obj.y-self.y*obj.x
+            x = self.x**obj
+            y = self.y**obj
+            z = self.z**obj
             return MatrixVector(x, y, z)
-        elif isinstance(obj, MatrixVector):
-            x = self.y*obj.z-self.z*obj.y
-            y = self.z*obj.x-self.x*obj.z
-            z = self.x*obj.y-self.y*obj.x
+    def __rpow__(self, obj: Any)  -> 'MatrixVector':
+        if isinstance(obj, (Vector, MatrixVector)):
+            x = obj.y*self.z - obj.z*self.y
+            y = obj.z*self.x - obj.x*self.z
+            z = obj.x*self.y - obj.y*self.x
             return MatrixVector(x, y, z)
         else:
-            raise TypeError()
-    def __add__(self, obj: Any):
+            raise TypeError('MatrixVector cannot be an exponent of a power.')
+    def __add__(self, obj: Any) -> 'MatrixVector':
         if isinstance(obj, (MatrixVector, Vector)):
-            x = self.x+obj.x
-            y = self.y+obj.y
-            z = self.z+obj.z
+            x = self.x + obj.x
+            y = self.y + obj.y
+            z = self.z + obj.z
             return MatrixVector(x, y, z)
-    def __radd__(self, obj: Any):
+        else:
+            err = 'MatrixVector object can only be added to VectorLike object.'
+            raise TypeError(err)
+    def __radd__(self, obj: Any) -> 'MatrixVector':
         if obj is None:
+            return self
+        elif obj == Vector(0.0, 0.0, 0.0):
             return self
         elif obj == 0:
             return self
         else:
             return self.__add__(obj)
-    def __sub__(self, obj: Any):
+    def __sub__(self, obj: Any) -> 'MatrixVector':
         if isinstance(obj, (MatrixVector, Vector)):
-            x = self.x-obj.x
-            y = self.y-obj.y
-            z = self.z-obj.z
+            x = self.x - obj.x
+            y = self.y - obj.y
+            z = self.z - obj.z
             return MatrixVector(x, y, z)
         else:
+            err = 'MatrixVector object can only be subtracted from VectorLike object.'
+            raise TypeError(err)
+    def __rsub__(self, obj: Any) -> 'MatrixVector':
+        if isinstance(obj, (Vector, MatrixVector)):
+            return -self.__sub__(obj)
+        else:
+            err = 'MatrixVector object cannot be reverse subtracted'
+            err += f' from {type(obj)} object.'
             raise TypeError()
     def __pos__(self) -> 'MatrixVector':
         return MatrixVector(self.x, self.y, self.z)
     def __neg__(self) -> 'MatrixVector':
         return MatrixVector(-self.x, -self.y, -self.z)
-    def __repr__(self) -> 'str':
+    def __repr__(self) -> str:
         return '<MatrixVector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
-    def __str__(self) -> 'str':
+    def __str__(self) -> str:
         return 'x:\n{:}\ny:\n{:}\nz:\n{:}'.format(self.x, self.y, self.z)
-    def __format__(self, frm: 'str') -> 'str':
+    def __format__(self, frm: str) -> str:
         frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\nz:\n{:' + frm + '}'
         return frmstr.format(self.x, self.y, self.z)
 
@@ -187,7 +230,7 @@ def elementwise_dot_product(a: 'MatrixVector',
     if a.shape == b.shape:
         return multiply(a.x, b.x) + multiply(a.y, b.y) + multiply(a.z, b.z)
     else:
-        raise ValueError()
+        raise ValueError('The shape of a and b need to be the same.')
 
 def elementwise_cross_product(a: 'MatrixVector',
                               b: 'MatrixVector') -> 'MatrixVector':

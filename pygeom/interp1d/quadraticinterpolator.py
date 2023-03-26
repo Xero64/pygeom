@@ -9,7 +9,7 @@ from ..tools.tridiag_solver import tridiag_solver
 
 class QuadraticCentreInterpolationSolver():
     x: 'ndarray' = None
-    _num: 'int' = None
+    _num: int = None
     _dx: 'ndarray' = None
     _xc: 'ndarray' = None
     _gmat: 'matrix' = None
@@ -38,13 +38,13 @@ class QuadraticCentreInterpolationSolver():
     # _zmatv3: 'matrix' = None
     # _gmatv3: 'matrix' = None
     # _hmatv3: 'matrix' = None
-    def __init__(self, x: Iterable['float']) -> None:
+    def __init__(self, x: Iterable[float]) -> None:
         for i in range(len(x)-1):
             if x[i+1] <= x[i]:
                 raise ValueError('Input x list must be sorted and unique.')
         self.x = asarray(x, dtype=float)
     @property
-    def num(self) -> 'int':
+    def num(self) -> int:
         if self._num is None:
             self._num = len(self.x)
         return self._num
@@ -335,8 +335,8 @@ class QuadraticCentreInterpolationSolver():
 
 class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
     yc: 'ndarray' = None
-    dya: 'float' = None
-    dya: 'float' = None
+    dya: float = None
+    dya: float = None
     _ycmat: 'matrix' = None
     _rmat: 'matrix' = None
     _ymat: 'matrix' = None
@@ -345,8 +345,8 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
     _dydx: 'ndarray' = None
     _iymat: 'matrix' = None
     _iydx: 'ndarray' = None
-    def __init__(self, x: Iterable['float'], yc: Iterable['float'],
-                 dya: 'float', dyb: 'float') -> None:
+    def __init__(self, x: Iterable[float], yc: Iterable[float],
+                 dya: float, dyb: float) -> None:
         x = asarray(x, dtype=float)
         yc = asarray(yc, dtype=float)
         if len(x) != len(yc) + 1:
@@ -403,7 +403,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         if self._iydx is None:
             self._iydx = asarray(self.iymat).flatten()
         return self._iydx
-    def quadratic_interpolation(self, xv: 'float') -> 'float':
+    def quadratic_interpolation(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             xa = self.x[j]
@@ -426,7 +426,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         return yv
     def quadratic_interpolation_array(self, xv: 'ndarray') -> 'ndarray':
         return fromiter([self.quadratic_interpolation(xi) for xi in xv], dtype=float)
-    def quadratic_first_derivative(self, xv: 'float') -> 'float':
+    def quadratic_first_derivative(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             xa = self.x[j]
@@ -449,7 +449,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         return dyv
     def quadratic_first_derivative_array(self, xv: 'ndarray') -> 'ndarray':
         return fromiter([self.quadratic_first_derivative(xi) for xi in xv], dtype=float)
-    # def quadratic_integral(self, xv: 'float') -> 'float':
+    # def quadratic_integral(self, xv: float) -> float:
     #     found = False
     #     for j, dxj in enumerate(self.dx):
     #         ia = self.iydx[j]
@@ -474,7 +474,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
 
 class QuadraticInterpolationSolver():
     x: 'ndarray' = None
-    _num: 'int' = None
+    _num: int = None
     _dx: 'ndarray' = None
     _xc: 'ndarray' = None
     _gmat: 'matrix' = None
@@ -502,13 +502,13 @@ class QuadraticInterpolationSolver():
     _hmate0: 'matrix' = None
     _qmate0: 'matrix' = None
     _kmate0: 'matrix' = None
-    def __init__(self, x: Iterable['float']) -> None:
+    def __init__(self, x: Iterable[float]) -> None:
         for i in range(len(x)-1):
             if x[i+1] <= x[i]:
                 raise ValueError('Input x list must be sorted and unique.')
         self.x = asarray(x, dtype=float)
     @property
-    def num(self) -> 'int':
+    def num(self) -> int:
         if self._num is None:
             self._num = len(self.x)
         return self._num
@@ -706,7 +706,7 @@ class QuadraticInterpolationSolver():
 
 class QuadraticInterpolation(QuadraticInterpolationSolver):
     y: 'ndarray' = None
-    dya: 'float' = None
+    dya: float = None
     _rmat: 'matrix' = None
     _ycmat: 'matrix' = None
     _yc: 'ndarray' = None
@@ -714,8 +714,8 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
     _dydx: 'ndarray' = None
     _iymat: 'matrix' = None
     _iydx: 'ndarray' = None
-    def __init__(self, x: Iterable['float'], y: Iterable['float'],
-                 dya: 'float') -> None:
+    def __init__(self, x: Iterable[float], y: Iterable[float],
+                 dya: float) -> None:
         x = asarray(x, dtype=float)
         y = asarray(y, dtype=float)
         if len(x) != len(y):
@@ -771,7 +771,7 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         if self._iydx is None:
             self._iydx = asarray(self.iymat).flatten()
         return self._iydx
-    def quadratic_interpolation(self, xv: 'float') -> 'float':
+    def quadratic_interpolation(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             xa = self.x[j]
@@ -794,7 +794,7 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         return yv
     def quadratic_interpolation_array(self, xv: 'ndarray') -> 'ndarray':
         return fromiter([self.quadratic_interpolation(xi) for xi in xv], dtype=float)
-    def quadratic_first_derivative(self, xv: 'float') -> 'float':
+    def quadratic_first_derivative(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             xa = self.x[j]
@@ -817,7 +817,7 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         return dyv
     def quadratic_first_derivative_array(self, xv: 'ndarray') -> 'ndarray':
         return fromiter([self.quadratic_first_derivative(xi) for xi in xv], dtype=float)
-    def quadratic_integral(self, xv: 'float') -> 'float':
+    def quadratic_integral(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             ia = self.iydx[j]

@@ -33,7 +33,7 @@ class MatrixTensor2D():
         else:
             raise IndexError()
     @property
-    def shape(self) -> Tuple['int', ...]:
+    def shape(self) -> Tuple[int, ...]:
         return self.xx.shape
     def transpose(self) -> 'MatrixTensor2D':
         xx = self.xx.transpose()
@@ -148,7 +148,7 @@ class MatrixTensor2D():
         frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
-def zero_matrix_tensor(shape: Tuple['int', 'int'],
+def zero_matrix_tensor(shape: Tuple[int, int],
                        dtype=float, order='C') -> 'MatrixTensor2D':
     xx = zeros(shape, dtype=dtype, order=order)
     xy = zeros(shape, dtype=dtype, order=order)

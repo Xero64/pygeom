@@ -1,28 +1,22 @@
 from typing import TYPE_CHECKING, Tuple, Union, Optional, Any
 
+from math import sqrt, isclose
+
 if TYPE_CHECKING:
-    from numpy.matlib import matrix
     from .point import Point
-    from ..matrix3d.matrixvector import MatrixVector
-    VecType = Union['Vector', 'MatrixVector']
-    OptVecType = Optional['VecType']
 
 class Vector():
     """Vector Class"""
-    x: 'float' = None
-    y: 'float' = None
-    z: 'float' = None
-    def __init__(self, x: 'float', y: 'float', z: 'float') -> None:
-        """Initialise vector object
-
-        Args:
-            x (float): x component of vector
-            y (float): y component of vector
-            z (float): z component of vector
-        """
-        self.x = x
-        self.y = y
-        self.z = z
+    x: float = None
+    y: float = None
+    z: float = None
+    def __init__(self, x: float, y: float, z: float) -> None:
+        if isinstance(x, float) and isinstance(y, float) and isinstance(z, float):
+            self.x = x
+            self.y = y
+            self.z = z
+        else:
+            raise TypeError('Vector arguments must all be float.')
     def to_unit(self) -> 'Vector':
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
@@ -40,115 +34,104 @@ class Vector():
     def to_vector(self) -> 'Vector':
         """Returns a copy of this vector"""
         return Vector(self.x, self.y, self.z)
-    def return_magnitude(self) -> 'float':
+    def return_magnitude(self) -> float:
         """Returns the magnitude of this vector"""
-        return (self.x**2+self.y**2+self.z**2)**0.5
-    def to_xyz(self) -> Tuple['float', 'float', 'float']:
+        return sqrt(self.x**2 + self.y**2 + self.z**2)
+    def to_xyz(self) -> Tuple[float, float, float]:
         """Returns the x, y and z values of this vector"""
         return self.x, self.y, self.z
-    def dot(self, vec: 'VecType') -> Union['float', 'matrix']:
-        return self.x*vec.x+self.y*vec.y+self.z*vec.z
-    def __mul__(self, obj: Any) -> 'VecType':
-        from pygeom.matrix3d import MatrixVector
-        if isinstance(obj, (Vector, MatrixVector)):
-            return self.x*obj.x + self.y*obj.y + self.z*obj.z
-        elif isinstance(obj, matrix):
-            x = self.x*obj
-            y = self.y*obj
-            z = self.z*obj
-            return MatrixVector(x, y, z)
-        else:
-            x = self.x*obj
-            y = self.y*obj
-            z = self.z*obj
-            return Vector(x, y, z)
-    def __rmul__(self, obj: Any) -> 'VecType':
-        from numpy.matlib import matrix
-        from pygeom.matrix3d import MatrixVector
-        if isinstance(obj, (Vector, MatrixVector)):
-            return self.x*obj.x+self.y*obj.y+self.z*obj.z
-        elif isinstance(obj, matrix):
-            x = obj*self.x
-            y = obj*self.y
-            z = obj*self.z
-            return MatrixVector(x, y, z)
-        else:
-            x = obj*self.x
-            y = obj*self.y
-            z = obj*self.z
-            return Vector(x, y, z)
-    def __truediv__(self, obj: Any):
-        if isinstance(obj, (int, float, complex)):
-            x = self.x/obj
-            y = self.y/obj
-            z = self.z/obj
-            return Vector(x, y, z)
-    def cross(self, vec: 'VecType') -> 'VecType':
+    def dot(self, vec: 'Vector') -> float:
         if isinstance(vec, Vector):
-            x = self.y*vec.z-self.z*vec.y
-            y = self.z*vec.x-self.x*vec.z
-            z = self.x*vec.y-self.y*vec.x
-            return Vector(x, y, z)
-        elif isinstance(vec, MatrixVector):
-            x = self.y*vec.z-self.z*vec.y
-            y = self.z*vec.x-self.x*vec.z
-            z = self.x*vec.y-self.y*vec.x
-            return MatrixVector(x, y, z)
-    def __pow__(self, obj: Any) -> 'Vector':
-        from pygeom.matrix3d import MatrixVector
-        if isinstance(obj, Vector):
-            x = self.y*obj.z-self.z*obj.y
-            y = self.z*obj.x-self.x*obj.z
-            z = self.x*obj.y-self.y*obj.x
-            return Vector(x, y, z)
-        elif isinstance(obj, MatrixVector):
-            x = self.y*obj.z-self.z*obj.y
-            y = self.z*obj.x-self.x*obj.z
-            z = self.x*obj.y-self.y*obj.x
-            return MatrixVector(x, y, z)
-    def __add__(self, obj: 'VecType') -> 'VecType':
-        from pygeom.matrix3d import MatrixVector
-        if isinstance(obj, Vector):
-            x = self.x+obj.x
-            y = self.y+obj.y
-            z = self.z+obj.z
-            return Vector(x, y, z)
-        elif isinstance(obj, MatrixVector):
-            x = self.x+obj.x
-            y = self.y+obj.y
-            z = self.z+obj.z
-            return MatrixVector(x, y, z)
+            return self.x*vec.x + self.y*vec.y + self.z*vec.z
         else:
-            raise ValueError('Can only add Vector or MatrixVector from Vector.')
-    def __radd__(self, obj: 'OptVecType'=None) -> 'VecType':
-        if obj == 0 or obj is None:
+            raise TypeError('Vector dot product must be with Vector object.')
+    def cross(self, vec: 'Vector') -> 'Vector':
+        if isinstance(vec, Vector):
+            x = self.y*vec.z - self.z*vec.y
+            y = self.z*vec.x - self.x*vec.z
+            z = self.x*vec.y - self.y*vec.x
+            return Vector(x, y, z)
+        else:
+            raise TypeError('Vector cross product must be with Vector object.')
+    def __abs__(self) -> float:
+        return self.return_magnitude()
+    def __mul__(self, obj: Any) -> Union[float, 'Vector']:
+        if isinstance(obj, Vector):
+            return self.dot(obj)
+        else:
+            x = self.x*obj
+            y = self.y*obj
+            z = self.z*obj
+            return Vector(x, y, z)
+    def __rmul__(self, obj: Any) -> Union[float, 'Vector']:
+        if isinstance(obj, Vector):
+            return obj.dot(self)
+        else:
+            x = obj*self.x
+            y = obj*self.y
+            z = obj*self.z
+            return Vector(x, y, z)
+    def __truediv__(self, obj: Any) -> 'Vector':
+        x = self.x/obj
+        y = self.y/obj
+        z = self.z/obj
+        return Vector(x, y, z)
+    def __pow__(self, obj: Any) -> 'Vector':
+        if isinstance(obj, Vector):
+            return self.cross(obj)
+        else:
+            x = self.x**obj
+            y = self.y**obj
+            z = self.z**obj
+            return Vector(x, y, z)
+    def __rpow__(self, obj: Any) -> 'Vector':
+        return obj**self
+    def __add__(self, obj: 'Vector') -> 'Vector':
+        if isinstance(obj, Vector):
+            x = self.x + obj.x
+            y = self.y + obj.y
+            z = self.z + obj.z
+            return Vector(x, y, z)
+        else:
+            return obj.__add__(self)
+    def __radd__(self, obj: Optional['Vector']=None) -> 'Vector':
+        if obj is None:
+            return self
+        elif obj == 0:
+            return self
+        elif obj == Vector(0.0, 0.0, 0.0):
             return self
         else:
             return self.__add__(obj)
-    def __sub__(self, obj: 'VecType') -> 'VecType':
-        from pygeom.matrix3d import MatrixVector
+    def __sub__(self, obj: 'Vector') -> 'Vector':
         if isinstance(obj, Vector):
-            x = self.x-obj.x
-            y = self.y-obj.y
-            z = self.z-obj.z
+            x = self.x - obj.x
+            y = self.y - obj.y
+            z = self.z - obj.z
             return Vector(x, y, z)
-        elif isinstance(obj, MatrixVector):
-            x = self.x-obj.x
-            y = self.y-obj.y
-            z = self.z-obj.z
-            return MatrixVector(x, y, z)
         else:
-            raise ValueError('Can only subtract Vector or MatrixVector from Vector.')
+            err = 'Vector object can only be subtracted from Vector object.'
+            raise TypeError(err)
     def __pos__(self) -> 'Vector':
-        return Vector(self.x, self.y, self.z)
+        return self
     def __neg__(self) -> 'Vector':
         return Vector(-self.x, -self.y, -self.z)
-    def __repr__(self) -> 'str':
+    def __eq__(self, obj: Any) -> 'bool':
+        if isinstance(obj, Vector):
+            if obj.x == self.x and obj.y == self.y and obj.z == self.z:
+                return True
+        return False
+    def __neq__(self, obj: Any) -> 'bool':
+        if isinstance(obj, Vector):
+            if obj.x != self.x or obj.y != self.y or obj.z != self.z:
+                return True
+        return False
+    def __repr__(self) -> str:
         return '<Vector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
-    def __str__(self) -> 'str':
+    def __str__(self) -> str:
         return '<{:}, {:}, {:}>'.format(self.x, self.y, self.z)
-    def __format__(self, format_spec: 'str') -> 'str':
-        frmstr = '<{:'+format_spec+'}, {:'+format_spec+'}, {:'+format_spec+'}>'
+    def __format__(self, frm: str) -> str:
+        frmstr = '<{:' + frm + '}, {:' + frm + '}, {:' + frm + '}>'
         return frmstr.format(self.x, self.y, self.z)
 
 def zero_vector() -> 'Vector':
@@ -156,7 +139,13 @@ def zero_vector() -> 'Vector':
 
 def vector_from_points(pnta: 'Point', pntb: 'Point') -> 'Vector':
     """Create a Vector from two Points"""
-    x = pntb.x-pnta.x
-    y = pntb.y-pnta.y
-    z = pntb.z-pnta.z
+    x = pntb.x - pnta.x
+    y = pntb.y - pnta.y
+    z = pntb.z - pnta.z
     return Vector(x, y, z)
+
+def vector_isclose(a: Vector, b: Vector,
+                   rel_tol: float=1e-09, abs_tol: float=0.0) -> bool:
+    return isclose(a.x, b.x, rel_tol=rel_tol, abs_tol=abs_tol) and \
+        isclose(a.y, b.y, rel_tol=rel_tol, abs_tol=abs_tol) and \
+        isclose(a.z, b.z, rel_tol=rel_tol, abs_tol=abs_tol)

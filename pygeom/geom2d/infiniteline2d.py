@@ -6,15 +6,15 @@ class InfiniteLine2D():
     def __init__(self, pnt: 'Vector2D', uvec: 'Vector2D') -> None:
         self.pnt = pnt
         self.uvec = uvec.to_unit()
-    def point_along_vector(self, length: 'float') -> 'Vector2D':
+    def point_along_vector(self, length: float) -> 'Vector2D':
         x = self.pnt.x+self.uvec.x*length
         y = self.pnt.y+self.uvec.y*length
         return Vector2D(x, y)
-    def __repr__(self) -> 'str':
+    def __repr__(self) -> str:
         return '<InfiniteLine2D>'
 
 def intersection_length_of_ifl2D(iln1: 'InfiniteLine2D', iln2: 'InfiniteLine2D',
-                                 tol: 'float'=1e-12) -> 'float':
+                                 tol: float=1e-12) -> float:
     uv1 = iln1.uvec
     uv2 = iln2.uvec
     xp12 = uv1**uv2
@@ -28,7 +28,7 @@ def intersection_length_of_ifl2D(iln1: 'InfiniteLine2D', iln2: 'InfiniteLine2D',
     return l1
 
 def intersection_of_ifl2D(iln1: 'InfiniteLine2D', iln2: 'InfiniteLine2D',
-                          tol: 'float'=1e-12) -> 'Vector2D':
+                          tol: float=1e-12) -> 'Vector2D':
     l1 = intersection_length_of_ifl2D(iln1, iln2, tol=tol)
     xp = iln1.pnt.x + l1*iln1.uvec.x
     yp = iln1.pnt.y + l1*iln1.uvec.y

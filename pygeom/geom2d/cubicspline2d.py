@@ -20,9 +20,9 @@ class CubicSpline2D():
     clsd: 'bool' = False
     tanA: Optional['Vector2D'] = None
     tanB: Optional['Vector2D'] = None
-    _numpnt: 'int' = None
+    _numpnt: int = None
     _pnls: List['SplineLine2D'] = None
-    _numpnl: 'int' = None
+    _numpnl: int = None
     _d2r: List['Vector2D'] = None
     _dr: List['Vector2D'] = None
     _r: List['Vector2D'] = None
@@ -34,7 +34,7 @@ class CubicSpline2D():
         self.tanA = tanA
         self.tanB = tanB
     @property
-    def numpnt(self) -> 'int':
+    def numpnt(self) -> int:
         if self._numpnt is None:
             self._numpnt = len(self.pnts)
         return self._numpnt
@@ -57,7 +57,7 @@ class CubicSpline2D():
                 self._pnls.append(SplineLine2D(self.pnts[inda], self.pnts[indb]))
         return self._pnls
     @property
-    def numpnl(self) -> 'int':
+    def numpnl(self) -> int:
         if self._numpnl is None:
             self._numpnl = len(self.pnls)
         return self._numpnl
@@ -233,7 +233,7 @@ class CubicSpline2D():
             dy.append(dyA)
         dr = [Vector2D(dx[i], dy[i]) for i in range(self.numpnt)]
         return dr
-    def calc_r(self) -> List['float']:
+    def calc_r(self) -> List[float]:
         u"""This function calculates the radius of curvature of the spline."""
         r = []
         for i in range(self.numpnt):
@@ -247,7 +247,7 @@ class CubicSpline2D():
             else:
                 r.append(1/k)
         return r
-    def spline_points(self, num: 'int') -> Tuple[List['float'], List['float']]:
+    def spline_points(self, num: int) -> Tuple[List[float], List[float]]:
         u"""This function interpolates the spline with a number of points."""
         x = []
         y = []
@@ -265,7 +265,7 @@ class CubicSpline2D():
             x.append(self.pnts[-1].x)
             y.append(self.pnts[-1].y)
         return x, y
-    def spline_gradient(self, num: 'int') -> Tuple[List['float'], List['float']]:
+    def spline_gradient(self, num: int) -> Tuple[List[float], List[float]]:
         u"""This function interpolates the gradient of the spline."""
         dx = []
         dy = []
@@ -283,7 +283,7 @@ class CubicSpline2D():
             dx.append(self.dr[-1].x)
             dy.append(self.dr[-1].y)
         return dx, dy
-    def spline_curvature(self, num: 'int') -> Tuple[List['float'], List['float']]:
+    def spline_curvature(self, num: int) -> Tuple[List[float], List[float]]:
         u"""This function interpolates the curvature of the spline."""
         d2x = []
         d2y = []
@@ -443,6 +443,7 @@ class CubicSpline2D():
                         i = j
                         break
         x, y = [], []
+        self.set_panel_d2r()
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
@@ -474,6 +475,7 @@ class CubicSpline2D():
                         i = j
                         break
         dx, dy = [], []
+        self.set_panel_d2r()
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
@@ -505,6 +507,7 @@ class CubicSpline2D():
                         i = j
                         break
         d2x, d2y = [], []
+        self.set_panel_d2r()
         for i, si in enumerate(slst):
             s = sloc[i]
             j = ploc[i]
@@ -603,7 +606,7 @@ class CubicSpline2D():
     #                                   round(self.d2r[i].x, 6),
     #                                   round(self.r[i], 6))
     #         print(outstr)
-    def arc_length_approximation(self, num: 'int') -> 'ndarray':
+    def arc_length_approximation(self, num: int) -> 'ndarray':
         x, y = self.spline_points(num)
         x = asarray(x, dtype=float)
         y = asarray(y, dtype=float)
@@ -622,33 +625,33 @@ class SplineLine2D(Line2D):
     def __init__(self, pnta: 'Point2D', pntb: 'Point2D'):
         super(SplineLine2D, self).__init__(pnta, pntb)
     @property
-    def xa(self) -> 'float':
+    def xa(self) -> float:
         return self.pnta.x
     @property
-    def ya(self) -> 'float':
+    def ya(self) -> float:
         return self.pnta.y
     @property
-    def xb(self) -> 'float':
+    def xb(self) -> float:
         return self.pntb.x
     @property
-    def yb(self) -> 'float':
+    def yb(self) -> float:
         return self.pntb.y
     def set_d2r(self, d2ra: 'Vector2D', d2rb: 'Vector2D'):
         self.d2ra = d2ra
         self.d2rb = d2rb
     @property
-    def d2xa(self) -> 'float':
+    def d2xa(self) -> float:
         return self.d2ra.x
     @property
-    def d2ya(self) -> 'float':
+    def d2ya(self) -> float:
         return self.d2ra.y
     @property
-    def d2xb(self) -> 'float':
+    def d2xb(self) -> float:
         return self.d2rb.x
     @property
-    def d2yb(self) -> 'float':
+    def d2yb(self) -> float:
         return self.d2rb.y
-    def interpolate_point(self, s: 'float') -> Tuple['float', 'float']:
+    def interpolate_point(self, s: float) -> Tuple[float, float]:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP
@@ -657,7 +660,7 @@ class SplineLine2D(Line2D):
         x = A*self.xa + B*self.xb + C*self.d2xa + D*self.d2xb
         y = A*self.ya + B*self.yb + C*self.d2ya + D*self.d2yb
         return x, y
-    def interpolate_gradient(self, s: 'float') -> Tuple['float', 'float']:
+    def interpolate_gradient(self, s: float) -> Tuple[float, float]:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP
@@ -666,7 +669,7 @@ class SplineLine2D(Line2D):
         dx = (self.xb-self.xa)/sP + (F*self.d2xb-E*self.d2xa)*sP/6
         dy = (self.yb-self.ya)/sP + (F*self.d2yb-E*self.d2ya)*sP/6
         return dx, dy
-    def interpolate_curvature(self, s: 'float') -> Tuple['float', 'float']:
+    def interpolate_curvature(self, s: float) -> Tuple[float, float]:
         sP = self.length
         A = (sP-s)/sP
         B = s/sP

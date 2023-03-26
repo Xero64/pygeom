@@ -28,6 +28,9 @@ MANIFEST
 # Shell scripts
 *.sh
 
+# py2md outputs
+*.py.md
+
 # Test scripts
 scripts/
 sympy/

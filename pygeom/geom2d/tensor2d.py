@@ -2,12 +2,12 @@ from typing import Any
 
 class Tensor2D():
     """Tensor2D Class"""
-    xx: 'float' = None
-    xy: 'float' = None
-    yx: 'float' = None
-    yy: 'float' = None
-    def __init__(self, xx: 'float', xy: 'float',
-                 yx: 'float', yy: 'float') -> None:
+    xx: float = None
+    xy: float = None
+    yx: float = None
+    yy: float = None
+    def __init__(self, xx: float, xy: float,
+                 yx: float, yy: float) -> None:
         self.xx = xx
         self.xy = xy
         self.yx = yx
@@ -86,12 +86,12 @@ class Tensor2D():
         return self
     def __neg__(self) -> 'Tensor2D':
         return Tensor2D(-self.xx, -self.xy, -self.yx, -self.yy)
-    def __repr__(self) -> 'str':
+    def __repr__(self) -> str:
         frmstr = '<Tensor2D: {:}, {:}, {:}, {:}>'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
-    def __str__(self) -> 'str':
+    def __str__(self) -> str:
         frmstr = '<{:}, {:}, {:}, {:}>'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
-    def __format__(self, frm: 'str') -> 'str':
+    def __format__(self, frm: str) -> str:
         frmstr = '<{:' + frm + '}, {:' + frm + '}>, {:' + frm + '}>, {:' + frm + '}>'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)

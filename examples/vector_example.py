@@ -1,9 +1,9 @@
 #%%
 # Import Vector Class
-from pygeom import Vector
+from pygeom.geom3d import Vector
 
 # Vector object creation
-vec1 = Vector(2, 3.0, 1)
+vec1 = Vector(2.0, 3.0, 1.0)
 print(f'vec1 = {vec1:g}')
 
 # Multiply vector by a scalar
@@ -12,7 +12,7 @@ print(f'vec2 = {vec2:g}')
 
 # Vector attributes are x, y, and z
 vec3 = Vector(vec2.y, vec2.z, vec2.z)
-print(f'vec3 = {vec3:.1f}')
+print(f'vec3 = {vec3:.6f}')
 
 # Vector cross product
 vec4 = vec1**vec2

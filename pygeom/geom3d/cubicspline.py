@@ -17,9 +17,9 @@ class CubicSpline():
     clsd: 'bool' = False
     tanA: Optional['Vector'] = None
     tanB: Optional['Vector'] = None
-    _numpnt: 'int' = None
+    _numpnt: int = None
     _pnls: List['Line'] = None
-    _numpnl: 'int' = None
+    _numpnl: int = None
     _d2r: List['Vector'] = None
     _dr: List['Vector'] = None
     _r: List['Vector'] = None
@@ -31,7 +31,7 @@ class CubicSpline():
         self.tanA = tanA
         self.tanB = tanB
     @property
-    def numpnt(self) -> 'int':
+    def numpnt(self) -> int:
         if self._numpnt is None:
             self._numpnt = len(self.pnts)
         return self._numpnt
@@ -54,7 +54,7 @@ class CubicSpline():
                 self._pnls.append(Line(self.pnts[inda], self.pnts[indb]))
         return self._pnls
     @property
-    def numpnl(self) -> 'int':
+    def numpnl(self) -> int:
         if self._numpnl is None:
             self._numpnl = len(self.pnls)
         return self._numpnl
