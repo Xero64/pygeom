@@ -1,6 +1,10 @@
-from typing import Tuple, Union, List
-from pygeom.geom2d import Tensor2D, Coordinate2D
-from numpy.matlib import matrix, zeros, multiply, divide
+from typing import List, Tuple, Union
+
+from numpy.matlib import divide, matrix, multiply
+from numpy.matlib import zeros as zero_matrix
+
+from pygeom.geom2d import Coordinate2D, Tensor2D
+
 
 class MatrixTensor2D():
     """MatrixTensor2D Class"""
@@ -148,14 +152,6 @@ class MatrixTensor2D():
         frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
-def zero_matrix_tensor(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixTensor2D':
-    xx = zeros(shape, dtype=dtype, order=order)
-    xy = zeros(shape, dtype=dtype, order=order)
-    yx = zeros(shape, dtype=dtype, order=order)
-    yy = zeros(shape, dtype=dtype, order=order)
-    return MatrixTensor2D(xx, xy, yx, yy)
-
 def elementwise_multiply(a: 'MatrixTensor2D',
                          b: 'matrix') -> 'MatrixTensor2D':
     if a.shape == b.shape:
@@ -197,3 +193,11 @@ def tensor2d_to_local(crd: 'Coordinate2D', tens: 'MatrixTensor2D') -> 'MatrixTen
     exy = qxx*qyx*sxx + qxx*qyy*sxy + qxy*qyx*syx + qxy*qyy*syy
     eyx = qxx*qyx*sxx + qxx*qyy*syx + qxy*qyx*sxy + qxy*qyy*syy
     return MatrixTensor2D(exx, exy, eyx, eyy)
+
+def zero_matrix_tensor(shape: Tuple[int, int],
+                       dtype=float, order='C') -> 'MatrixTensor2D':
+    xx = zero_matrix(shape, dtype=dtype, order=order)
+    xy = zero_matrix(shape, dtype=dtype, order=order)
+    yx = zero_matrix(shape, dtype=dtype, order=order)
+    yy = zero_matrix(shape, dtype=dtype, order=order)
+    return MatrixTensor2D(xx, xy, yx, yy)

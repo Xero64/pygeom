@@ -1,20 +1,13 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 from numpy.matlib import zeros as zero_matrix
 
 from ..geom3d.vector import Vector
-from .matrixvector import MatrixVector
+from .matrixvector import MatrixVector, zero_matrix_vector
 
 if TYPE_CHECKING:
     from numpy.matlib import matrix
     from ..geom3d.coordinate import Coordinate
-
-def zero_matrix_vector(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixVector':
-    x = zero_matrix(shape, dtype=dtype, order=order)
-    y = zero_matrix(shape, dtype=dtype, order=order)
-    z = zero_matrix(shape, dtype=dtype, order=order)
-    return MatrixVector(x, y, z)
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector') -> 'MatrixVector':
     from numpy.linalg import solve

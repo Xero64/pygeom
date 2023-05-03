@@ -1,20 +1,15 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 from numpy.matlib import zeros as zero_matrix
 
 from ..geom2d.vector2d import Vector2D
-from .matrixvector2d import MatrixVector2D
+from .matrixvector2d import MatrixVector2D, zero_matrix_vector
 from .matrixtensor2d import MatrixTensor2D as MatrixTensor2D
+from .matrixtensor2d import zero_matrix_tensor as zero_matrix_tensor
 
 if TYPE_CHECKING:
     from numpy.matlib import matrix
     from ..geom2d.coordinate2d import Coordinate2D
-
-def zero_matrix_vector(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixVector2D':
-    x = zero_matrix(shape, dtype=dtype, order=order)
-    y = zero_matrix(shape, dtype=dtype, order=order)
-    return MatrixVector2D(x, y)
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector2D') -> 'MatrixVector2D':
     from numpy.linalg import solve
