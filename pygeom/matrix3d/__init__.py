@@ -7,7 +7,7 @@ from .matrixvector import MatrixVector, zero_matrix_vector
 
 if TYPE_CHECKING:
     from numpy.matlib import matrix
-    from ..geom3d.coordinate import Coordinate
+    from ..geom3d.transform import Transform
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector') -> 'MatrixVector':
     from numpy.linalg import solve
@@ -22,19 +22,19 @@ def solve_matrix_vector(a: 'matrix', b: 'MatrixVector') -> 'MatrixVector':
         c[:, i] = MatrixVector(newc[:, 3*i+0], newc[:, 3*i+1], newc[:, 3*i+2])
     return c
 
-def vector_to_global(crd: 'Coordinate', vec: 'MatrixVector') -> 'MatrixVector':
+def vector_to_global(tfm: 'Transform', vec: 'MatrixVector') -> 'MatrixVector':
     """Transforms a matrix vector from this local coordinate system to global"""
-    dirx = Vector(crd.dirx.x, crd.diry.x, crd.dirz.x)
-    diry = Vector(crd.dirx.y, crd.diry.y, crd.dirz.y)
-    dirz = Vector(crd.dirx.z, crd.diry.z, crd.dirz.z)
+    dirx = Vector(tfm.dirx.x, tfm.diry.x, tfm.dirz.x)
+    diry = Vector(tfm.dirx.y, tfm.diry.y, tfm.dirz.y)
+    dirz = Vector(tfm.dirx.z, tfm.diry.z, tfm.dirz.z)
     x = vec*dirx
     y = vec*diry
     z = vec*dirz
     return MatrixVector(x, y, z)
 
-def vector_to_local(crd: 'Coordinate', vec: 'MatrixVector') -> 'MatrixVector':
+def vector_to_local(tfm: 'Transform', vec: 'MatrixVector') -> 'MatrixVector':
     """Transforms a vector from global to this local coordinate system"""
-    x = vec*crd.dirx
-    y = vec*crd.diry
-    z = vec*crd.dirz
+    x = vec*tfm.dirx
+    y = vec*tfm.diry
+    z = vec*tfm.dirz
     return MatrixVector(x, y, z)
