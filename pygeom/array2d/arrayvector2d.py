@@ -18,30 +18,16 @@ class ArrayVector2D(Vector2D):
         self.x = x
         self.y = y
 
+    def return_magnitude(self) -> 'ndarray':
+        """Returns the magnitude array of this array vector"""
+        return super().return_magnitude()
+
     def to_unit(self) -> 'ArrayVector2D':
         """Returns the unit array vector of this array vector"""
         mag = self.return_magnitude()
         x = where(mag == 0.0, 0.0, self.x/mag)
         y = where(mag == 0.0, 0.0, self.y/mag)
         return ArrayVector2D(x, y)
-
-    def return_magnitude(self) -> 'ndarray':
-        """Returns the magnitude array of this array vector"""
-        return super().return_magnitude()
-
-    def return_angle(self) -> 'ndarray':
-        """Returns the angle array of this array vector from the x axis"""
-        return super().return_angle()
-
-    def rotate(self, rot: 'number') -> 'ArrayVector2D':
-        """Rotates this array vector by an input angle in radians"""
-        vec = super().rotate(rot)
-        vec.__class__ = ArrayVector2D
-        return vec
-
-    def to_complex(self) -> 'ndarray':
-        """Returns the complex number of this array vector"""
-        return super().to_complex()
 
     def dot(self, vec: Vector2D) -> 'ndarray':
         try:
@@ -136,7 +122,7 @@ class ArrayVector2D(Vector2D):
             y = self.y@obj
             return scalar_arrayvector2d(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be multiplied by a numpy ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
 
     def __rmatmul__(self, obj: 'ndarray') -> 'ArrayVector2D':
@@ -145,7 +131,7 @@ class ArrayVector2D(Vector2D):
             y = obj@self.y
             return scalar_arrayvector2d(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be multiplied by a numpy ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
 
     def __getitem__(self, key) -> 'Vector2DLike':
@@ -212,7 +198,7 @@ class ArrayVector2D(Vector2D):
         y = self.y.reshape(shape, order=order)
         return ArrayVector2D(x, y)
 
-    def to_tuple(self) -> Tuple[Vector2D]:
+    def to_tuple(self) -> Tuple[Vector2D, ...]:
         return [Vector2D(xi, yi) for xi, yi in zip(self.x, self.y)]
 
     def copy(self, order='C') -> 'ArrayVector2D':
@@ -234,6 +220,21 @@ class ArrayVector2D(Vector2D):
         ylst = split(self.y, numsect, axis=-1)
         for xi, yi in zip(xlst, ylst):
             yield ArrayVector2D(xi, yi).reshape(shape)
+
+    def return_angle(self) -> 'ndarray':
+        """Returns the angle array of this array vector from the x axis"""
+        return super().return_angle()
+
+    def rotate(self, rot: 'number') -> 'ArrayVector2D':
+        """Rotates this array vector by an input angle in radians"""
+        vec = super().rotate(rot)
+        vec.__class__ = ArrayVector2D
+        return vec
+
+    def to_complex(self) -> 'ndarray':
+        """Returns the complex number of this array vector"""
+        return super().to_complex()
+
 
 def zero_arrayvector2d(shape: Tuple[int, ...],
                        dtype=float, order='C') -> ArrayVector2D:

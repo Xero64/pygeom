@@ -19,17 +19,11 @@ class Vector():
     def to_unit(self) -> 'Vector':
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
-        if mag == 0.0:
-            return Vector(self.x, self.y, self.z)
-        else:
+        if mag != 0.0:
             x = self.x/mag
             y = self.y/mag
             z = self.z/mag
             return Vector(x, y, z)
-
-    def to_vector(self) -> 'Vector':
-        """Returns a copy of this vector"""
-        return Vector(self.x, self.y, self.z)
 
     def return_magnitude(self) -> 'number':
         """Returns the magnitude of this vector"""
@@ -99,16 +93,6 @@ class Vector():
             err = 'Vector object can only be added to Vector object.'
             raise TypeError(err)
 
-    def __radd__(self, obj: 'Vector'=None) -> 'Vector':
-        if obj is None:
-            return self
-        elif obj == 0:
-            return self
-        elif obj == Vector(0.0, 0.0, 0.0):
-            return self
-        else:
-            return self.__add__(obj)
-
     def __sub__(self, obj: 'Vector') -> 'Vector':
         try:
             x = self.x - obj.x
@@ -124,6 +108,16 @@ class Vector():
 
     def __neg__(self) -> 'Vector':
         return Vector(-self.x, -self.y, -self.z)
+
+    def __repr__(self) -> str:
+        return '<Vector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
+
+    def __str__(self) -> str:
+        return '<{:}, {:}, {:}>'.format(self.x, self.y, self.z)
+
+    def __format__(self, frm: str) -> str:
+        frmstr = '<{:' + frm + '}, {:' + frm + '}, {:' + frm + '}>'
+        return frmstr.format(self.x, self.y, self.z)
 
     def __eq__(self, obj: 'Vector') -> 'bool':
         try:
@@ -143,20 +137,10 @@ class Vector():
         except AttributeError:
             return False
 
-    def __repr__(self) -> str:
-        return '<Vector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
-
-    def __str__(self) -> str:
-        return '<{:}, {:}, {:}>'.format(self.x, self.y, self.z)
-
-    def __format__(self, frm: str) -> str:
-        frmstr = '<{:' + frm + '}, {:' + frm + '}, {:' + frm + '}>'
-        return frmstr.format(self.x, self.y, self.z)
-
-def zero_vector() -> 'Vector':
+def zero_vector() -> Vector:
     return Vector(0.0, 0.0, 0.0)
 
-def vector_from_points(pnta: 'Vector', pntb: 'Vector') -> 'Vector':
+def vector_from_points(pnta: Vector, pntb: Vector) -> Vector:
     """Create a Vector from two Points"""
     x = pntb.x - pnta.x
     y = pntb.y - pnta.y

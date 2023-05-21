@@ -30,23 +30,6 @@ class Vector2D():
         """Returns the angle of this vector from the x axis"""
         return arctan2(self.y, self.x)
 
-    def rotate(self, rot: 'number') -> 'Vector2D':
-        """Rotates this vector by an input angle in radians"""
-        mag = self.return_magnitude()
-        ang = self.return_angle()
-        x = mag*cos(ang + rot)
-        y = mag*sin(ang + rot)
-        return Vector2D(x, y)
-
-    def to_complex(self) -> 'number':
-        """Returns the complex 'number' of this vector"""
-        cplx = self.x + 1j*self.y
-        return cplx
-
-    def to_xy(self) -> Tuple['number', 'number']:
-        """Returns the x, y values of this vector"""
-        return self.x, self.y
-
     def dot(self, obj: 'Vector2D') -> 'number':
         try:
             return self.x*obj.x + self.y*obj.y
@@ -140,6 +123,23 @@ class Vector2D():
                 return False
         except AttributeError:
             return False
+
+    def rotate(self, rot: 'number') -> 'Vector2D':
+        """Rotates this vector by an input angle in radians"""
+        mag = self.return_magnitude()
+        ang = self.return_angle()
+        x = mag*cos(ang + rot)
+        y = mag*sin(ang + rot)
+        return Vector2D(x, y)
+
+    def to_complex(self) -> 'number':
+        """Returns the complex 'number' of this vector"""
+        cplx = self.x + 1j*self.y
+        return cplx
+
+    def to_xy(self) -> Tuple['number', 'number']:
+        """Returns the x, y values of this vector"""
+        return self.x, self.y
 
 def zero_vector2d() -> Vector2D:
     return Vector2D(0.0, 0.0)
