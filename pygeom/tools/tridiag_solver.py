@@ -1,18 +1,16 @@
 from typing import TYPE_CHECKING
 
-from numpy import zeros as zeros_array
-from numpy.matlib import zeros as zeros_matrix
+from numpy import zeros
 
 if TYPE_CHECKING:
     from numpy import ndarray
-    from numpy.matlib import matrix
 
 def tridiag_solver(a: 'ndarray', b: 'ndarray', c: 'ndarray',
-                   d: 'matrix') -> 'matrix':
+                   d: 'ndarray') -> 'ndarray':
     num = len(b)
-    gm = zeros_array(num, dtype=float)
+    gm = zeros(num)
     bt = b[0]
-    r = zeros_matrix(d.shape, dtype=float)
+    r = zeros(d.shape)
     r[0, :] = (d[0, :]-a[0]*r[0, :])/bt
     for i in range(1, num):
         gm[i] = c[i-1]/bt

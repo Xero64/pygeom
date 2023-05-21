@@ -3,13 +3,16 @@ from .vector2d import Vector2D
 class InfiniteLine2D():
     pnt: 'Vector2D' = None
     uvec: 'Vector2D' = None
+
     def __init__(self, pnt: 'Vector2D', uvec: 'Vector2D') -> None:
         self.pnt = pnt
         self.uvec = uvec.to_unit()
+
     def point_along_vector(self, length: float) -> 'Vector2D':
         x = self.pnt.x+self.uvec.x*length
         y = self.pnt.y+self.uvec.y*length
         return Vector2D(x, y)
+
     def __repr__(self) -> str:
         return '<InfiniteLine2D>'
 

@@ -1,4 +1,5 @@
 from .symbolicvector import SymbolicVector
+from .symbolicvector import symple_vector as symple_vector
 
 IHAT = SymbolicVector(1, 0, 0)
 JHAT = SymbolicVector(0, 1, 0)

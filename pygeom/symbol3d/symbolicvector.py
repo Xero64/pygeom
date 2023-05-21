@@ -10,7 +10,9 @@ class SymbolicVector(Vector):
     y: 'Symbol' = None
     z: 'Symbol' = None
     def __init__(self, x: 'Symbol', y: 'Symbol', z: 'Symbol') -> None:
-        super().__init__(x, y, z)
+        self.x = x
+        self.y = y
+        self.z = z
     def return_magnitude(self):
         return sqrt(self.x**2+self.y**2+self.z**2)
     def simplify(self) -> 'SymbolicVector':

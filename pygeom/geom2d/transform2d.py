@@ -1,57 +1,77 @@
-from math import cos, sin
-
 from .tensor2d import Tensor2D
 from .vector2d import Vector2D
-
 
 class Transform2D():
     """Transform2D Class"""
     dirx: Vector2D = None
     _diry: Vector2D = None
+
     def __init__(self, vecx: Vector2D) -> None:
         self.dirx = vecx.to_unit()
+
     @property
     def diry(self) -> Vector2D:
         if self._diry is None:
             self._diry = Vector2D(-self.dirx.y, self.dirx.x)
         return self._diry
-    def vector_to_global(self, vec: Vector2D) -> Vector2D:
+
+    def vector_to_global(self, vec: 'Vector2D') -> 'Vector2D':
         """Transforms a vector from this local coordinate system to global."""
         dirx = Vector2D(self.dirx.x, self.diry.x)
         diry = Vector2D(self.dirx.y, self.diry.y)
-        x = dirx*vec
-        y = diry*vec
-        return Vector2D(x, y)
-    def vector_to_local(self, vec: Vector2D) -> Vector2D:
+        x = vec.dot(dirx)
+        y = vec.dot(diry)
+        return vec.__class__(x, y)
+        # if isinstance(vec, ArrayVector2D):
+        #     return ArrayVector2D(x, y)
+        # elif isinstance(vec, Vector2D):
+        #     return Vector2D(x, y)
+        # else:
+        #     raise TypeError('vec must be Vector2D or ArrayVector2D')
+
+    def vector_to_local(self, vec: 'Vector2D') -> 'Vector2D':
         """Transforms a vector from global to this local coordinate system."""
-        dirx = self.dirx
-        diry = self.diry
-        x = dirx*vec
-        y = diry*vec
-        return Vector2D(x, y)
-    def tensor_to_global(self, ten: 'Tensor2D') -> 'Tensor2D':
-        """Transforms a tensor from this local coordinate system to global."""
-        dirx = Vector2D(self.dirx.x, self.diry.x)
-        diry = Vector2D(self.dirx.y, self.diry.y)
-        xx = dirx*ten*dirx
-        xy = dirx*ten*diry
-        yx = diry*ten*dirx
-        yy = diry*ten*diry
-        return Tensor2D(xx, xy, yx, yy)
-    def tensor_to_local(self, ten: 'Tensor2D') -> 'Tensor2D':
-        """Transforms a tensor from global to this local coordinate system."""
-        dirx = self.dirx
-        diry = self.diry
-        xx = dirx*ten*dirx
-        xy = dirx*ten*diry
-        yx = diry*ten*dirx
-        yy = diry*ten*diry
-        return Tensor2D(xx, xy, yx, yy)
-    def rotate_about_z(self, angle: float) -> 'Transform2D':
-        """Creates a transform that is rotated by an angle [radians]."""
-        cos_ang = cos(angle)
-        sin_ang = sin(angle)
-        dirx = self.dirx*cos_ang + self.diry*sin_ang
-        return Transform2D(dirx)
+        x = vec.dot(self.dirx)
+        y = vec.dot(self.diry)
+        return vec.__class__(x, y)
+        # if isinstance(vec, ArrayVector2D):
+        #     return ArrayVector2D(x, y)
+        # elif isinstance(vec, Vector2D):
+        #     return Vector2D(x, y)
+        # else:
+        #     raise TypeError('vec must be Vector2D or ArrayVector2D')
+
+    def tensor2d_to_global(self, tens: 'Tensor2D') -> 'Tensor2D':
+        """Transforms a tensor from this local coordinate system to global"""
+        sxx, sxy, syx, syy = tens.to_xy()
+        qxx, qxy, qyx, qyy = self.dirx.x, self.dirx.y, self.diry.x, self.diry.y
+        exx = qxx**2*sxx + qxx*qyx*sxy + qxx*qyx*syx + qyx**2*syy
+        eyy = qxy**2*sxx + qxy*qyy*sxy + qxy*qyy*syx + qyy**2*syy
+        exy = qxx*qxy*sxx + qxx*qyy*sxy + qxy*qyx*syx + qyx*qyy*syy
+        eyx = qxx*qxy*sxx + qxx*qyy*syx + qxy*qyx*sxy + qyx*qyy*syy
+        return tens.__class__(exx, exy, eyx, eyy)
+        # if isinstance(tens, ArrayTensor2D):
+        #     return ArrayTensor2D(exx, exy, eyx, eyy)
+        # elif isinstance(tens, Tensor2D):
+        #     return Tensor2D(exx, exy, eyx, eyy)
+        # else:
+        #     raise TypeError('tens must be Tensor2D or ArrayTensor2D')
+
+    def tensor2d_to_local(self, tens: 'Tensor2D') -> 'Tensor2D':
+        """Transforms a tensor from global to this local coordinate system"""
+        sxx, sxy, syx, syy = tens.to_xy()
+        qxx, qxy, qyx, qyy = self.dirx.x, self.dirx.y, self.diry.x, self.diry.y
+        exx = qxx**2*sxx + qxx*qxy*sxy + qxx*qxy*syx + qxy**2*syy
+        eyy = qyx**2*sxx + qyx*qyy*sxy + qyx*qyy*syx + qyy**2*syy
+        exy = qxx*qyx*sxx + qxx*qyy*sxy + qxy*qyx*syx + qxy*qyy*syy
+        eyx = qxx*qyx*sxx + qxx*qyy*syx + qxy*qyx*sxy + qxy*qyy*syy
+        return tens.__class__(exx, exy, eyx, eyy)
+        # if isinstance(tens, ArrayTensor2D):
+        #     return ArrayTensor2D(exx, exy, eyx, eyy)
+        # elif isinstance(tens, Tensor2D):
+        #     return Tensor2D(exx, exy, eyx, eyy)
+        # else:
+        #     raise TypeError('tens must be Tensor2D or ArrayTensor2D')
+
     def __repr__(self) -> str:
         return '<Transform2D>'

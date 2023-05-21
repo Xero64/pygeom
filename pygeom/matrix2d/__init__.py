@@ -9,7 +9,7 @@ from .matrixtensor2d import zero_matrix_tensor as zero_matrix_tensor
 
 if TYPE_CHECKING:
     from numpy.matlib import matrix
-    from ..geom2d.coordinate2d import Coordinate2D
+    from ..geom2d.transform2d import Transform2D
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector2D') -> 'MatrixVector2D':
     from numpy.linalg import solve
@@ -23,16 +23,16 @@ def solve_matrix_vector(a: 'matrix', b: 'MatrixVector2D') -> 'MatrixVector2D':
         c[:, i] = MatrixVector2D(newc[:, 2*i+0], newc[:, 2*i+1])
     return c
 
-def vector2d_to_global(crd: 'Coordinate2D', vec: 'MatrixVector2D') -> 'MatrixVector2D':
+def vector2d_to_global(tfm: 'Transform2D', vec: 'MatrixVector2D') -> 'MatrixVector2D':
     """Transforms a vector from this local coordinate system to global"""
-    dirx = Vector2D(crd.dirx.x, crd.diry.x)
-    diry = Vector2D(crd.dirx.y, crd.diry.y)
+    dirx = Vector2D(tfm.dirx.x, tfm.diry.x)
+    diry = Vector2D(tfm.dirx.y, tfm.diry.y)
     x = vec*dirx
     y = vec*diry
     return MatrixVector2D(x, y)
 
-def vector2d_to_local(crd: 'Coordinate2D', vec: 'MatrixVector2D') -> 'MatrixVector2D':
+def vector2d_to_local(tfm: 'Transform2D', vec: 'MatrixVector2D') -> 'MatrixVector2D':
     """Transforms a vector from global  to this local coordinate system"""
-    x = vec*crd.dirx
-    y = vec*crd.diry
+    x = vec*tfm.dirx
+    y = vec*tfm.diry
     return MatrixVector2D(x, y)
