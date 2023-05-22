@@ -371,20 +371,20 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         else:
             raise ValueError('Not all x values are unique.')
         super().__init__(x)
-        self.yc = asarray(yc)
+        self.yc = yc
         self.dya = dya
         self.dyb = dyb
 
     @property
     def ycmat(self) -> 'ndarray':
-        return self.yc.reshape(-1, 1)
+        return self.yc.reshape((-1, 1))
 
     @property
     def rmat(self) -> 'ndarray':
         if self._rmat is None:
-            dya = asarray(self.dya)
-            dyb = asarray(self.dyb)
-            self._rmat = concatenate(self.yc, dya, dyb).reshape(-1, 1)
+            dya = asarray(self.dya).reshape((1, ))
+            dyb = asarray(self.dyb).reshape((1, ))
+            self._rmat = concatenate((self.yc, dya, dyb)).reshape((-1, 1))
         return self._rmat
 
     @property
@@ -446,7 +446,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         return yv
 
     def quadratic_interpolation_array(self, xv: 'ndarray') -> 'ndarray':
-        return fromiter([self.quadratic_interpolation(xi) for xi in xv])
+        return fromiter([self.quadratic_interpolation(xi) for xi in xv], float)
 
     def quadratic_first_derivative(self, xv: float) -> float:
         found = False
@@ -471,7 +471,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
         return dyv
 
     def quadratic_first_derivative_array(self, xv: 'ndarray') -> 'ndarray':
-        return fromiter([self.quadratic_first_derivative(xi) for xi in xv])
+        return fromiter([self.quadratic_first_derivative(xi) for xi in xv], float)
 
     # def quadratic_integral(self, xv: float) -> float:
     #     found = False
@@ -493,6 +493,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
     #     if not found:
     #         raise ValueError('The x value provided is not within the x range.')
     #     return iyv
+
     # def quadratic_integral_array(self, xv: 'ndarray') -> 'ndarray':
     #     return fromiter([self.quadratic_integral(xi) for xi in xv])
 
@@ -856,7 +857,7 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         return yv
 
     def quadratic_interpolation_array(self, xv: 'ndarray') -> 'ndarray':
-        return fromiter([self.quadratic_interpolation(xi) for xi in xv])
+        return fromiter([self.quadratic_interpolation(xi) for xi in xv], float)
 
     def quadratic_first_derivative(self, xv: float) -> float:
         found = False
@@ -881,7 +882,7 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         return dyv
 
     def quadratic_first_derivative_array(self, xv: 'ndarray') -> 'ndarray':
-        return fromiter([self.quadratic_first_derivative(xi) for xi in xv])
+        return fromiter([self.quadratic_first_derivative(xi) for xi in xv], float)
 
     def quadratic_integral(self, xv: float) -> float:
         found = False
@@ -905,4 +906,4 @@ class QuadraticInterpolation(QuadraticInterpolationSolver):
         return iyv
 
     def quadratic_integral_array(self, xv: 'ndarray') -> 'ndarray':
-        return fromiter([self.quadratic_integral(xi) for xi in xv])
+        return fromiter([self.quadratic_integral(xi) for xi in xv], float)
