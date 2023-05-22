@@ -9,7 +9,7 @@ class Transform2D():
 
     def __init__(self, vecx: Vector2D) -> None:
         self.dirx = vecx.to_unit()
-        self._diry = Vector2D(-self.dirx.y, self.dirx.x)
+        self.diry = Vector2D(-self.dirx.y, self.dirx.x)
 
     def vector_to_global(self, vec: Vector2D) -> Vector2D:
         """Transforms a vector from this local coordinate system to global."""
