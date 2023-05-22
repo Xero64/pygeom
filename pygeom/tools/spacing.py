@@ -13,18 +13,18 @@ def normalise_spacing(spacing: 'ndarray') -> 'ndarray':
     return (spacing-smin)/(smax-smin)
 
 def semi_cosine_spacing(num: int) -> 'ndarray':
-    th = arange(num, -1, -1, dtype=float)*pi/2/num
+    th = arange(num, -1, -1)*pi/2/num
     spc = cos(th)
     spc[0] = 0.0
     return spc
 
 def full_cosine_spacing(num: int) -> 'ndarray':
-    th = arange(num, -1, -1, dtype=float)*pi/num
+    th = arange(num, -1, -1)*pi/num
     spc = (cos(th)+1.0)/2
     return spc
 
 def equal_spacing(num: int) -> 'ndarray':
-    spc = arange(0, num+1, 1, dtype=float)/num
+    spc = arange(0, num+1, 1)/num
     return spc
 
 def linear_bias_left(spc: 'ndarray', ratio: float) -> 'ndarray':
@@ -32,21 +32,21 @@ def linear_bias_left(spc: 'ndarray', ratio: float) -> 'ndarray':
     if ratio > 1.0:
         ratio = 1.0/ratio
     m = 1.0 - ratio
-    return asarray([s*(ratio + m*s) for s in spc], dtype=float)
+    return asarray([s*(ratio + m*s) for s in spc])
 
 def linear_bias_right(spc: 'ndarray', ratio: float) -> 'ndarray':
     ratio = abs(ratio)
     if ratio > 1.0:
         ratio = 1.0/ratio
     m = 1.0 - ratio
-    return asarray([1.0 - (1.0 - s)*(ratio + m*(1.0 - s)) for s in spc], dtype=float)
+    return asarray([1.0 - (1.0 - s)*(ratio + m*(1.0 - s)) for s in spc])
 
 def geometric_series_spacing_ratio(num: int, ratio: float) -> 'ndarray':
     if ratio == 1.0:
         raise ValueError('The input ratio must not equal 1.0.')
     ds0 = (1.0-ratio)/(1.0-ratio**num)
-    ds = asarray([ds0*ratio**i for i in range(num)], dtype=float)
-    spc = zeros(num+1, dtype=float)
+    ds = asarray([ds0*ratio**i for i in range(num)])
+    spc = zeros(num+1)
     spc[1:] = cumsum(ds)
     return spc
 
@@ -97,7 +97,7 @@ def geometric_series_spacing_ds0(num: int, ds0t: float,
             if count == 100:
                 print('Convergence failed in geometric_series_spacing_ds0.')
                 break
-    ds = asarray([ds0t*ratio**i for i in range(num)], dtype=float)
-    spc = zeros(num+1, dtype=float)
+    ds = asarray([ds0t*ratio**i for i in range(num)])
+    spc = zeros(num+1)
     spc[1:] = cumsum(ds)
     return spc

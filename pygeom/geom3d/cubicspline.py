@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
+from numpy import zeros
 from numpy.linalg import solve
-from numpy.matlib import zeros
 
 from .line import Line
 from .vector import Vector
@@ -23,6 +23,7 @@ class CubicSpline():
     _d2r: List['Vector'] = None
     _dr: List['Vector'] = None
     _r: List['Vector'] = None
+
     def __init__(self, pnts: List['Point'], clsd: 'bool'=False,
                  tanA: 'Vector'=None, tanB: 'Vector'=None):
         u"""This function initialises the object."""
@@ -30,11 +31,13 @@ class CubicSpline():
         self.clsd = clsd
         self.tanA = tanA
         self.tanB = tanB
+
     @property
     def numpnt(self) -> int:
         if self._numpnt is None:
             self._numpnt = len(self.pnts)
         return self._numpnt
+
     @property
     def pnls(self) -> List['Line']:
         if self._pnls is None:
@@ -53,11 +56,13 @@ class CubicSpline():
                 indb = indbs[i]
                 self._pnls.append(Line(self.pnts[inda], self.pnts[indb]))
         return self._pnls
+
     @property
     def numpnl(self) -> int:
         if self._numpnl is None:
             self._numpnl = len(self.pnls)
         return self._numpnl
+
     @property
     def d2r(self) -> List['Vector']:
         if self._d2r is None:
@@ -66,6 +71,7 @@ class CubicSpline():
             else:
                 self._d2r = self.calc_d2r_open(self.tanA, self.tanB)
         return self._d2r
+
     @property
     def dr(self) -> List['Vector']:
         if self._dr is None:
@@ -74,11 +80,13 @@ class CubicSpline():
             else:
                 self._dr = self.calc_dr_open()
         return self._dr
+
     @property
     def r(self) -> List['Vector']:
         if self._r is None:
             self._r = self.calc_r()
         return self._r
+
     def calc_d2r_open(self, tanA: Optional['Vector']=None,
                       tanB: Optional['Vector']=None) -> List['Vector']:
         u"""This function calculates the curvature of an open ended spline."""
@@ -157,6 +165,7 @@ class CubicSpline():
             d2z[i] -= Γ[i+1]*d2z[i+1]
         d2r = [Vector(d2x[i], d2y[i], d2z[i]) for i in range(self.numpnt)]
         return d2r
+
     def calc_d2r_closed(self) -> List['Vector']:
         u"""This function calculates the curvature of a closed spline."""
         n = self.numpnt
@@ -170,9 +179,9 @@ class CubicSpline():
         del_dy = [0.]*n
         del_dz = [0.]*n
         for i in range(n):
-            del_dx[i] = pnl_dx[indb[i]]-pnl_dx[inda[i]]
-            del_dy[i] = pnl_dy[indb[i]]-pnl_dy[inda[i]]
-            del_dz[i] = pnl_dz[indb[i]]-pnl_dz[inda[i]]
+            del_dx[i] = pnl_dx[indb[i]] - pnl_dx[inda[i]]
+            del_dy[i] = pnl_dy[indb[i]] - pnl_dy[inda[i]]
+            del_dz[i] = pnl_dz[indb[i]] - pnl_dz[inda[i]]
         A = zeros((n, n))
         B = zeros((n, 3))
         for i in range(n):
@@ -196,6 +205,7 @@ class CubicSpline():
         d2z = [X[i, 2] for i in range(n)]
         d2r = [Vector(d2x[i], d2y[i], d2z[i]) for i in range(self.numpnt)]
         return d2r
+
     def calc_dr_open(self) -> List['Vector']:
         u"""This function calculates the gradient of an open ended spline."""
         dx = []
@@ -229,6 +239,7 @@ class CubicSpline():
         dz.append(dzB)
         dr = [Vector(dx[i], dy[i], dz[i]) for i in range(self.numpnt)]
         return dr
+
     def calc_dr_closed(self) -> List['Vector']:
         u"""This function calculates the gradient of a closed spline."""
         n = self.numpnt
@@ -262,6 +273,7 @@ class CubicSpline():
             dz.append(dzA)
         dr = [Vector(dx[i], dy[i], dz[i]) for i in range(self.numpnt)]
         return dr
+
     def calc_r(self):
         u"""This function calculates the radius of curvature of the spline."""
         r = []
@@ -274,6 +286,7 @@ class CubicSpline():
             else:
                 r.append(1/k)
         return r
+
     def spline_points(self, num=5):
         u"""This function interpolates the spline with a number of points."""
         x = []
@@ -315,6 +328,7 @@ class CubicSpline():
             y.append(self.pnts[-1].y)
             z.append(self.pnts[-1].z)
         return x, y, z
+
     def spline_gradient(self, num=5):
         u"""This function interpolates the gradient of the spline."""
         dx = []
@@ -354,6 +368,7 @@ class CubicSpline():
             dy.append(self.dr[-1].y)
             dz.append(self.dr[-1].z)
         return dx, dy, dz
+
     def spline_curvature(self, num=1):
         u"""This function interpolates the curvature of the spline."""
         d2x = []
@@ -387,6 +402,7 @@ class CubicSpline():
             d2y.append(self.d2r[-1].y)
             d2z.append(self.d2r[-1].z)
         return d2x, d2y, d2z
+
     def scatter(self, ax=None, label=False):
         u"""This function plots the points of the spline."""
         if ax is None:
@@ -405,6 +421,7 @@ class CubicSpline():
             for i in range(self.numpnt):
                 ax.text(x[i], y[i], z[i], i)
         return ax
+
     def plot_spline(self, num=5, ax=None, color='blue'):
         u"""This function plots the spline using the interpolated points."""
         if ax is None:
@@ -414,6 +431,7 @@ class CubicSpline():
         x, y, z = self.spline_points(num)
         ax.plot(x, y, z, color=color)
         return ax
+
     def arc_length(self, num=1):
         u"""This function calculates the arc length of the spline."""
         s = []
@@ -426,6 +444,7 @@ class CubicSpline():
             sc += sP
         s.append(sc)
         return s
+
     def plot_gradient(self, ax=None, num=5):
         u"""This function plots the gradient of the spline."""
         if ax is None:
@@ -439,6 +458,7 @@ class CubicSpline():
         ax.plot(s, dy, color='red')
         ax.plot(s, dz, color='green')
         return ax
+
     def quiver_tangent(self, ax=None, length=1.0, color='green'):
         u"""This function quiver plots the tangent of the spline."""
         if ax is None:
@@ -453,6 +473,7 @@ class CubicSpline():
         dz = [self.dr[i].z for i in range(self.numpnt)]
         ax.quiver(x, y, z, dx, dy, dz, length=length, color=color)
         return ax
+
     def plot_curvature(self, ax=None, num=5):
         u"""This function plots the curvature of the spline."""
         if ax is None:
@@ -466,6 +487,7 @@ class CubicSpline():
         ax.plot(s, d2y, color='red')
         ax.plot(s, d2z, color='green')
         return ax
+
     def plot_inverse_radius(self, ax=None, num=5):
         u"""This function plots the inverse radius of curvature of the spline."""
         if ax is None:
@@ -484,6 +506,7 @@ class CubicSpline():
             k.append((dr**d2r).return_magnitude()/(dr.return_magnitude())**3)
         ax.plot(s, k, color='blue')
         return ax
+
     def quiver_normal(self, ax=None, length=1.0, color='red'):
         u"""This function quiver plots the normal of the spline."""
         if ax is None:
@@ -498,26 +521,6 @@ class CubicSpline():
         d2z = [self.d2r[i].z for i in range(self.numpnt)]
         ax.quiver(x, y, z, d2x, d2y, d2z, length=length, color=color)
         return ax
-    # def print_gradient(self):
-    #     u"""This function prints the gradient of the spline."""
-    #     outstr = '\nGradient\nID\tdxds\tdyds\tdzds'
-    #     print(outstr)
-    #     frmstr = '{:d}\t{:g}\t{:g}\t{:g}'
-    #     for i in range(self.numpnt):
-    #         outstr = frmstr.format(i, round(self.dr[i].x, 6),
-    #                                round(self.dr[i].y, 6),
-    #                                round(self.dr[i].z, 6))
-    #         print(outstr)
-    # def print_curvature(self):
-    #     u"""This function prints the curvature of the spline."""
-    #     outstr = '\nCurvature\nID\td2xds2\td2yds2\td2zds2\tRadius of Curvature'
-    #     print(outstr)
-    #     frmstr = '{:d}\t{:g}\t{:g}\t{:g}\t{:g}'
-    #     for i in range(self.numpnt):
-    #         outstr = frmstr.format(i, round(self.d2r[i].x, 6),
-    #                                round(self.d2r[i].y, 6),
-    #                                round(self.d2r[i].z, 6),
-    #                                round(self.r[i], 6))
-    #         print(outstr)
+
     def __repr__(self):
         return '<CubicSpline>'

@@ -210,11 +210,10 @@ class ArrayTensor2D(Tensor2D):
         yy = self.yy.copy(order=order)
         return ArrayTensor2D(xx, xy, yx, yy)
 
-def zero_arraytensor2d(shape: Tuple[int, ...],
-                       dtype=float, order='C') -> 'ArrayTensor2D':
+def zero_arraytensor2d(shape: Tuple[int, ...], **kwargs) -> 'ArrayTensor2D':
     '''Create a zero ArrayTensor2D object.'''
-    xx = zeros(shape, dtype=dtype, order=order)
-    xy = zeros(shape, dtype=dtype, order=order)
-    yx = zeros(shape, dtype=dtype, order=order)
-    yy = zeros(shape, dtype=dtype, order=order)
+    xx = zeros(shape, **kwargs)
+    xy = zeros(shape, **kwargs)
+    yx = zeros(shape, **kwargs)
+    yy = zeros(shape, **kwargs)
     return ArrayTensor2D(xx, xy, yx, yy)

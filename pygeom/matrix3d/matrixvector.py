@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Tuple, Union
 
-from numpy.matlib import zeros as zero_matrix
+from numpy.matlib import zeros
 from numpy.matlib import divide, matrix, multiply, sqrt, square
 
 from pygeom.geom3d.vector import Vector
@@ -244,8 +244,8 @@ def elementwise_cross_product(a: 'MatrixVector',
         raise ValueError('The shape of a and b need to be the same.')
 
 def zero_matrix_vector(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixVector':
-    x = zero_matrix(shape, dtype=dtype, order=order)
-    y = zero_matrix(shape, dtype=dtype, order=order)
-    z = zero_matrix(shape, dtype=dtype, order=order)
+                       **kwargs) -> 'MatrixVector':
+    x = zeros(shape, **kwargs)
+    y = zeros(shape, **kwargs)
+    z = zeros(shape, **kwargs)
     return MatrixVector(x, y, z)

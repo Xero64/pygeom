@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Optional, Tuple, List
 
 from numpy import asarray, sqrt, square, cumsum
-from numpy.matlib import zeros as zero_matrix
+from numpy import zeros
 from numpy.linalg import solve
 from matplotlib.pyplot import figure
 
@@ -172,8 +172,8 @@ class CubicSpline2D():
         for i in range(n):
             del_dx[i] = pnl_dx[indb[i]]-pnl_dx[inda[i]]
             del_dy[i] = pnl_dy[indb[i]]-pnl_dy[inda[i]]
-        A = zero_matrix((n, n), dtype=float)
-        B = zero_matrix((n, 2), dtype=float)
+        A = zeros((n, n))
+        B = zeros((n, 2))
         for i in range(n):
             sA = self.pnls[inda[i]].length
             sB = self.pnls[indb[i]].length
@@ -611,8 +611,8 @@ class CubicSpline2D():
 
     def arc_length_approximation(self, num: int) -> 'ndarray':
         x, y = self.spline_points(num)
-        x = asarray(x, dtype=float)
-        y = asarray(y, dtype=float)
+        x = asarray(x)
+        y = asarray(y)
         dx = x[1:] - x[:-1]
         dy = y[1:] - y[:-1]
         ds = sqrt(square(dx) + square(dy))
@@ -620,7 +620,7 @@ class CubicSpline2D():
         svals = [0.0]
         for i in range(self.numpnl):
             svals.append(s[(i+1)*num-1])
-        return asarray(svals, dtype=float)
+        return asarray(svals)
 
 class SplineLine2D(Line2D):
     d2ra: 'Vector2D' = None

@@ -235,11 +235,10 @@ class ArrayVector(Vector):
         for xi, yi, zi in zip(xlst, ylst, zlst):
             yield ArrayVector(xi, yi, zi).reshape(shape)
 
-def zero_arrayvector(shape: Tuple[int, ...],
-                     dtype=float, order='C') -> 'ArrayVector':
-    x = zeros(shape, dtype=dtype, order=order)
-    y = zeros(shape, dtype=dtype, order=order)
-    z = zeros(shape, dtype=dtype, order=order)
+def zero_arrayvector(shape: Tuple[int, ...], **kwargs) -> ArrayVector:
+    x = zeros(shape, **kwargs)
+    y = zeros(shape, **kwargs)
+    z = zeros(shape, **kwargs)
     return ArrayVector(x, y, z)
 
 def scalar_arrayvector(x: 'ndarray', y: 'ndarray',

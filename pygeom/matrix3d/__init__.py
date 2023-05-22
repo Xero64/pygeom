@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy.matlib import zeros as zero_matrix
+from numpy.matlib import zeros
 
 from ..geom3d.vector import Vector
 from .matrixvector import MatrixVector, zero_matrix_vector
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector') -> 'MatrixVector':
     from numpy.linalg import solve
-    newb = zero_matrix((b.shape[0], b.shape[1]*3))
+    newb = zeros((b.shape[0], b.shape[1]*3))
     for i in range(b.shape[1]):
         newb[:, 3*i+0] = b[:, i].x
         newb[:, 3*i+1] = b[:, i].y

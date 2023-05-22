@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 
 from numpy.matlib import divide, matrix, multiply
-from numpy.matlib import zeros as zero_matrix
+from numpy.matlib import zeros
 
 from pygeom.geom2d import Coordinate2D, Tensor2D
 
@@ -195,9 +195,9 @@ def tensor2d_to_local(crd: 'Coordinate2D', tens: 'MatrixTensor2D') -> 'MatrixTen
     return MatrixTensor2D(exx, exy, eyx, eyy)
 
 def zero_matrix_tensor(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixTensor2D':
-    xx = zero_matrix(shape, dtype=dtype, order=order)
-    xy = zero_matrix(shape, dtype=dtype, order=order)
-    yx = zero_matrix(shape, dtype=dtype, order=order)
-    yy = zero_matrix(shape, dtype=dtype, order=order)
+                       **kwargs) -> 'MatrixTensor2D':
+    xx = zeros(shape, **kwargs)
+    xy = zeros(shape, **kwargs)
+    yx = zeros(shape, **kwargs)
+    yy = zeros(shape, **kwargs)
     return MatrixTensor2D(xx, xy, yx, yy)

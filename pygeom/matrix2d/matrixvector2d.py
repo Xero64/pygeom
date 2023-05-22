@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, List, Tuple, Union
 
 from numpy.matlib import arctan2, divide, matrix, multiply, sqrt, square
-from numpy.matlib import zeros as zero_matrix
+from numpy.matlib import zeros
 
 from ..geom2d.vector2d import Vector2D
 
@@ -211,7 +211,7 @@ def elementwise_cross_product(a: 'MatrixVector2D',
         raise ValueError('The shape of a and b need to be the same.')
 
 def zero_matrix_vector(shape: Tuple[int, int],
-                       dtype=float, order='C') -> 'MatrixVector2D':
-    x = zero_matrix(shape, dtype=dtype, order=order)
-    y = zero_matrix(shape, dtype=dtype, order=order)
+                       **kwargs) -> 'MatrixVector2D':
+    x = zeros(shape, **kwargs)
+    y = zeros(shape, **kwargs)
     return MatrixVector2D(x, y)

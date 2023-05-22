@@ -122,7 +122,7 @@ class ArrayVector2D(Vector2D):
             y = self.y@obj
             return scalar_arrayvector2d(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be matrix multiplied by a numpy ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
             raise TypeError(err)
 
     def __rmatmul__(self, obj: 'ndarray') -> 'ArrayVector2D':
@@ -131,7 +131,7 @@ class ArrayVector2D(Vector2D):
             y = obj@self.y
             return scalar_arrayvector2d(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be matrix multiplied by a numpy ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
             raise TypeError(err)
 
     def __getitem__(self, key) -> 'Vector2DLike':
@@ -236,11 +236,10 @@ class ArrayVector2D(Vector2D):
         return super().to_complex()
 
 
-def zero_arrayvector2d(shape: Tuple[int, ...],
-                       dtype=float, order='C') -> ArrayVector2D:
+def zero_arrayvector2d(shape: Tuple[int, ...], **kwargs) -> ArrayVector2D:
     '''Return a zero ArrayVector2D object with the given shape and dtype.'''
-    x = zeros(shape, dtype=dtype, order=order)
-    y = zeros(shape, dtype=dtype, order=order)
+    x = zeros(shape, **kwargs)
+    y = zeros(shape, **kwargs)
     return ArrayVector2D(x, y)
 
 def scalar_arrayvector2d(x: 'ndarray', y: 'ndarray') -> Union[Vector2D, ArrayVector2D]:

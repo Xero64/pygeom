@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy.matlib import zeros as zero_matrix
+from numpy.matlib import zeros
 
 from ..geom2d.vector2d import Vector2D
 from .matrixvector2d import MatrixVector2D, zero_matrix_vector
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 def solve_matrix_vector(a: 'matrix', b: 'MatrixVector2D') -> 'MatrixVector2D':
     from numpy.linalg import solve
-    newb = zero_matrix((b.shape[0], b.shape[1]*2), dtype=b.dtype)
+    newb = zeros((b.shape[0], b.shape[1]*2), dtype=b.dtype)
     for i in range(b.shape[1]):
         newb[:, 2*i+0] = b[:, i].x
         newb[:, 2*i+1] = b[:, i].y
