@@ -53,7 +53,7 @@ class Tensor2D():
             err = 'Tensor2D object can only be added to Tensor2D object.'
             raise TypeError(err)
 
-    def __sub__(self, obj: Any):
+    def __sub__(self, obj: 'Tensor2D') -> 'Tensor2D':
         try:
             xx = self.xx - obj.xx
             xy = self.xy - obj.xy

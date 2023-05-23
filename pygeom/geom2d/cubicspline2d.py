@@ -142,7 +142,7 @@ class CubicSpline2D():
             b[-1] = sA/3
             rx[-1] = del_dx[-1]
             ry[-1] = del_dy[-1]
-        Γ = [0.]*self.numpnt
+        Γ = [0.0]*self.numpnt
         d2x = [0.0]*self.numpnt
         d2y = [0.0]*self.numpnt
         β = b[0]
@@ -150,7 +150,7 @@ class CubicSpline2D():
         d2y[0] = ry[0]/β
         for i in range(1, self.numpnt):
             Γ[i] = c[i-1]/β
-            β = b[i]-a[i]*Γ[i]
+            β = b[i] - a[i]*Γ[i]
             d2x[i] = (rx[i]-a[i]*d2x[i-1])/β
             d2y[i] = (ry[i]-a[i]*d2y[i-1])/β
         for i in range(self.numpnt-2, -1, -1):
@@ -254,7 +254,7 @@ class CubicSpline2D():
             dy = self.dr[i].y
             d2x = self.d2r[i].x
             d2y = self.d2r[i].y
-            k = (dx*d2y-dy*d2x)/(dx**2+dy**2)**1.5
+            k = (dx*d2y - dy*d2x)/(dx**2 + dy**2)**1.5
             if k == 0.:
                 r.append(float('inf'))
             else:
@@ -391,12 +391,12 @@ class CubicSpline2D():
                 s = e*sP
                 if isinstance(s, float):
                     if s >= 0.0 and s < sP:
-                        A = (sP-s)/sP
+                        A = (sP - s)/sP
                         B = s/sP
-                        C = sP**2/6*(A**3-A)
-                        D = sP**2/6*(B**3-B)
-                        x = A*xA+B*xB+C*d2xA+D*d2xB
-                        y = A*yA+B*yB+C*d2yA+D*d2yB
+                        C = sP**2/6*(A**3 - A)
+                        D = sP**2/6*(B**3 - B)
+                        x = A*xA + B*xB + C*d2xA + D*d2xB
+                        y = A*yA + B*yB + C*d2yA + D*d2yB
                         pnts.append(Point2D(x, y))
         return pnts
 

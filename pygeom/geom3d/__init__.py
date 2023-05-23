@@ -1,7 +1,7 @@
 from typing import Iterable, List
 
 from math import atan2
-from .vector import Vector, vector_from_points
+from .vector import Vector
 from .point import Point
 from .transform import Transform as Transform
 from .coordinate import Coordinate
@@ -18,11 +18,9 @@ def coordinate_from_points(pnta: Vector, pntb: Vector,
                            pntc: Vector) -> Coordinate:
     """Create a Coordinate from three Points"""
     pnt = pnta
-    dirx = vector_from_points(pnta, pntb).to_unit()
-    dirxy = vector_from_points(pnta, pntc).to_unit()
-    dirz = dirx**dirxy
-    diry = dirz**dirx
-    return Coordinate(pnt, dirx, diry, dirz)
+    vecx = pntb - pnta
+    vecxy = pntc - pnta
+    return Coordinate(pnt, vecx, vecxy)
 
 def plane_from_multiple_points(pnts: Iterable[Point]) -> Plane:
     """Create a Plane from multiple Points"""

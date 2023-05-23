@@ -233,12 +233,12 @@ class QuadraticCentreInterpolationSolver():
     # @property
     # def gmatle(self) -> 'ndarray':
     #     if self._gmatle is None:
-    #         self._gmatle = self.gmat[:, :-2] + self.gmat[:, -2:]*self.zmatle
+    #         self._gmatle = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatle
     #     return self._gmatle
     # @property
     # def hmatle(self) -> 'ndarray':
     #     if self._hmatle is None:
-    #         self._hmatle = self.emat*self.gmatle + self.fmat
+    #         self._hmatle = self.emat@self.gmatle + self.fmat
     #     return self._hmatle
     # @property
     # def zmatv2(self) -> 'ndarray':
@@ -254,7 +254,7 @@ class QuadraticCentreInterpolationSolver():
     # @property
     # def gmatv2(self) -> 'ndarray':
     #     if self._gmatv2 is None:
-    #         self._gmatv2 = self.gmat[:, :-2] + self.gmat[:, -2:]*self.zmatv2
+    #         self._gmatv2 = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatv2
     #     return self._gmatv2
     # @property
     # def hmatv2(self) -> 'ndarray':
@@ -275,12 +275,12 @@ class QuadraticCentreInterpolationSolver():
     # @property
     # def gmatv3(self) -> 'ndarray':
     #     if self._gmatv3 is None:
-    #         self._gmatv3 = self.gmat[:, :-2] + self.gmat[:, -2:]*self.zmatv3
+    #         self._gmatv3 = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatv3
     #     return self._gmatv3
     # @property
     # def hmatv3(self) -> 'ndarray':
     #     if self._hmatv3 is None:
-    #         self._hmatv3 = self.emat*self.gmatv3 + self.fmat
+    #         self._hmatv3 = self.emat@self.gmatv3 + self.fmat
     #     return self._hmatv3
     # def imat(self) -> 'ndarray':
     #     if self._imat is None:
@@ -309,18 +309,18 @@ class QuadraticCentreInterpolationSolver():
     # @property
     # def kmat(self) -> 'ndarray':
     #     if self._kmat is None:
-    #         self._kmat = self.jmat*self.gmat
+    #         self._kmat = self.jmat@self.gmat
     #         self._kmat[:, :-1] += self.imat
     #     return self._kmat
     # @property
     # def kmateq(self) -> 'ndarray':
     #     if self._kmateq is None:
-    #         self._kmateq = self.imat + self.jmat*self.gmateq
+    #         self._kmateq = self.imat + self.jmat@self.gmateq
     #     return self._kmateq
     # @property
     # def kmatop(self) -> 'ndarray':
     #     if self._kmatop is None:
-    #         self._kmatop = self.imat + self.jmat*self.gmatop
+    #         self._kmatop = self.imat + self.jmat@self.gmatop
     #     return self._kmatop
 
     @property
@@ -461,8 +461,8 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
                 yc = self.yc[j]
                 oos = 1/dxj
                 xos2x4 = x/dxj**2*4
-                dAdx = xos2x4-oos
-                dBdx = xos2x4+oos
+                dAdx = xos2x4 - oos
+                dBdx = xos2x4 + oos
                 dCdx = -2*xos2x4
                 dyv = dAdx*ya + dBdx*yb + dCdx*yc
                 break
@@ -676,13 +676,13 @@ class QuadraticInterpolationSolver():
     @property
     def hmateq(self) -> 'ndarray':
         if self._hmateq is None:
-            self._hmateq = self.emat + self.fmat*self.gmateq
+            self._hmateq = self.emat + self.fmat@self.gmateq
         return self._hmateq
 
     @property
     def qmateq(self) -> 'ndarray':
         if self._qmateq is None:
-            self._qmateq = self.smat + self.tmat*self.gmateq
+            self._qmateq = self.smat + self.tmat@self.gmateq
         return self._qmateq
 
     @property
