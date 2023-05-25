@@ -140,13 +140,6 @@ class Vector():
 def zero_vector() -> Vector:
     return Vector(0.0, 0.0, 0.0)
 
-def vector_from_points(pnta: Vector, pntb: Vector) -> Vector:
-    """Create a Vector from two Points"""
-    x = pntb.x - pnta.x
-    y = pntb.y - pnta.y
-    z = pntb.z - pnta.z
-    return Vector(x, y, z)
-
 def vector_isclose(a: Vector, b: Vector,
                    rtol: 'number'=1e-09, atol: 'number'=0.0) -> bool:
     """Returns True if two vectors are close enough to be considered equal"""
