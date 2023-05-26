@@ -50,6 +50,16 @@ class Vector():
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)
 
+    def rcross(self, vec: 'Vector') -> 'Vector':
+        try:
+            x = vec.y*self.z - vec.z*self.y
+            y = vec.z*self.x - vec.x*self.z
+            z = vec.x*self.y - vec.y*self.x
+            return Vector(x, y, z)
+        except AttributeError:
+            err = 'Vector cross product must be with Vector object.'
+            raise TypeError(err)
+
     def __abs__(self) -> 'number':
         return self.return_magnitude()
 

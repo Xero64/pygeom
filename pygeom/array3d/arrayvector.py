@@ -46,6 +46,13 @@ class ArrayVector(Vector):
             err = 'ArrayVector cross product must be with Vector object.'
             raise TypeError(err)
 
+    def rcross(self, vec: Vector) -> 'ArrayVector':
+        try:
+            return super().rcross(vec)
+        except AttributeError:
+            err = 'ArrayVector cross product must be with Vector object.'
+            raise TypeError(err)
+
     def rmatmul(self, mat: 'ndarray') -> 'ArrayVector':
         """Returns the right matrix multiplication of this array vector"""
         vec = self.__rmatmul__(mat)

@@ -27,14 +27,14 @@ def vector_to_global(tfm: 'Transform', vec: 'MatrixVector') -> 'MatrixVector':
     dirx = Vector(tfm.dirx.x, tfm.diry.x, tfm.dirz.x)
     diry = Vector(tfm.dirx.y, tfm.diry.y, tfm.dirz.y)
     dirz = Vector(tfm.dirx.z, tfm.diry.z, tfm.dirz.z)
-    x = vec*dirx
-    y = vec*diry
-    z = vec*dirz
+    x = vec.dot(dirx)
+    y = vec.dot(diry)
+    z = vec.dot(dirz)
     return MatrixVector(x, y, z)
 
 def vector_to_local(tfm: 'Transform', vec: 'MatrixVector') -> 'MatrixVector':
     """Transforms a vector from global to this local coordinate system"""
-    x = vec*tfm.dirx
-    y = vec*tfm.diry
-    z = vec*tfm.dirz
+    x = vec.dot(tfm.dirx)
+    y = vec.dot(tfm.diry)
+    z = vec.dot(tfm.dirz)
     return MatrixVector(x, y, z)

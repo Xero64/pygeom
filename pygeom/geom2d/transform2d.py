@@ -11,7 +11,7 @@ class Transform2D():
         self.dirx = vecx.to_unit()
         self.diry = Vector2D(-self.dirx.y, self.dirx.x)
 
-    def vector_to_global(self, vec: Vector2D) -> Vector2D:
+    def vector2d_to_global(self, vec: Vector2D) -> Vector2D:
         """Transforms a vector from this local coordinate system to global."""
         dirx = Vector2D(self.dirx.x, self.diry.x)
         diry = Vector2D(self.dirx.y, self.diry.y)
@@ -19,7 +19,7 @@ class Transform2D():
         y = vec.dot(diry)
         return vec.__class__(x, y)
 
-    def vector_to_local(self, vec: Vector2D) -> Vector2D:
+    def vector2d_to_local(self, vec: Vector2D) -> Vector2D:
         """Transforms a vector from global to this local coordinate system."""
         x = vec.dot(self.dirx)
         y = vec.dot(self.diry)
