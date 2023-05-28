@@ -41,14 +41,18 @@ class ArrayVector(Vector):
 
     def cross(self, vec: Vector) -> 'ArrayVector':
         try:
-            return super().cross(vec)
+            vec = super().cross(vec)
+            vec.__class__ = ArrayVector
+            return vec
         except AttributeError:
             err = 'ArrayVector cross product must be with Vector object.'
             raise TypeError(err)
 
     def rcross(self, vec: Vector) -> 'ArrayVector':
         try:
-            return super().rcross(vec)
+            vec = super().rcross(vec)
+            vec.__class__ = ArrayVector
+            return vec
         except AttributeError:
             err = 'ArrayVector cross product must be with Vector object.'
             raise TypeError(err)

@@ -14,19 +14,9 @@ class MatrixVector():
     y: 'matrix' = None
     z: 'matrix' = None
     def __init__(self, x: 'matrix', y: 'matrix', z: 'matrix') -> None:
-        """Initialise matrixvector object
-
-        Args:
-            x (matrix): x component of vector
-            y (matrix): y component of vector
-            z (matrix): z component of vector
-        """
-        if isinstance(x, matrix) and isinstance(y, matrix) and isinstance(z, matrix):
-            self.x = x
-            self.y = y
-            self.z = z
-        else:
-            raise TypeError('Vector arguments must all be matrix.')
+        self.x = x
+        self.y = y
+        self.z = z
     def return_magnitude(self) -> 'matrix':
         """Returns the magnitude matrix of this matrixvector"""
         return sqrt(square(self.x) + square(self.y) + square(self.z))
