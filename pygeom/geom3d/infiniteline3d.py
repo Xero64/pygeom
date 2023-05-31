@@ -6,13 +6,17 @@ from pygeom.geom3d.vector import Vector
 class InfiniteLine3D():
     pnt: Vector = None
     uvec: Vector = None
+    
     def __init__(self, pnt: Vector, uvec: Vector) -> None:
         self.pnt = pnt
         self.uvec = uvec.to_unit()
+        
     def point_along_vector(self, length: float) -> Vector:
         x = self.pnt.x + self.uvec.x*length
         y = self.pnt.y + self.uvec.y*length
-        return Vector(x, y)
+        z = self.pnt.z + self.uvec.z*length
+        return Vector(x, y, z)
+    
     def __repr__(self) -> str:
         return '<InfiniteLine3D>'
 

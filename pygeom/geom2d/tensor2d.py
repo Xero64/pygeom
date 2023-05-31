@@ -42,6 +42,20 @@ class Tensor2D():
         yy = self.yy/obj
         return Tensor2D(xx, xy, yx, yy)
 
+    def __pow__(self, obj: Any) -> 'Tensor2D':
+        xx = self.xx**obj
+        xy = self.xy**obj
+        yx = self.yx**obj
+        yy = self.yy**obj
+        return Tensor2D(xx, xy, yx, yy)
+
+    def __rpow__(self, obj: Any) -> 'Tensor2D':
+        xx = obj**self.xx
+        xy = obj**self.xy
+        yx = obj**self.yx
+        yy = obj**self.yy
+        return Tensor2D(xx, xy, yx, yy)
+
     def __add__(self, obj: 'Tensor2D') -> 'Tensor2D':
         try:
             xx = self.xx + obj.xx

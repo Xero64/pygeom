@@ -124,10 +124,10 @@ class ArrayVector(Vector):
         return '<ArrayVector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
 
     def __str__(self) -> str:
-        return '\nx:\n{:}\ny:\n{:}\ny:\n{:}'.format(self.x, self.y, self.z)
+        return '\nx:\n{:}\ny:\n{:}\nz:\n{:}'.format(self.x, self.y, self.z)
 
     def __format__(self, frm: str) -> str:
-        frmstr = '\nx:\n{:' + frm + '}\ny:\n{:' + frm + '}\ny:\n{:' + frm + '}'
+        frmstr = '\nx:\n{:' + frm + '}\ny:\n{:' + frm + '}\nz:\n{:' + frm + '}'
         return frmstr.format(self.x, self.y, self.z)
 
     def __matmul__(self, obj: 'ndarray') -> 'ArrayVector':

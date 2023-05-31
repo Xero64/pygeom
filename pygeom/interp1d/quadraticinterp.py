@@ -8,7 +8,7 @@ from ..tools.tridiag_solver import tridiag_solver
 if TYPE_CHECKING:
     from numpy import ndarray
 
-class QuadraticCentreInterpolationSolver():
+class QuadraticCentreInterpSolver():
     x: 'ndarray' = None
     _num: int = None
     _dx: 'ndarray' = None
@@ -347,7 +347,7 @@ class QuadraticCentreInterpolationSolver():
                 self._kmatc[i, i+1] += dxi/8
         return self._kmatc
 
-class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
+class QuadraticCentreInterp(QuadraticCentreInterpSolver):
     yc: 'ndarray' = None
     dya: float = None
     dya: float = None
@@ -497,7 +497,7 @@ class QuadraticCentreInterpolation(QuadraticCentreInterpolationSolver):
     # def quadratic_integral_array(self, xv: 'ndarray') -> 'ndarray':
     #     return fromiter([self.quadratic_integral(xi) for xi in xv])
 
-class QuadraticInterpolationSolver():
+class QuadraticInterpSolver():
     x: 'ndarray' = None
     _num: int = None
     _dx: 'ndarray' = None
@@ -758,7 +758,7 @@ class QuadraticInterpolationSolver():
             self._kmatop = self.imat + self.jmat@self.gmatop
         return self._kmatop
 
-class QuadraticInterpolation(QuadraticInterpolationSolver):
+class QuadraticInterp(QuadraticInterpSolver):
     y: 'ndarray' = None
     dya: float = None
     _rmat: 'ndarray' = None
