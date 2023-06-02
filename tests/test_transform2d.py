@@ -11,4 +11,4 @@ trans = Transform2D(vec)
 vecl = Vector2D(sqrt(x**2 + y**2), 0.0)
 
 def test_transform_to_local():
-    assert vector2d_isclose(trans.vector_to_local(vec), vecl)
+    assert vector2d_isclose(trans.vector2d_to_local(vec), vecl)
