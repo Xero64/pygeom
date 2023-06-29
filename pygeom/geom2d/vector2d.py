@@ -20,6 +20,9 @@ class Vector2D():
         if mag != 0.0:
             x = self.x/mag
             y = self.y/mag
+        else:
+            x = self.x
+            y = self.y
         return Vector2D(x, y)
 
     def return_magnitude(self):

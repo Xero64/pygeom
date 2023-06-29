@@ -89,11 +89,11 @@ class ArrayTensor2D(Tensor2D):
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
     def __str__(self) -> str:
-        frmstr = 'xx:\n{:}\nxy:\n{:}\nyx:\n{:}\nyy:\n{:}'
+        frmstr = 'xx:\n{:}\nxy:\n{:}\nyx:\n{:}\nyy:\n{:}\n'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
     def __format__(self, fs: str) -> str:
-        frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}'
+        frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}\n'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
     def __matmul__(self, obj: 'ndarray') -> 'ArrayTensor2D':

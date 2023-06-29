@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from .point2d import Point2D
-from . import vector2d_from_points
 
 if TYPE_CHECKING:
     from numpy import number
@@ -13,6 +12,7 @@ class Line2D():
     pntb: 'Point2D' = None
     _vec: 'Vector2D' = None
     _length: 'number' = None
+    _uvec: 'Vector2D' = None
 
     def __init__(self, pnta: 'Point2D', pntb: 'Point2D') -> None:
         self.pnta = pnta
@@ -21,7 +21,7 @@ class Line2D():
     @property
     def vec(self) -> 'Vector2D':
         if self._vec is None:
-            self._vec = vector2d_from_points(self.pnta, self.pntb)
+            self._vec = self.pntb - self.pnta
         return self._vec
 
     @property
@@ -29,6 +29,12 @@ class Line2D():
         if self._length is None:
             self._length = self.vec.return_magnitude()
         return self._length
+
+    @property
+    def uvec(self) -> 'Vector2D':
+        if self._uvec is None:
+            self._uvec = self.vec/self.length
+        return self._uvec
 
     def centre_point(self) -> 'Vector2D':
         """Returns the centre point of this line"""

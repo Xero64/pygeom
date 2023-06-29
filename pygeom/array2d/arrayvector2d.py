@@ -110,10 +110,10 @@ class ArrayVector2D(Vector2D):
         return '<ArrayVector2D: {:}, {:}>'.format(self.x, self.y)
 
     def __str__(self) -> str:
-        return '\nx:\n{:}\ny:\n{:}'.format(self.x, self.y)
+        return 'x:\n{:}\ny:\n{:}\n'.format(self.x, self.y)
 
     def __format__(self, frm: str) -> str:
-        frmstr = '\nx:\n{:' + frm + '}\ny:\n{:' + frm + '}'
+        frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\n'
         return frmstr.format(self.x, self.y)
 
     def __matmul__(self, obj: 'ndarray') -> 'ArrayVector2D':

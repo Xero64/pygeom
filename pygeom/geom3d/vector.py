@@ -23,7 +23,11 @@ class Vector():
             x = self.x/mag
             y = self.y/mag
             z = self.z/mag
-            return Vector(x, y, z)
+        else:
+            x = self.x
+            y = self.y
+            z = self.z
+        return Vector(x, y, z)
 
     def return_magnitude(self) -> 'number':
         """Returns the magnitude of this vector"""

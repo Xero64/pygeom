@@ -31,9 +31,8 @@ MANIFEST
 # py2md outputs
 *.py.md
 
-# Test scripts
-scripts/
-sympy/
+# Scripts and Notes
+symbolic/
 notes/
 
 # PyInstaller

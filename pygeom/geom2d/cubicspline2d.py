@@ -428,6 +428,7 @@ class CubicSpline2D():
         x, y = self.spline_points(num)
         ax.plot(x, y, color=color)
         return ax
+
     def arc_length(self, num=1):
         u"""This function calculates the arc length of the spline."""
         s = []
@@ -623,10 +624,12 @@ class CubicSpline2D():
         return asarray(svals)
 
 class SplineLine2D(Line2D):
+    _dra: 'Vector2D' = None
+    _drb: 'Vector2D' = None
     d2ra: 'Vector2D' = None
     d2rb: 'Vector2D' = None
 
-    def __init__(self, pnta: 'Point2D', pntb: 'Point2D'):
+    def __init__(self, pnta: 'Point2D', pntb: 'Point2D') -> None:
         super(SplineLine2D, self).__init__(pnta, pntb)
 
     @property
@@ -644,6 +647,26 @@ class SplineLine2D(Line2D):
     @property
     def yb(self) -> float:
         return self.pntb.y
+
+    @property
+    def dra(self) -> 'Vector2D':
+        if self._dra is None:
+            E = 2*self.length/6
+            F = -1*self.length/6
+            dxa = self.uvec.x + F*self.d2xb - E*self.d2xa
+            dya = self.uvec.y + F*self.d2yb - E*self.d2ya
+            self._dra = Vector2D(dxa, dya)
+        return self._dra
+
+    @property
+    def drb(self) -> 'Vector2D':
+        if self._drb is None:
+            E = -1*self.length/6
+            F = 2*self.length/6
+            dxb = self.uvec.x + F*self.d2xb - E*self.d2xa
+            dyb = self.uvec.y + F*self.d2yb - E*self.d2ya
+            self._drb = Vector2D(dxb, dyb)
+        return self._drb
 
     def set_d2r(self, d2ra: 'Vector2D', d2rb: 'Vector2D'):
         self.d2ra = d2ra
