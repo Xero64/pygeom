@@ -19,6 +19,8 @@ class ArrayVector(Vector):
         self.x = x
         self.y = y
         self.z = z
+        if isscalar(x) and isscalar(y) and isscalar(z):
+            self.__class__ = Vector
 
     def return_magnitude(self) -> 'ndarray':
         """Returns the magnitude array of this array vector"""
@@ -135,7 +137,7 @@ class ArrayVector(Vector):
             x = self.x@obj
             y = self.y@obj
             z = self.z@obj
-            return scalar_arrayvector(x, y, z)
+            return ArrayVector(x, y, z)
         except AttributeError:
             err = 'ArrayVector object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
@@ -145,7 +147,7 @@ class ArrayVector(Vector):
             x = obj@self.x
             y = obj@self.y
             z = obj@self.z
-            return scalar_arrayvector(x, y, z)
+            return ArrayVector(x, y, z)
         except AttributeError:
             err = 'ArrayVector object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
@@ -154,7 +156,7 @@ class ArrayVector(Vector):
         x = self.x[key]
         y = self.y[key]
         z = self.z[key]
-        return scalar_arrayvector(x, y, z)
+        return ArrayVector(x, y, z)
 
     def __setitem__(self, key, value: 'VectorLike') -> None:
         try:
@@ -202,11 +204,11 @@ class ArrayVector(Vector):
         z = self.z.transpose()
         return ArrayVector(x, y, z)
 
-    def sum(self, axis=None, dtype=None, out=None) -> 'VectorLike':
+    def sum(self, axis=None, dtype=None, out=None) -> 'ArrayVector':
         x = self.x.sum(axis=axis, dtype=dtype, out=out)
         y = self.y.sum(axis=axis, dtype=dtype, out=out)
         z = self.z.sum(axis=axis, dtype=dtype, out=out)
-        return scalar_arrayvector(x, y,     z)
+        return ArrayVector(x, y, z)
 
     def repeat(self, repeats, axis=None) -> 'ArrayVector':
         x = self.x.repeat(repeats, axis=axis)
@@ -251,11 +253,3 @@ def zero_arrayvector(shape: Tuple[int, ...], **kwargs) -> ArrayVector:
     y = zeros(shape, **kwargs)
     z = zeros(shape, **kwargs)
     return ArrayVector(x, y, z)
-
-def scalar_arrayvector(x: 'ndarray', y: 'ndarray',
-                       z: 'ndarray') -> Union[Vector, ArrayVector]:
-    '''Return a scalar ArrayVector object with the given x, y and z.'''
-    if isscalar(x) and isscalar(y) and isscalar(z):
-        return Vector(x, y, z)
-    else:
-        return ArrayVector(x, y, z)

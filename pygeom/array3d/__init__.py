@@ -4,7 +4,6 @@ from numpy import allclose, hsplit, hstack, number
 from numpy.linalg import solve
 
 from .arrayvector import ArrayVector as ArrayVector
-from .arrayvector import scalar_arrayvector as scalar_arrayvector
 from .arrayvector import zero_arrayvector as zero_arrayvector
 
 if TYPE_CHECKING:
@@ -28,4 +27,4 @@ def matmul_arrayvector(a: 'ndarray', b: 'ArrayVector') -> 'ArrayVector':
     x = a @ b.x
     y = a @ b.y
     z = a @ b.z
-    return scalar_arrayvector(x, y, z)
+    return ArrayVector(x, y, z)

@@ -5,7 +5,6 @@ from numpy.linalg import solve
 
 from .arrayvector2d import ArrayVector2D as ArrayVector2D
 from .arrayvector2d import zero_arrayvector2d as zero_arrayvector2d
-from .arrayvector2d import scalar_arrayvector2d as scalar_arrayvector2d
 from .arraytensor2d import ArrayTensor2D as ArrayTensor2D
 from .arraytensor2d import zero_arraytensor2d as zero_arraytensor2d
 
@@ -28,4 +27,4 @@ def matmul_arrayvector2d(a: 'ndarray', b: 'ArrayVector2D') -> 'ArrayVector2D':
     """Returns the matrix multiplication of a and b."""
     x = a @ b.x
     y = a @ b.y
-    return scalar_arrayvector2d(x, y)
+    return ArrayVector2D(x, y)

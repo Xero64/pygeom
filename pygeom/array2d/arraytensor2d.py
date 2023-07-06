@@ -22,6 +22,8 @@ class ArrayTensor2D(Tensor2D):
         self.xy = xy
         self.yx = yx
         self.yy = yy
+        if isscalar(xx) and isscalar(xy) and isscalar(yx) and isscalar(yy):
+            self.__class__ = Tensor2D
 
     def to_xy(self) -> Tuple['ndarray', 'ndarray', 'ndarray', 'ndarray']:
         """Returns the xx, xy, yx and yy values of this ndarray tensor"""
@@ -118,15 +120,12 @@ class ArrayTensor2D(Tensor2D):
             err = 'ArrayTensor2D object can only be multiplied by a numpy ndarray.'
             raise TypeError(err)
 
-    def __getitem__(self, key) -> 'Tensor2DLike':
+    def __getitem__(self, key) -> 'ArrayTensor2D':
         xx = self.xx[key]
         xy = self.xy[key]
         yx = self.yx[key]
         yy = self.yy[key]
-        if isscalar(xx) and isscalar(xy) and isscalar(yx) and isscalar(yy):
-            return Tensor2D(xx, xy, yx, yy)
-        else:
-            return ArrayTensor2D(xx, xy, yx, yy)
+        return ArrayTensor2D(xx, xy, yx, yy)
 
     def __setitem__(self, key, value: 'Tensor2DLike') -> None:
         try:
@@ -165,16 +164,12 @@ class ArrayTensor2D(Tensor2D):
         yy = self.yy.transpose()
         return ArrayTensor2D(xx, xy, yx, yy)
 
-    def sum(self, axis=None, dtype=None, out=None) -> Union['Tensor2D',
-                                                            'ArrayTensor2D']:
+    def sum(self, axis=None, dtype=None, out=None) -> 'ArrayTensor2D':
         xx = self.xx.sum(axis=axis, dtype=dtype, out=out)
         xy = self.xy.sum(axis=axis, dtype=dtype, out=out)
         yx = self.yx.sum(axis=axis, dtype=dtype, out=out)
         yy = self.yy.sum(axis=axis, dtype=dtype, out=out)
-        if isscalar(xx) and isscalar(xy) and isscalar(yx) and isscalar(yy):
-            return Tensor2D(xx, xy, yx, yy)
-        else:
-            return ArrayTensor2D(xx, xy, yx, yy)
+        return ArrayTensor2D(xx, xy, yx, yy)
 
     def repeat(self, repeats, axis=None) -> 'ArrayTensor2D':
         xx = self.xx.repeat(repeats, axis=axis)

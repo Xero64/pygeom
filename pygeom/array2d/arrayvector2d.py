@@ -17,6 +17,8 @@ class ArrayVector2D(Vector2D):
     def __init__(self, x: 'ndarray', y: 'ndarray') -> None:
         self.x = x
         self.y = y
+        if isscalar(x) and isscalar(y):
+            self.__class__ = Vector2D
 
     def return_magnitude(self) -> 'ndarray':
         """Returns the magnitude array of this array vector"""
@@ -120,7 +122,7 @@ class ArrayVector2D(Vector2D):
         try:
             x = self.x@obj
             y = self.y@obj
-            return scalar_arrayvector2d(x, y)
+            return ArrayVector2D(x, y)
         except AttributeError:
             err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
             raise TypeError(err)
@@ -129,15 +131,15 @@ class ArrayVector2D(Vector2D):
         try:
             x = obj@self.x
             y = obj@self.y
-            return scalar_arrayvector2d(x, y)
+            return ArrayVector2D(x, y)
         except AttributeError:
             err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
             raise TypeError(err)
 
-    def __getitem__(self, key) -> 'Vector2DLike':
+    def __getitem__(self, key) -> 'ArrayVector2D':
         x = self.x[key]
         y = self.y[key]
-        return scalar_arrayvector2d(x, y)
+        return ArrayVector2D(x, y)
 
     def __setitem__(self, key, value: 'Vector2DLike') -> None:
         try:
@@ -183,10 +185,10 @@ class ArrayVector2D(Vector2D):
         y = self.y.transpose()
         return ArrayVector2D(x, y)
 
-    def sum(self, axis=None, dtype=None, out=None) -> 'Vector2D':
+    def sum(self, axis=None, dtype=None, out=None) -> 'ArrayVector2D':
         x = self.x.sum(axis=axis, dtype=dtype, out=out)
         y = self.y.sum(axis=axis, dtype=dtype, out=out)
-        return scalar_arrayvector2d(x, y)
+        return ArrayVector2D(x, y)
 
     def repeat(self, repeats, axis=None) -> 'ArrayVector2D':
         x = self.x.repeat(repeats, axis=axis)
@@ -241,10 +243,3 @@ def zero_arrayvector2d(shape: Tuple[int, ...], **kwargs) -> ArrayVector2D:
     x = zeros(shape, **kwargs)
     y = zeros(shape, **kwargs)
     return ArrayVector2D(x, y)
-
-def scalar_arrayvector2d(x: 'ndarray', y: 'ndarray') -> Union[Vector2D, ArrayVector2D]:
-    '''Return a scalar ArrayVector2D object with the given x and y.'''
-    if isscalar(x) and isscalar(y):
-        return Vector2D(x, y)
-    else:
-        return ArrayVector2D(x, y)
