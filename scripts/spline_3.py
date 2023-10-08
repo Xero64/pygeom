@@ -1,17 +1,17 @@
 #%%
 # Import Dependencies
 from pygeom.geom2d.point2d import Point2D
-from pygeom.geom2d.cubicspline2d import CubicSpline2D
+from pygeom.geom2d.spline2d import Spline2D
 
 #%%
 # Create Spline and Plot
 
-pnts = [Point2D(1., 0.),
-        Point2D(-1., 0.),
-        Point2D(0., 1.),
-        Point2D(0., -1.)]
+pnts = [Point2D(1.0, 0.0),
+        Point2D(-1.0, 0.0),
+        Point2D(0.0, 1.0),
+        Point2D(0.0, -1.0)]
 
-spline = CubicSpline2D(pnts, clsd=True)
+spline = Spline2D(pnts, closed=True)
 
 axs = spline.plot_spline(num=100)
 axs.set_aspect('equal')

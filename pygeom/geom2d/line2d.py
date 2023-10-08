@@ -31,10 +31,10 @@ class Line2D():
         return self._length
 
     @property
-    def uvec(self) -> 'Vector2D':
-        if self._uvec is None:
-            self._uvec = self.vec/self.length
-        return self._uvec
+    def direc(self) -> 'Vector2D':
+        if self._direc is None:
+            self._direc = self.vec/self.length
+        return self._direc
 
     def centre_point(self) -> 'Vector2D':
         """Returns the centre point of this line"""
@@ -42,8 +42,7 @@ class Line2D():
 
     def ratio_point(self, ratio: 'number') -> 'Vector2D':
         """Returns a point a certain ratio along the line"""
-        vec = self.pntb - self.pnta
-        return self.pnta + ratio*vec
+        return self.pnta + ratio*self.vec
 
     def __repr__(self) -> str:
         return '<Line2D>'

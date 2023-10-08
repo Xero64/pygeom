@@ -1,17 +1,17 @@
-from typing import TYPE_CHECKING, Optional, Tuple, List
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from numpy import asarray, sqrt, square, cumsum
-from numpy import zeros
-from numpy.linalg import solve
 from matplotlib.pyplot import figure
+from numpy import asarray, cumsum, sqrt, square, zeros
+from numpy.linalg import solve
 
+from ..tools import cubic_roots
 from .line2d import Line2D
 from .point2d import Point2D
 from .vector2d import Vector2D
-from ..tools import cubic_roots
 
 if TYPE_CHECKING:
     from numpy import ndarray
+
     from .infiniteline2d import InfiniteLine2D
 
 class CubicSpline2D():
@@ -418,7 +418,7 @@ class CubicSpline2D():
                 ax.text(x[i], y[i], i)
         return ax
 
-    def plot_spline(self, num=1, ax=None, color='blue'):
+    def plot_spline(self, num=1, ax=None):
         u"""This function plots the spline using the interpolated points."""
         if ax is None:
             fig = figure()
@@ -426,7 +426,7 @@ class CubicSpline2D():
             ax.set_aspect('equal')
             ax.grid(True)
         x, y = self.spline_points(num)
-        ax.plot(x, y, color=color)
+        ax.plot(x, y)
         return ax
 
     def arc_length(self, num=1):
@@ -550,11 +550,11 @@ class CubicSpline2D():
             ax.set_title('Gradient')
         s = self.arc_length(num=num)
         dx, dy = self.spline_gradient(num=num)
-        ax.plot(s, dx, color='blue')
-        ax.plot(s, dy, color='red')
+        ax.plot(s, dx)
+        ax.plot(s, dy)
         return ax
 
-    def quiver_tangent(self, ax=None, color='green'):
+    def quiver_tangent(self, ax=None):
         u"""This function quiver plots the tangent of the spline."""
         if ax is None:
             fig = figure()
@@ -565,7 +565,7 @@ class CubicSpline2D():
         y = [self.pnts[i].y for i in range(self.numpnt)]
         dx = [self.dr[i].x for i in range(self.numpnt)]
         dy = [self.dr[i].y for i in range(self.numpnt)]
-        ax.quiver(x, y, dx, dy, color=color)
+        ax.quiver(x, y, dx, dy)
         return ax
 
     def plot_curvature(self, ax=None, num=1):
@@ -577,8 +577,8 @@ class CubicSpline2D():
             ax.set_title('Curvature')
         s = self.arc_length(num=num)
         d2x, d2y = self.spline_curvature(num=num)
-        ax.plot(s, d2x, color='blue')
-        ax.plot(s, d2y, color='red')
+        ax.plot(s, d2x)
+        ax.plot(s, d2y)
         return ax
 
     def plot_inverse_radius(self, ax=None, num=5):
@@ -593,10 +593,10 @@ class CubicSpline2D():
         dx, dy = self.spline_gradient(num=num)
         nums = len(s)
         k = [(dx[i]*d2y[i]-dy[i]*d2x[i])/(dx[i]**2+dy[i]**2)**1.5 for i in range(nums)]
-        ax.plot(s, k, color='blue')
+        ax.plot(s, k)
         return ax
 
-    def quiver_normal(self, ax=None, color='red'):
+    def quiver_normal(self, ax=None):
         u"""This function quiver plots the normal of the spline."""
         if ax is None:
             fig = figure()
@@ -607,7 +607,7 @@ class CubicSpline2D():
         y = [self.pnts[i].y for i in range(self.numpnt)]
         dx = [-self.dr[i].y for i in range(self.numpnt)]
         dy = [self.dr[i].x for i in range(self.numpnt)]
-        ax.quiver(x, y, dx, dy, color=color)
+        ax.quiver(x, y, dx, dy)
         return ax
 
     def arc_length_approximation(self, num: int) -> 'ndarray':

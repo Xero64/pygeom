@@ -3,7 +3,7 @@
 from math import pi, cos, sin
 from pygeom.geom2d.vector2d import Vector2D
 from pygeom.geom2d import point2d_from_lists
-from pygeom.geom2d.cubicspline2d import CubicSpline2D
+from pygeom.geom2d.spline2d import Spline2D
 
 #%%
 # Create Spline 1
@@ -15,7 +15,7 @@ y = [R*sin(thi) for thi in th]
 
 pnts = point2d_from_lists(x, y)
 
-TestSpline = CubicSpline2D(pnts)
+TestSpline = Spline2D(pnts)
 ax = TestSpline.scatter(label=True)
 ax = TestSpline.plot_spline(50, ax=ax)
 
@@ -26,7 +26,7 @@ tanA = Vector2D(cos(thA), sin(thA))
 thB = pi/2-2*pi/num
 tanB = Vector2D(cos(thB), sin(thB))
 
-TestSpline2 = CubicSpline2D(pnts, tanA=tanA, tanB=tanB)
+TestSpline2 = Spline2D(pnts, tanA=tanA, tanB=tanB)
 ax = TestSpline2.plot_spline(50, ax=ax, color='green')
 
 ax1 = TestSpline2.plot_gradient()
@@ -34,7 +34,7 @@ ax2 = TestSpline2.plot_curvature()
 
 #%%
 # Create Spline 3
-TestSpline3 = CubicSpline2D(pnts, clsd=True)
+TestSpline3 = Spline2D(pnts, closed=True)
 ax = TestSpline3.plot_spline(50, ax=ax, color='red')
 
 ax3 = TestSpline3.plot_gradient()

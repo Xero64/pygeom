@@ -7,7 +7,7 @@ from pygeom.geom3d.spline import Spline
 
 #%%
 # Create Spline 1
-num = 36
+num = 4
 R = 2.0
 th = [i/num*2*pi for i in range(num)]
 x = [0.0 for _ in th]
@@ -30,9 +30,9 @@ ax4 = TestSpline4.plot_spline(50, ax=ax4)
 #%%
 # Create Spline 2
 thA = pi/2
-tanA = Vector(0.0, cos(thA), sin(thA))
+tanA = Vector(0.0, cos(thA), sin(thA))*10.0
 thB = pi/2 - 2*pi/num
-tanB = Vector(0.0, cos(thB), sin(thB))
+tanB = Vector(0.0, cos(thB), sin(thB))*0.5
 
 TestSpline2 = CubicSpline(pnts, tanA=tanA, tanB=tanB)
 
@@ -74,7 +74,7 @@ ax6 = TestSpline6.plot_spline(50)
 
 ax6 = TestSpline6.plot_gradient()
 ax6 = TestSpline6.plot_curvature()
-ax6 = TestSpline6.plot_inverse_radius()
+ax6 = TestSpline6.plot_inverse_radius(50)
 ax6.set_ylim(0.0, 1.0)
 
 ax6 = TestSpline6.scatter(label=True)

@@ -1,7 +1,7 @@
 #%%
 # Import Dependencies
 from pygeom.geom2d import point2d_from_lists
-from pygeom.geom2d.cubicspline2d import CubicSpline2D
+from pygeom.geom2d.spline2d import Spline2D
 
 #%%
 # Create Spline
@@ -24,7 +24,7 @@ y = [4.6358e-06, -161.931, -267.902, -330.945, -366.744, -385.095,
 
 pnts = point2d_from_lists(x, y)
 
-spline = CubicSpline2D(pnts)
+spline = Spline2D(pnts)
 ax = spline.scatter(label=True)
 ax = spline.plot_spline(50, ax=ax)
 
