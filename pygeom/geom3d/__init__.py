@@ -1,6 +1,6 @@
 from typing import Iterable, List
 
-from math import atan2
+from numpy import arctan2
 from .vector import Vector
 from .point import Point
 from .transform import Transform as Transform
@@ -74,7 +74,7 @@ def solid_angle_tetrahedron(va: Vector, vb: Vector, vc: Vector) -> float:
     num = va.dot(vb.cross(vc))
     den = a*b*c + a*vb.dot(vc) + b*va.dot(vc) + c*va.dot(vb)
 
-    return 2*atan2(num, den)
+    return 2*arctan2(num, den)
 
 #%%
 # Solid Angle of Trapezoidal Pyramid
