@@ -9,6 +9,7 @@ from .cubicspline import CubicSpline as CubicSpline
 from .line import Line as Line
 from .infiniteline3d import InfiniteLine3D as InfiniteLine3D
 from .plane import Plane
+from .spline import Spline as Spline
 
 IHAT = Vector(1.0, 0.0, 0.0)
 JHAT = Vector(0.0, 1.0, 0.0)

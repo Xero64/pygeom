@@ -353,6 +353,9 @@ class SplinePanel():
         k = dr.cross(d2r)/mdr3
         return k
 
+    def ratio_s(self, s: float) -> float:
+        return (s - self.sa)/(self.sb - self.sa)
+
 class Spline():
     u"""This class stores a 3D parametric spline."""
     pnts: List[SplinePoint] = None
@@ -367,6 +370,7 @@ class Spline():
     _r: ArrayVector = None
     _s: 'ndarray' = None
     _k: ArrayVector = None
+    _length: float = None
 
     def __init__(self, pnts: List[Vector], closed: bool=False,
                  tanA: Vector=None, tanB: Vector=None) -> None:
@@ -480,6 +484,12 @@ class Spline():
                 indb = pnl.ind[1]
                 self._k[indb] = pnl.kb
         return self._k
+
+    @property
+    def length(self) -> float:
+        if self._length is None:
+            self._length = self.s[-1]
+        return self._length
 
     def spline_length(self, num: int=5) -> 'ndarray':
         u"""This function interpolates the spline length with a 'number' of points per piece."""
@@ -669,6 +679,21 @@ class Spline():
         d2x, d2y, d2z = self.d2r.x, self.d2r.y, self.d2r.z
         ax.quiver(x, y, z, d2x, d2y, d2z, **kwargs)
         return ax
+
+    def spline_points_ratio(self, ratio: 'ndarray') -> ArrayVector:
+        s = ratio*self.length
+        num = s.size
+        pnts = zero_arrayvector(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    pnts[j] = pnl.ratio_point_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return pnts
 
     def __repr__(self) -> str:
         return '<Spline>'
