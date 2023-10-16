@@ -14,6 +14,7 @@ class SplinePoint(Vector):
     pnla: 'SplinePanel' = None
     pnlb: 'SplinePanel' = None
     tan: Vector = None
+    nrm: Vector = None
     _endpnta: bool = None
     _endpntb: bool = None
     _c1: bool = None
@@ -84,23 +85,33 @@ class SplinePoint(Vector):
         rhs = []
 
         if self.endpnta:
-            if self.c2b0 or self.tan is None:
+            if self.c2b0 or (self.tan is None and self.nrm is None):
                 ind.append(self.pnlb.ind)
                 lhs.append(self.pnlb.lhs_d2ra)
                 rhs.append(Vector(0.0, 0.0, 0.0))
             else:
-                ind.append(self.pnlb.ind)
-                lhs.append(self.pnlb.lhs_dra)
-                rhs.append(self.tan - self.pnlb.rhs_dr)
+                if self.tan is not None:
+                    ind.append(self.pnlb.ind)
+                    lhs.append(self.pnlb.lhs_dra)
+                    rhs.append(self.tan - self.pnlb.rhs_dr)
+                elif self.nrm is not None:
+                    ind.append(self.pnlb.ind)
+                    lhs.append(self.pnlb.lhs_d2ra)
+                    rhs.append(self.nrm)
         elif self.endpntb:
-            if self.c2b0 or self.tan is None:
+            if self.c2b0 or (self.tan is None and self.nrm is None):
                 ind.append(self.pnla.ind)
                 lhs.append(self.pnla.lhs_d2rb)
                 rhs.append(Vector(0.0, 0.0, 0.0))
             else:
-                ind.append(self.pnla.ind)
-                lhs.append(self.pnla.lhs_drb)
-                rhs.append(self.tan - self.pnla.rhs_dr)
+                if self.tan is not None:
+                    ind.append(self.pnla.ind)
+                    lhs.append(self.pnla.lhs_drb)
+                    rhs.append(self.tan - self.pnla.rhs_dr)
+                elif self.nrm is not None:
+                    ind.append(self.pnla.ind)
+                    lhs.append(self.pnla.lhs_d2rb)
+                    rhs.append(self.nrm)
         else:
             if self.c1:
                 ind.append(concatenate((self.pnla.ind, self.pnlb.ind)))
@@ -362,6 +373,8 @@ class Spline():
     closed: bool = False
     tanA: Optional[Vector] = None
     tanB: Optional[Vector] = None
+    nrmA: Optional[Vector] = None
+    nrmB: Optional[Vector] = None
     _numpnt: int = None
     _pnls: List[SplinePanel] = None
     _numpnl: int = None
@@ -373,7 +386,8 @@ class Spline():
     _length: float = None
 
     def __init__(self, pnts: List[Vector], closed: bool=False,
-                 tanA: Vector=None, tanB: Vector=None) -> None:
+                 tanA: Vector=None, tanB: Vector=None,
+                 nrmA: Vector=None, nrmB: Vector=None) -> None:
         if closed and pnts[0] == pnts[-1]:
             pnts = pnts[:-1]
         self.pnts = [SplinePoint(pnt.x, pnt.y, pnt.z) for pnt in pnts]
@@ -383,6 +397,10 @@ class Spline():
             self.pnts[0].tan = tanA
             self.tanB = tanB
             self.pnts[-1].tan = tanB
+            self.nrmA = nrmA
+            self.pnts[0].nrm = nrmA
+            self.nrmB = nrmB
+            self.pnts[-1].nrm = nrmB
 
     def reset(self) -> None:
         for attr in self.__dict__:
