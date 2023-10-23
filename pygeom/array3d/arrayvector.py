@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
-from numpy import isscalar, zeros, where, split
+from numpy import isscalar, zeros, where, split, stack
 
 from ..geom3d.vector import Vector
 
@@ -68,6 +68,9 @@ class ArrayVector(Vector):
     def to_xyz(self) -> Tuple['ndarray', 'ndarray', 'ndarray']:
         """Returns the x, y and z values of this ndarray vector"""
         return super().to_xyz()
+
+    def stack_xyz(self) -> 'ndarray':
+        return stack((self.x, self.y, self.z), axis=-1)
 
     def __mul__(self, obj: Any) -> 'ArrayVector':
         vec = super().__mul__(obj)

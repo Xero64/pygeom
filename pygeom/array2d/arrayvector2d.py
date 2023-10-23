@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
-from numpy import isscalar, split, where, zeros
+from numpy import isscalar, split, where, zeros, stack
 
 from ..geom2d.vector2d import Vector2D
 
@@ -54,6 +54,9 @@ class ArrayVector2D(Vector2D):
     def to_xy(self) -> Tuple['ndarray', 'ndarray']:
         """Returns the x and y values of this array vector"""
         return super().to_xy()
+
+    def stack_xy(self) -> 'ndarray':
+        return stack((self.x, self.y), axis=-1)
 
     def __mul__(self, obj: Any) -> 'ArrayVector2D':
         vec = super().__mul__(obj)
