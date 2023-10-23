@@ -713,5 +713,50 @@ class Spline():
                     break
         return pnts
 
+    def spline_gradient_ratio(self, ratio: 'ndarray') -> ArrayVector:
+        s = ratio*self.length
+        num = s.size
+        grds = zero_arrayvector(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    grds[j] = pnl.ratio_gradient_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return grds
+
+    def spline_curvature_ratio(self, ratio: 'ndarray') -> ArrayVector:
+        s = ratio*self.length
+        num = s.size
+        crvs = zero_arrayvector(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    crvs[j] = pnl.ratio_curvature_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return crvs
+
+    def spline_inverse_radius_ratio(self, ratio: 'ndarray') -> ArrayVector:
+        s = ratio*self.length
+        num = s.size
+        ks = zero_arrayvector(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    ks[j] = pnl.ratio_inverse_radius_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return ks
+
     def __repr__(self) -> str:
         return '<Spline>'
