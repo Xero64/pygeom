@@ -162,6 +162,9 @@ class SplinePoint(Vector):
             self.get_ind_lhs_rhs()
         return self._ind
 
+    def __repr__(self) -> str:
+        return '<SplinePoint>'
+
 class SplinePanel():
     pnta: SplinePoint = None
     pntb: SplinePoint = None
@@ -174,6 +177,7 @@ class SplinePanel():
     _lhs_d2rb: 'ndarray' = None
     ind: 'ndarray' = None
     spline: 'Spline' = None
+    _straight: bool = False
     _sa: float = None
     _sb: float = None
     _d2ra: Vector = None
@@ -190,6 +194,7 @@ class SplinePanel():
         self.pntb.pnla = self
 
     def set_straight_edge(self) -> None:
+        self._straight = True
         self.pnta.c2b0 = True
         self.pntb.c2a0 = True
         self.pnta._c2 = False
@@ -199,6 +204,12 @@ class SplinePanel():
         for attr in self.__dict__:
             if attr[0] == '_':
                 setattr(self, attr, None)
+
+    @property
+    def straight(self) -> bool:
+        if self._straight is None:
+            self._straight = False
+        return self._straight
 
     @property
     def vector(self) -> Vector:
@@ -366,6 +377,9 @@ class SplinePanel():
 
     def ratio_s(self, s: float) -> float:
         return (s - self.sa)/(self.sb - self.sa)
+
+    def __repr__(self) -> str:
+        return '<SplinePanel>'
 
 class Spline():
     u"""This class stores a 3D parametric spline."""
@@ -757,6 +771,42 @@ class Spline():
                     k = j
                     break
         return ks
+
+    def split_at_index(self, index: int) -> Tuple['Spline', 'Spline']:
+        u"""This function splits the spline at the given index."""
+        if index < 0 or index >= self.numpnt:
+            raise ValueError('Index out of range.')
+        pnta = self.pnts[0]
+        pntb = self.pnts[index]
+        if self.closed:
+            pntc = pnta
+        else:
+            pntc = self.pnts[-1]
+        pnts1 = self.pnts[:index+1]
+        pnls1 = self.pnls[:index]
+        tgt1a = pnta.pnlb.dra
+        tgt1b = pntb.pnla.drb
+        pnts2 = self.pnts[index:]
+        pnls2 = self.pnls[index:]
+        tgt2a = pntb.pnlb.dra
+        tgt2b = pntc.pnla.drb
+        spline1 = Spline([Vector(pnt1.x, pnt1.y, pnt1.z) for pnt1 in pnts1],
+                         tanA=tgt1a, tanB=tgt1b)
+        for i, pnt in enumerate(pnts1):
+            spline1.pnts[i].c2a0 = pnt.c2a0
+            spline1.pnts[i].c2b0 = pnt.c2b0
+        # for i, pnl in enumerate(pnls1):
+        #     if pnl.straight:
+        #         spline1.pnls[i].set_straight_edge()
+        spline2 = Spline([Vector(pnt2.x, pnt2.y, pnt2.z) for pnt2 in pnts2],
+                         tanA=tgt2a, tanB=tgt2b)
+        for i, pnt in enumerate(pnts2):
+            spline2.pnts[i].c2a0 = pnt.c2a0
+            spline2.pnts[i].c2b0 = pnt.c2b0
+        # for i, pnl in enumerate(pnls2):
+        #     if pnl.straight:
+        #         spline2.pnls[i].set_straight_edge()
+        return spline1, spline2
 
     def __repr__(self) -> str:
         return '<Spline>'

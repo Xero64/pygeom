@@ -14,6 +14,7 @@ class SplinePoint2D(Vector2D):
     pnla: 'SplinePanel2D' = None
     pnlb: 'SplinePanel2D' = None
     tan: Vector2D = None
+    nrm: Vector2D = None
     _endpnta: bool = None
     _endpntb: bool = None
     _c1: bool = None
@@ -84,23 +85,33 @@ class SplinePoint2D(Vector2D):
         rhs = []
 
         if self.endpnta:
-            if self.c2b0 or self.tan is None:
+            if self.c2b0 or (self.tan is None and self.nrm is None):
                 ind.append(self.pnlb.ind)
                 lhs.append(self.pnlb.lhs_d2ra)
                 rhs.append(Vector2D(0.0, 0.0))
             else:
-                ind.append(self.pnlb.ind)
-                lhs.append(self.pnlb.lhs_dra)
-                rhs.append(self.tan - self.pnlb.rhs_dr)
+                if self.tan is not None:
+                    ind.append(self.pnlb.ind)
+                    lhs.append(self.pnlb.lhs_dra)
+                    rhs.append(self.tan - self.pnlb.rhs_dr)
+                elif self.nrm is not None:
+                    ind.append(self.pnlb.ind)
+                    lhs.append(self.pnlb.lhs_d2ra)
+                    rhs.append(self.nrm)
         elif self.endpntb:
-            if self.c2b0 or self.tan is None:
+            if self.c2b0 or (self.tan is None and self.nrm is None):
                 ind.append(self.pnla.ind)
                 lhs.append(self.pnla.lhs_d2rb)
                 rhs.append(Vector2D(0.0, 0.0))
             else:
-                ind.append(self.pnla.ind)
-                lhs.append(self.pnla.lhs_drb)
-                rhs.append(self.tan - self.pnla.rhs_dr)
+                if self.tan is not None:
+                    ind.append(self.pnla.ind)
+                    lhs.append(self.pnla.lhs_drb)
+                    rhs.append(self.tan - self.pnla.rhs_dr)
+                elif self.nrm is not None:
+                    ind.append(self.pnla.ind)
+                    lhs.append(self.pnla.lhs_d2rb)
+                    rhs.append(self.nrm)
         else:
             if self.c1:
                 ind.append(concatenate((self.pnla.ind, self.pnlb.ind)))
@@ -151,6 +162,9 @@ class SplinePoint2D(Vector2D):
             self.get_ind_lhs_rhs()
         return self._ind
 
+    def __repr__(self) -> str:
+        return '<SplinePoint2D>'
+
 class SplinePanel2D():
     pnta: SplinePoint2D = None
     pntb: SplinePoint2D = None
@@ -163,6 +177,7 @@ class SplinePanel2D():
     _lhs_d2rb: 'ndarray' = None
     ind: 'ndarray' = None
     spline: 'Spline2D' = None
+    _straight: bool = False
     _sa: float = None
     _sb: float = None
     _d2ra: Vector2D = None
@@ -179,6 +194,7 @@ class SplinePanel2D():
         self.pntb.pnla = self
 
     def set_straight_edge(self) -> None:
+        self._straight = True
         self.pnta.c2b0 = True
         self.pntb.c2a0 = True
         self.pnta._c2 = False
@@ -188,6 +204,12 @@ class SplinePanel2D():
         for attr in self.__dict__:
             if attr[0] == '_':
                 setattr(self, attr, None)
+
+    @property
+    def straight(self) -> bool:
+        if self._straight is None:
+            self._straight = False
+        return self._straight
 
     @property
     def vector(self) -> Vector2D:
@@ -298,14 +320,14 @@ class SplinePanel2D():
         return self._sb
 
     @property
-    def ka(self) -> Vector2D:
+    def ka(self) -> 'number':
         if self._ka is None:
             mdra3 = self.dra.return_magnitude()**3
             self._ka = self.dra.cross(self.d2ra)/mdra3
         return self._ka
 
     @property
-    def kb(self) -> Vector2D:
+    def kb(self) -> 'number':
         if self._kb is None:
             mdrb3 = self.drb.return_magnitude()**3
             self._kb = self.drb.cross(self.d2rb)/mdrb3
@@ -348,12 +370,20 @@ class SplinePanel2D():
         k = dr.cross(d2r)/mdr3
         return k
 
+    def ratio_s(self, s: float) -> float:
+        return (s - self.sa)/(self.sb - self.sa)
+
+    def __repr__(self) -> str:
+        return '<SplinePanel2D>'
+
 class Spline2D():
     u"""This class stores a 3D parametric spline."""
     pnts: List[SplinePoint2D] = None
     closed: bool = False
     tanA: Optional[Vector2D] = None
     tanB: Optional[Vector2D] = None
+    nrmA: Optional[Vector2D] = None
+    nrmB: Optional[Vector2D] = None
     _numpnt: int = None
     _pnls: List[SplinePanel2D] = None
     _numpnl: int = None
@@ -362,9 +392,11 @@ class Spline2D():
     _r: ArrayVector2D = None
     _s: 'ndarray' = None
     _k: ArrayVector2D = None
+    _length: float = None
 
     def __init__(self, pnts: List[Vector2D], closed: bool=False,
-                 tanA: Vector2D=None, tanB: Vector2D=None) -> None:
+                 tanA: Vector2D=None, tanB: Vector2D=None,
+                 nrmA: Vector2D=None, nrmB: Vector2D=None) -> None:
         if closed and pnts[0] == pnts[-1]:
             pnts = pnts[:-1]
         self.pnts = [SplinePoint2D(pnt.x, pnt.y) for pnt in pnts]
@@ -374,6 +406,10 @@ class Spline2D():
             self.pnts[0].tan = tanA
             self.tanB = tanB
             self.pnts[-1].tan = tanB
+            self.nrmA = nrmA
+            self.pnts[0].nrm = nrmA
+            self.nrmB = nrmB
+            self.pnts[-1].nrm = nrmB
 
     def reset(self) -> None:
         for attr in self.__dict__:
@@ -423,7 +459,8 @@ class Spline2D():
                 Amat[j, ind] = lhs
                 Bmat[j, 0] = rhs
                 j += 1
-        self._d2r = solve_arrayvector2d(Amat, Bmat)
+        d2r = solve_arrayvector2d(Amat, Bmat)
+        self._d2r = ArrayVector2D(d2r.x.flatten(), d2r.y.flatten())
 
     @property
     def d2r(self) -> ArrayVector2D:
@@ -474,6 +511,12 @@ class Spline2D():
                 indb = pnl.ind[1]
                 self._k[indb] = pnl.kb
         return self._k
+
+    @property
+    def length(self) -> float:
+        if self._length is None:
+            self._length = self.s[-1]
+        return self._length
 
     def spline_length(self, num: int=5) -> 'ndarray':
         u"""This function interpolates the spline length with a 'number' of points per piece."""
@@ -647,6 +690,102 @@ class Spline2D():
         d2x, d2y = self.d2r.x, self.d2r.y
         ax.quiver(x, y, d2x, d2y, **kwargs)
         return ax
+
+    def spline_points_ratio(self, ratio: 'ndarray') -> ArrayVector2D:
+        s = ratio*self.length
+        num = s.size
+        pnts = zero_arrayvector2d(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    pnts[j] = pnl.ratio_point_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return pnts
+
+    def spline_gradient_ratio(self, ratio: 'ndarray') -> ArrayVector2D:
+        s = ratio*self.length
+        num = s.size
+        grds = zero_arrayvector2d(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    grds[j] = pnl.ratio_gradient_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return grds
+
+    def spline_curvature_ratio(self, ratio: 'ndarray') -> ArrayVector2D:
+        s = ratio*self.length
+        num = s.size
+        crvs = zero_arrayvector2d(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    crvs[j] = pnl.ratio_curvature_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return crvs
+
+    def spline_inverse_radius_ratio(self, ratio: 'ndarray') -> 'ndarray':
+        s = ratio*self.length
+        num = s.size
+        ks = zeros(s.shape)
+        k = 0
+        for pnl in self.pnls:
+            for j in range(k, num):
+                ratio = pnl.ratio_s(s[j])
+                if ratio >= 0.0 and ratio <= 1.0:
+                    ks[j] = pnl.ratio_inverse_radius_interpolate(ratio)
+                if ratio > 1.0:
+                    k = j
+                    break
+        return ks
+
+    def split_at_index(self, index: int) -> Tuple['Spline2D', 'Spline2D']:
+        u"""This function splits the spline at the given index."""
+        if index < 0 or index >= self.numpnt:
+            raise ValueError('Index out of range.')
+        pnta = self.pnts[0]
+        pntb = self.pnts[index]
+        if self.closed:
+            pntc = pnta
+        else:
+            pntc = self.pnts[-1]
+        pnts1 = self.pnts[:index+1]
+        pnls1 = self.pnls[:index]
+        tgt1a = pnta.pnlb.dra
+        tgt1b = pntb.pnla.drb
+        pnts2 = self.pnts[index:]
+        pnls2 = self.pnls[index:]
+        tgt2a = pntb.pnlb.dra
+        tgt2b = pntc.pnla.drb
+        spline1 = Spline2D([Vector2D(pnt1.x, pnt1.y) for pnt1 in pnts1],
+                           tanA=tgt1a, tanB=tgt1b)
+        for i, pnt in enumerate(pnts1):
+            spline1.pnts[i].c2a0 = pnt.c2a0
+            spline1.pnts[i].c2b0 = pnt.c2b0
+        # for i, pnl in enumerate(pnls1):
+        #     if pnl.straight:
+        #         spline1.pnls[i].set_straight_edge()
+        spline2 = Spline2D([Vector2D(pnt2.x, pnt2.y) for pnt2 in pnts2],
+                           tanA=tgt2a, tanB=tgt2b)
+        for i, pnt in enumerate(pnts2):
+            spline2.pnts[i].c2a0 = pnt.c2a0
+            spline2.pnts[i].c2b0 = pnt.c2b0
+        # for i, pnl in enumerate(pnls2):
+        #     if pnl.straight:
+        #         spline2.pnls[i].set_straight_edge()
+        return spline1, spline2
 
     def __repr__(self) -> str:
         return '<Spline2D>'
