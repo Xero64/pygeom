@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
-from numpy import isscalar, split, where, zeros, stack
+from numpy import divide, isscalar, split, stack, zeros
 
 from ..geom2d.vector2d import Vector2D
 
@@ -27,8 +27,11 @@ class ArrayVector2D(Vector2D):
     def to_unit(self) -> 'ArrayVector2D':
         """Returns the unit array vector of this array vector"""
         mag = self.return_magnitude()
-        x = where(mag == 0.0, 0.0, self.x/mag)
-        y = where(mag == 0.0, 0.0, self.y/mag)
+        x = zeros(mag.shape)
+        y = zeros(mag.shape)
+        magnot0 = mag != 0.0
+        divide(self.x, mag, out=x, where=magnot0)
+        divide(self.y, mag, out=y, where=magnot0)
         return ArrayVector2D(x, y)
 
     def dot(self, vec: Vector2D) -> 'ndarray':
@@ -239,6 +242,9 @@ class ArrayVector2D(Vector2D):
     def to_complex(self) -> 'ndarray':
         """Returns the complex number of this array vector"""
         return super().to_complex()
+
+    def __next__(self) -> Vector2D:
+        return Vector2D(next(self.x), next(self.y))
 
 
 def zero_arrayvector2d(shape: Tuple[int, ...], **kwargs) -> ArrayVector2D:

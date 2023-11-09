@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union, Iterator
 
-from numpy import isscalar, zeros, where, split, stack
+from numpy import divide, isscalar, split, stack, zeros
 
 from ..geom3d.vector import Vector
 
@@ -29,9 +29,13 @@ class ArrayVector(Vector):
     def to_unit(self) -> 'ArrayVector':
         """Returns the unit arrayvector of this arrayvector"""
         mag = self.return_magnitude()
-        x = where(mag == 0.0, 0.0, self.x/mag)
-        y = where(mag == 0.0, 0.0, self.y/mag)
-        z = where(mag == 0.0, 0.0, self.z/mag)
+        x = zeros(mag.shape)
+        y = zeros(mag.shape)
+        z = zeros(mag.shape)
+        magnot0 = mag != 0.0
+        divide(self.x, mag, out=x, where=magnot0)
+        divide(self.y, mag, out=y, where=magnot0)
+        divide(self.z, mag, out=z, where=magnot0)
         return ArrayVector(x, y, z)
 
     def dot(self, vec: Vector) -> 'ndarray':
@@ -250,6 +254,10 @@ class ArrayVector(Vector):
         zlst = split(self.z, numsect, axis=-1)
         for xi, yi, zi in zip(xlst, ylst, zlst):
             yield ArrayVector(xi, yi, zi).reshape(shape)
+
+    def __next__(self) -> Vector:
+        return Vector(next(self.x), next(self.y), next(self.z))
+
 
 def zero_arrayvector(shape: Tuple[int, ...], **kwargs) -> ArrayVector:
     x = zeros(shape, **kwargs)
