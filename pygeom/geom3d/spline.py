@@ -640,11 +640,20 @@ class Spline():
         elif plane == 'xy':
             ax.plot(r.x, r.y, **kwargs)
             ax.set_aspect('equal')
+        elif plane == 'yx':
+            ax.plot(r.y, r.x, **kwargs)
+            ax.set_aspect('equal')
         elif plane == 'xz':
             ax.plot(r.x, r.z, **kwargs)
             ax.set_aspect('equal')
+        elif plane == 'zx':
+            ax.plot(r.z, r.x, **kwargs)
+            ax.set_aspect('equal')
         elif plane == 'yz':
             ax.plot(r.y, r.z, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'zy':
+            ax.plot(r.z, r.y, **kwargs)
             ax.set_aspect('equal')
         return ax
 
@@ -662,15 +671,37 @@ class Spline():
         ax.plot(s, dr.z, label='dr.z')
         return ax
 
-    def quiver_tangent(self, ax: Axes=None, **kwargs) -> Axes:
+    def quiver_tangent(self, ax: Axes=None, plane: str=None, **kwargs) -> Axes:
         u"""This function quiver plots the tangent of the spline."""
         if ax is None:
             fig = figure()
-            ax: Axes = fig.add_subplot(projection='3d')
-            ax.grid(True)
+            if plane is None:
+                ax: Axes = fig.add_subplot(projection='3d')
+            else:
+                ax: Axes = fig.add_subplot()
         x, y, z = self.r.x, self.r.y, self.r.z
-        dx, dy, dz = self.dr.x, self.dr.y, self.dr.z
-        ax.quiver(x, y, z, dx, dy, dz, **kwargs)
+        tgt = self.dr.to_unit()
+        tgtx, tgty, tgtz = tgt.x, tgt.y, tgt.z
+        if plane is None:
+            ax.quiver(x, y, z, tgtx, tgty, tgtz, **kwargs)
+        elif plane == 'xy':
+            ax.quiver(x, y, tgtx, tgty, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'yx':
+            ax.quiver(y, x, tgty, tgtx, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'xz':
+            ax.quiver(x, z, tgtx, tgtz, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'zx':
+            ax.quiver(z, x, tgtz, tgtx, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'yz':
+            ax.quiver(y, z, tgty, tgtz, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'zy':
+            ax.quiver(z, y, tgtz, tgty, **kwargs)
+            ax.set_aspect('equal')
         return ax
 
     def plot_curvature(self, num: int=5, ax: Axes=None) -> Axes:
@@ -701,15 +732,35 @@ class Spline():
         ax.plot(s, k.z, label='k.z')
         return ax
 
-    def quiver_normal(self, ax: Axes=None, **kwargs) -> Axes:
+    def quiver_normal(self, ax: Axes=None, plane: str=None, **kwargs) -> Axes:
         u"""This function quiver plots the normal of the spline."""
         if ax is None:
             fig = figure()
             ax: Axes = fig.add_subplot(projection='3d')
             ax.grid(True)
         x, y, z = self.r.x, self.r.y, self.r.z
-        d2x, d2y, d2z = self.d2r.x, self.d2r.y, self.d2r.z
-        ax.quiver(x, y, z, d2x, d2y, d2z, **kwargs)
+        nrm = self.d2r.to_unit()
+        nrmx, nrmy, nrmz = nrm.x, nrm.y, nrm.z
+        if plane is None:
+            ax.quiver(x, y, z, nrmx, nrmy, nrmz, **kwargs)
+        elif plane == 'xy':
+            ax.quiver(x, y, nrmx, nrmy, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'yx':
+            ax.quiver(y, x, nrmy, nrmx, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'xz':
+            ax.quiver(x, z, nrmx, nrmz, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'zx':
+            ax.quiver(z, x, nrmz, nrmx, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'yz':
+            ax.quiver(y, z, nrmy, nrmz, **kwargs)
+            ax.set_aspect('equal')
+        elif plane == 'zy':
+            ax.quiver(z, y, nrmz, nrmy, **kwargs)
+            ax.set_aspect('equal')
         return ax
 
     def spline_points_ratio(self, ratio: 'ndarray') -> ArrayVector:
