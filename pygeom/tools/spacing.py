@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy import arange, asarray, cos, cumsum, pi, sqrt, zeros
+from numpy import linspace, asarray, cos, cumsum, pi, sqrt, zeros
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -13,18 +13,18 @@ def normalise_spacing(spacing: 'ndarray') -> 'ndarray':
     return (spacing-smin)/(smax-smin)
 
 def semi_cosine_spacing(num: int) -> 'ndarray':
-    th = arange(num, -1, -1)*pi/2/num
+    th = linspace(pi/2, 0, num + 1)
     spc = cos(th)
     spc[0] = 0.0
     return spc
 
 def full_cosine_spacing(num: int) -> 'ndarray':
-    th = arange(num, -1, -1)*pi/num
+    th = linspace(pi, 0.0, num + 1)
     spc = (cos(th)+1.0)/2
     return spc
 
 def equal_spacing(num: int) -> 'ndarray':
-    spc = arange(0, num+1, 1)/num
+    spc = linspace(0.0, 1.0, num + 1)
     return spc
 
 def linear_bias_left(spc: 'ndarray', ratio: float) -> 'ndarray':
