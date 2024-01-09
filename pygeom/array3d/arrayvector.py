@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from numpy.typing import DTypeLike
     VectorLike = Union['Vector', 'ArrayVector']
+    from ..array2d.arrayvector2d import ArrayVector2D
 
 class ArrayVector(Vector):
     """ArrayVector Class"""
@@ -263,4 +264,10 @@ def zero_arrayvector(shape: Tuple[int, ...], **kwargs) -> ArrayVector:
     x = zeros(shape, **kwargs)
     y = zeros(shape, **kwargs)
     z = zeros(shape, **kwargs)
+    return ArrayVector(x, y, z)
+
+def arrayvector3d_from_2d(arr2d: 'ArrayVector2D') -> ArrayVector:
+    x = arr2d.x
+    y = arr2d.y
+    z = zeros(arr2d.shape)
     return ArrayVector(x, y, z)

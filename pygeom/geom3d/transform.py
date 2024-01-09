@@ -14,10 +14,6 @@ class Transform():
         self.diry = vecy.to_unit()
         self.dirz = vecz.to_unit()
 
-
-
-
-
     def vector_to_global(self, vec: Vector) -> Vector:
         """Transforms a vector from this local coordinate to global."""
         dirx = Vector(self.dirx.x, self.diry.x, self.dirz.x)
