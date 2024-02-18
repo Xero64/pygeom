@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union, Iterator
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, Iterable
 
 from numpy import divide, isscalar, split, stack, zeros
 
@@ -27,7 +27,9 @@ class ArrayVector(Vector):
         """Returns the magnitude array of this array vector"""
         return super().return_magnitude()
 
-    def to_unit(self) -> 'ArrayVector':
+    def to_unit(self, return_magnitude: bool = False) -> Union['ArrayVector',
+                                                               Tuple['ArrayVector',
+                                                                    'ndarray']]:
         """Returns the unit arrayvector of this arrayvector"""
         mag = self.return_magnitude()
         x = zeros(mag.shape)
@@ -37,7 +39,10 @@ class ArrayVector(Vector):
         divide(self.x, mag, out=x, where=magnot0)
         divide(self.y, mag, out=y, where=magnot0)
         divide(self.z, mag, out=z, where=magnot0)
-        return ArrayVector(x, y, z)
+        if return_magnitude:
+            return ArrayVector(x, y, z), mag
+        else:
+            return ArrayVector(x, y, z)
 
     def dot(self, vec: Vector) -> 'ndarray':
         try:
@@ -131,14 +136,18 @@ class ArrayVector(Vector):
         return vec
 
     def __repr__(self) -> str:
-        return '<ArrayVector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
+        return f'<ArrayVector shape: {self.shape:}, dtype: {self.dtype}>'
 
     def __str__(self) -> str:
-        return 'x:\n{:}\ny:\n{:}\nz:\n{:}\n'.format(self.x, self.y, self.z)
+        outstr = f'ArrayVector shape: {self.shape:}, dtype: {self.dtype}\n'
+        outstr += 'x:\n{:}\ny:\n{:}\nz:\n{:}\n'.format(self.x, self.y, self.z)
+        return outstr
 
     def __format__(self, frm: str) -> str:
+        outstr = f'ArrayVector shape: {self.shape:}, dtype: {self.dtype}\n'
         frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\nz:\n{:' + frm + '}\n'
-        return frmstr.format(self.x, self.y, self.z)
+        outstr += frmstr.format(self.x, self.y, self.z)
+        return outstr
 
     def __matmul__(self, obj: 'ndarray') -> 'ArrayVector':
         try:
@@ -240,14 +249,14 @@ class ArrayVector(Vector):
         return ArrayVector(x, y, z)
 
     def split(self, numsect: int,
-              axis: Optional[int]=-1) -> Tuple['ArrayVector', ...]:
+              axis: Optional[int]=-1) -> Iterable['ArrayVector']:
         xlst = split(self.x, numsect, axis=axis)
         ylst = split(self.y, numsect, axis=axis)
         zlst = split(self.z, numsect, axis=axis)
         for xi, yi, zi in zip(xlst, ylst, zlst):
             yield ArrayVector(xi, yi, zi)
 
-    def unpack(self) -> Tuple['ArrayVector', ...]:
+    def unpack(self) -> Iterable['ArrayVector']:
         numsect = self.shape[-1]
         shape = self.shape[:-1]
         xlst = split(self.x, numsect, axis=-1)

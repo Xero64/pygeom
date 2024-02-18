@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple, Union
 
 from numpy import isclose, sqrt, square
 
@@ -16,7 +16,9 @@ class Vector():
         self.y = y
         self.z = z
 
-    def to_unit(self) -> 'Vector':
+    def to_unit(self, return_magnitude: bool = False) -> Union['Vector',
+                                                               Tuple['Vector',
+                                                                     'number']]:
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
         if mag != 0.0:
@@ -27,7 +29,10 @@ class Vector():
             x = self.x
             y = self.y
             z = self.z
-        return Vector(x, y, z)
+        if return_magnitude:
+            return Vector(x, y, z), mag
+        else:
+            return Vector(x, y, z)
 
     def return_magnitude(self) -> 'number':
         """Returns the magnitude of this vector"""

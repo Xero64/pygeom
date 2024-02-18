@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, Iterable
 
 from numpy import divide, isscalar, split, stack, zeros
 
@@ -24,7 +24,8 @@ class ArrayVector2D(Vector2D):
         """Returns the magnitude array of this array vector"""
         return super().return_magnitude()
 
-    def to_unit(self) -> 'ArrayVector2D':
+    def to_unit(self, return_magnitude: bool = False) -> Union['ArrayVector2D',
+                                                               Tuple['ArrayVector2D', 'ndarray']]:
         """Returns the unit array vector of this array vector"""
         mag = self.return_magnitude()
         x = zeros(mag.shape)
@@ -32,7 +33,10 @@ class ArrayVector2D(Vector2D):
         magnot0 = mag != 0.0
         divide(self.x, mag, out=x, where=magnot0)
         divide(self.y, mag, out=y, where=magnot0)
-        return ArrayVector2D(x, y)
+        if return_magnitude:
+            return ArrayVector2D(x, y), mag
+        else:
+            return ArrayVector2D(x, y)
 
     def dot(self, vec: Vector2D) -> 'ndarray':
         try:
@@ -115,14 +119,18 @@ class ArrayVector2D(Vector2D):
         return vec
 
     def __repr__(self) -> str:
-        return '<ArrayVector2D: {:}, {:}>'.format(self.x, self.y)
+        return f'<ArrayVector2D shape: {self.shape:}, dtype: {self.dtype}>'
 
     def __str__(self) -> str:
-        return 'x:\n{:}\ny:\n{:}\n'.format(self.x, self.y)
+        outstr = f'ArrayVector2D shape: {self.shape:}, dtype: {self.dtype}\n'
+        outstr += 'x:\n{:}\ny:\n{:}\n'.format(self.x, self.y)
+        return outstr
 
     def __format__(self, frm: str) -> str:
+        outstr = f'ArrayVector 2Dshape: {self.shape:}, dtype: {self.dtype}\n'
         frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\n'
-        return frmstr.format(self.x, self.y)
+        outstr += frmstr.format(self.x, self.y)
+        return outstr
 
     def __matmul__(self, obj: 'ndarray') -> 'ArrayVector2D':
         try:
@@ -215,13 +223,13 @@ class ArrayVector2D(Vector2D):
         return ArrayVector2D(x, y)
 
     def split(self, numsect: int,
-              axis: Optional[int]=-1) -> Tuple['ArrayVector2D', ...]:
+              axis: Optional[int]=-1) -> Iterable['ArrayVector2D']:
         xlst = split(self.x, numsect, axis=axis)
         ylst = split(self.y, numsect, axis=axis)
         for xi, yi in zip(xlst, ylst):
             yield ArrayVector2D(xi, yi)
 
-    def unpack(self) -> Tuple['ArrayVector2D', ...]:
+    def unpack(self) -> Iterable['ArrayVector2D']:
         numsect = self.shape[-1]
         shape = self.shape[:-1]
         xlst = split(self.x, numsect, axis=-1)

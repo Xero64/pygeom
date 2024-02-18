@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple, Union
 
 from numpy import arctan2, cos, isclose, sin, sqrt, square
 
@@ -14,7 +14,9 @@ class Vector2D():
         self.x = x
         self.y = y
 
-    def to_unit(self) -> 'Vector2D':
+    def to_unit(self, return_magnitude: bool = False) -> Union['Vector2D',
+                                                               Tuple['Vector2D',
+                                                                     'number']]:
         """Returns the unit vector of this vector2d"""
         mag = self.return_magnitude()
         if mag != 0.0:
@@ -23,7 +25,10 @@ class Vector2D():
         else:
             x = self.x
             y = self.y
-        return Vector2D(x, y)
+        if return_magnitude:
+            return Vector2D(x, y), mag
+        else:
+            return Vector2D(x, y)
 
     def return_magnitude(self):
         """Returns the magnitude of this vector2d"""
