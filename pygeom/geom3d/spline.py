@@ -2,7 +2,7 @@ from typing import Optional, Tuple, TYPE_CHECKING, List
 
 from matplotlib.pyplot import figure
 from matplotlib.axes import Axes
-from numpy import zeros, concatenate, linspace, array
+from numpy import zeros, concatenate, linspace, array, argwhere, logical_and
 
 from .vector import Vector
 from ..array3d import ArrayVector, zero_arrayvector, solve_arrayvector
@@ -395,6 +395,8 @@ class Spline():
     _d2r: ArrayVector = None
     _dr: ArrayVector = None
     _r: ArrayVector = None
+    _dS: 'ndarray' = None
+    _S: 'ndarray' = None
     _s: 'ndarray' = None
     _k: ArrayVector = None
     _length: float = None
@@ -494,6 +496,21 @@ class Spline():
                 indb = pnl.ind[1]
                 self._r[indb] = pnl.pntb
         return self._r
+
+    @property
+    def dS(self) -> 'ndarray':
+        if self._dS is None:
+            self._dS = zeros(self.numpnl)
+            for i in range(self.numpnl):
+                self._dS[i] = self.pnls[i].length
+        return self._dS
+
+    @property
+    def S(self) -> 'ndarray':
+        if self._S is None:
+            self._S = zeros(self.numpnt)
+            self._S[1:] = self.dS.cumsum()
+        return self._S
 
     @property
     def s(self) -> 'ndarray':
@@ -825,38 +842,70 @@ class Spline():
 
     def split_at_index(self, index: int) -> Tuple['Spline', 'Spline']:
         u"""This function splits the spline at the given index."""
+
         if index < 0 or index >= self.numpnt:
             raise ValueError('Index out of range.')
+
         pnta = self.pnts[0]
         pntb = self.pnts[index]
+
         if self.closed:
             pntc = pnta
         else:
             pntc = self.pnts[-1]
+
         pnts1 = self.pnts[:index+1]
-        pnls1 = self.pnls[:index]
         tgt1a = pnta.pnlb.dra
         tgt1b = pntb.pnla.drb
         pnts2 = self.pnts[index:]
-        pnls2 = self.pnls[index:]
         tgt2a = pntb.pnlb.dra
         tgt2b = pntc.pnla.drb
+
         spline1 = Spline([Vector(pnt1.x, pnt1.y, pnt1.z) for pnt1 in pnts1],
                          tanA=tgt1a, tanB=tgt1b)
         for i, pnt in enumerate(pnts1):
             spline1.pnts[i].c2a0 = pnt.c2a0
             spline1.pnts[i].c2b0 = pnt.c2b0
-        # for i, pnl in enumerate(pnls1):
-        #     if pnl.straight:
-        #         spline1.pnls[i].set_straight_edge()
+
         spline2 = Spline([Vector(pnt2.x, pnt2.y, pnt2.z) for pnt2 in pnts2],
                          tanA=tgt2a, tanB=tgt2b)
         for i, pnt in enumerate(pnts2):
             spline2.pnts[i].c2a0 = pnt.c2a0
             spline2.pnts[i].c2b0 = pnt.c2b0
-        # for i, pnl in enumerate(pnls2):
-        #     if pnl.straight:
-        #         spline2.pnls[i].set_straight_edge()
+
+        return spline1, spline2
+
+    def spline_panel_ratio(self, ratio: float) -> List[SplinePanel]:
+        if ratio < 0.0 or ratio > 1.0:
+            raise ValueError('Ratio out of range.')
+        s = ratio*self.length
+        Sa = self.S[:-1]
+        Sb = self.S[1:]
+        chk = logical_and(s >= Sa, s < Sb)
+        ind = argwhere(chk)
+        return self.pnls[ind.item()]
+
+    def split_at_ratio(self, ratio: float) -> Tuple['Spline', 'Spline']:
+
+        pnl = self.spline_panel_ratio(ratio)
+
+        ind = self.pnls.index(pnl)
+        pnt = self.spline_points_ratio(array([ratio]))[0]
+        tgt = self.spline_gradient_ratio(array([ratio]))[0]
+
+        pnts1 = self.pnts[:ind+1] + [pnt]
+        tgt1a = self.dr[0].to_unit()
+        tgt1b = tgt
+        pnts2 = [pnt] + self.pnts[ind+1:]
+        tgt2a = tgt
+        tgt2b = self.dr[-1].to_unit()
+
+        spline1 = Spline([Vector(pnt1.x, pnt1.y, pnt1.z) for pnt1 in pnts1],
+                         tanA=tgt1a, tanB=tgt1b)
+
+        spline2 = Spline([Vector(pnt2.x, pnt2.y, pnt2.z) for pnt2 in pnts2],
+                         tanA=tgt2a, tanB=tgt2b)
+
         return spline1, spline2
 
     def __repr__(self) -> str:
