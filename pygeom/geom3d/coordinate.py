@@ -22,3 +22,9 @@ class Coordinate(Transform):
 
     def __repr__(self) -> str:
         return '<Coordinate>'
+
+def coordinate_xy_from_3_points(pnta: 'Vector', pntb: 'Vector', pntc: 'Vector') -> Coordinate:
+    pnt = (pnta + pntb + pntc)/3
+    vecab = pntb - pnta
+    vecbc = pntc - pntb
+    return Coordinate(pnt, vecab, vecbc)
