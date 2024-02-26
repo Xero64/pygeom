@@ -10,6 +10,7 @@ from .coordinate2d import Coordinate2D
 from .cubicspline2d import CubicSpline2D as CubicSpline2D
 from .infiniteline2d import InfiniteLine2D as InfiniteLine2D
 from .line2d import Line2D as Line2D
+from .circle2d import Circle2D as Circle2D
 
 I2D = Vector2D(1.0, 0.0)
 J2D = Vector2D(0.0, 1.0)

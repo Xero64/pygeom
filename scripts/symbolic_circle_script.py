@@ -23,6 +23,8 @@ a = Symbol('a', real=True)
 b = Symbol('b', real=True)
 c = Symbol('c', real=True)
 
+jac = Symbol('jac', real=True)
+
 #%%
 # General Equation
 eqn = (x - xo)**2 + (y - yo)**2 - r**2
@@ -59,5 +61,22 @@ syms = [a, b, c]
 
 res = solve(eqns, syms)
 
-for i, resi in res.items():
-    print(f'{a} = {resi}')
+a_res = res[a]
+b_res = res[b]
+c_res = res[c]
+
+print(f'res[a] = {a_res}\n')
+print(f'res[b] = {b_res}\n')
+print(f'res[c] = {c_res}\n')
+
+#%%
+# Simplifications
+a_res = a_res.subs(xa*yb - xa*yc - xb*ya + xb*yc + xc*ya - xc*yb, jac)
+b_res = b_res.subs(xa*yb - xa*yc - xb*ya + xb*yc + xc*ya - xc*yb, jac)
+c_res = c_res.subs(xa*yb - xa*yc - xb*ya + xb*yc + xc*ya - xc*yb, jac)
+
+print(f'jac = {xa*yb - xa*yc - xb*ya + xb*yc + xc*ya - xc*yb}\n')
+
+print(f'res[a] = {a_res}\n')
+print(f'res[b] = {b_res}\n')
+print(f'res[c] = {c_res}\n')
