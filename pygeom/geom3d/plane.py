@@ -3,6 +3,7 @@ from typing import Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
     from .vector import Vector
 
+
 class Plane():
     """Plane Class"""
     pnt: 'Vector' = None
@@ -28,6 +29,7 @@ class Plane():
 
     def __repr__(self) -> str:
         return '<Plane>'
+
 
 def plane_from_3_points(pnta: 'Vector', pntb: 'Vector', pntc: 'Vector') -> Plane:
     pnt = (pnta + pntb + pntc)/3
