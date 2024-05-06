@@ -1,9 +1,9 @@
+from typing import Any, Tuple, Union
 
-from typing import Any
 from pygeom.geom3d.vector import Vector
-from sympy import Symbol, sqrt
-from sympy import expand, simplify, trigsimp, expand_trig
-from sympy import diff, integrate
+from sympy import (Symbol, diff, expand, expand_trig, integrate, simplify,
+                   sqrt, trigsimp)
+
 
 class SymbolicVector(Vector):
     x: 'Symbol' = None
@@ -14,9 +14,6 @@ class SymbolicVector(Vector):
         self.x = x
         self.y = y
         self.z = z
-
-    def return_magnitude(self):
-        return sqrt(self.x**2 + self.y**2 + self.z**2)
 
     def simplify(self) -> 'SymbolicVector':
         return SymbolicVector(simplify(self.x),
@@ -53,21 +50,72 @@ class SymbolicVector(Vector):
                               self.y.subs(*args),
                               self.z.subs(*args))
 
-    def to_unit(self) -> 'SymbolicVector':
+    def to_unit(self, return_magnitude: bool = False) -> Union['SymbolicVector',
+                                                               Tuple['SymbolicVector',
+                                                                     'SymbolicVector']]:
         mag = self.return_magnitude()
-        return SymbolicVector(self.x/mag, self.y/mag, self.z/mag)
-
-    def __mul__(self, obj: Any):
-        if isinstance(obj, SymbolicVector):
-            return self.x*obj.x+self.y*obj.y+self.z*obj.z
+        if mag != 0.0:
+            x = self.x/mag
+            y = self.y/mag
+            z = self.z/mag
         else:
-            x = obj*self.x
-            y = obj*self.y
-            z = obj*self.z
+            x = self.x
+            y = self.y
+            z = self.z
+        if return_magnitude:
+            return SymbolicVector(x, y, z), mag
+        else:
             return SymbolicVector(x, y, z)
 
+    def return_magnitude(self) -> 'Symbol':
+        """Returns the magnitude of this vector"""
+        return sqrt(self.x**2 + self.y**2 + self.z**2).simplify()
+
+    def to_xyz(self) -> Tuple['Symbol', 'Symbol', 'Symbol']:
+        """Returns the x, y and z values of this vector"""
+        return self.x, self.y, self.z
+
+    def dot(self, vec: 'SymbolicVector') -> 'Symbol':
+        try:
+            return self.x*vec.x + self.y*vec.y + self.z*vec.z
+        except AttributeError:
+            err = 'Vector dot product must be with Vector object.'
+            raise TypeError(err)
+
+    def cross(self, vec: 'SymbolicVector') -> 'SymbolicVector':
+        try:
+            x = self.y*vec.z - self.z*vec.y
+            y = self.z*vec.x - self.x*vec.z
+            z = self.x*vec.y - self.y*vec.x
+            return Vector(x, y, z)
+        except AttributeError:
+            err = 'Vector cross product must be with Vector object.'
+            raise TypeError(err)
+
+    def rcross(self, vec: 'SymbolicVector') -> 'SymbolicVector':
+        try:
+            x = vec.y*self.z - vec.z*self.y
+            y = vec.z*self.x - vec.x*self.z
+            z = vec.x*self.y - vec.y*self.x
+            return SymbolicVector(x, y, z)
+        except AttributeError:
+            err = 'Vector cross product must be with Vector object.'
+            raise TypeError(err)
+
+    def __abs__(self) -> 'Symbol':
+        return self.return_magnitude()
+
+    def __mul__(self, obj: Any) -> 'SymbolicVector':
+        x = self.x*obj
+        y = self.y*obj
+        z = self.z*obj
+        return SymbolicVector(x, y, z)
+
     def __rmul__(self, obj: Any) -> 'SymbolicVector':
-        return self.__mul__(obj)
+        x = obj*self.x
+        y = obj*self.y
+        z = obj*self.z
+        return SymbolicVector(x, y, z)
 
     def __truediv__(self, obj: Any) -> 'SymbolicVector':
         x = self.x/obj
@@ -76,37 +124,73 @@ class SymbolicVector(Vector):
         return SymbolicVector(x, y, z)
 
     def __pow__(self, obj: Any) -> 'SymbolicVector':
-        if isinstance(obj, SymbolicVector):
-            x = self.y*obj.z-self.z*obj.y
-            y = self.z*obj.x-self.x*obj.z
-            z = self.x*obj.y-self.y*obj.x
-            return SymbolicVector(x, y, z)
+        x = self.x**obj
+        y = self.y**obj
+        z = self.z**obj
+        return SymbolicVector(x, y, z)
 
-    def __add__(self, obj: Any) -> 'SymbolicVector':
-        if isinstance(obj, SymbolicVector):
-            x = self.x+obj.x
-            y = self.y+obj.y
-            z = self.z+obj.z
-            return SymbolicVector(x, y, z)
+    def __rpow__(self, obj: Any) -> 'SymbolicVector':
+        x = obj**self.x
+        y = obj**self.y
+        z = obj**self.z
+        return SymbolicVector(x, y, z)
 
-    def __radd__(self, obj: Any) -> 'SymbolicVector':
-        if obj == 0 or obj is None:
-            return self
-        else:
-            return self.__add__(obj)
-
-    def __sub__(self, obj: Any) -> 'SymbolicVector':
-        if isinstance(obj, SymbolicVector):
-            x = self.x-obj.x
-            y = self.y-obj.y
-            z = self.z-obj.z
+    def __add__(self, obj: 'SymbolicVector') -> 'SymbolicVector':
+        try:
+            x = self.x + obj.x
+            y = self.y + obj.y
+            z = self.z + obj.z
             return SymbolicVector(x, y, z)
+        except AttributeError:
+            err = 'Vector object can only be added to Vector object.'
+            raise TypeError(err)
+
+    def __sub__(self, obj: 'SymbolicVector') -> 'SymbolicVector':
+        try:
+            x = self.x - obj.x
+            y = self.y - obj.y
+            z = self.z - obj.z
+            return SymbolicVector(x, y, z)
+        except AttributeError:
+            err = 'Vector object can only be subtracted from Vector object.'
+            raise TypeError(err)
 
     def __pos__(self) -> 'SymbolicVector':
         return self
 
     def __neg__(self) -> 'SymbolicVector':
         return SymbolicVector(-self.x, -self.y, -self.z)
+
+    def __repr__(self) -> str:
+        return '<SymbolicVector: {:}, {:}, {:}>'.format(self.x, self.y, self.z)
+
+    def __str__(self) -> str:
+        return '<{:}, {:}, {:}>'.format(self.x, self.y, self.z)
+
+    def __format__(self, frm: str) -> str:
+        frmstr = '<{:' + frm + '}, {:' + frm + '}, {:' + frm + '}>'
+        return frmstr.format(self.x, self.y, self.z)
+
+    def __eq__(self, obj: 'SymbolicVector') -> 'bool':
+        try:
+            if obj.x == self.x and obj.y == self.y and obj.z == self.z:
+                return True
+            else:
+                return False
+        except AttributeError:
+            return False
+
+    def __neq__(self, obj: 'SymbolicVector') -> 'bool':
+        try:
+            if obj.x != self.x or obj.y != self.y or obj.z != self.z:
+                return True
+            else:
+                return False
+        except AttributeError:
+            return False
+
+def zero_symbolicvector() -> SymbolicVector:
+    return SymbolicVector(0, 0, 0)
 
 def symple_vector(label, **kwargs) -> 'SymbolicVector':
     x = Symbol(f'{label:s}.x', **kwargs)

@@ -147,7 +147,7 @@ class Vector():
         except AttributeError:
             return False
 
-    def __neq__(self, obj: Any) -> 'bool':
+    def __neq__(self, obj: 'Vector') -> 'bool':
         try:
             if obj.x != self.x or obj.y != self.y or obj.z != self.z:
                 return True
