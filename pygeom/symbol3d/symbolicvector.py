@@ -87,7 +87,7 @@ class SymbolicVector(Vector):
             x = self.y*vec.z - self.z*vec.y
             y = self.z*vec.x - self.x*vec.z
             z = self.x*vec.y - self.y*vec.x
-            return Vector(x, y, z)
+            return SymbolicVector(x, y, z)
         except AttributeError:
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)

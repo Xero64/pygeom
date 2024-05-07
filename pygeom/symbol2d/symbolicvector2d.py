@@ -35,7 +35,7 @@ class SymbolicVector2D(Vector2D):
 
     def return_angle(self) -> 'Symbol':
         """Returns the angle of this vector from the x axis"""
-        return atan(self.y, self.x)
+        return atan(self.y/self.x)
 
     def dot(self, obj: 'SymbolicVector2D') -> 'Symbol':
         try:
@@ -161,10 +161,10 @@ class SymbolicVector2D(Vector2D):
 
     def rotate(self, rot: 'Symbol') -> 'SymbolicVector2D':
         """Rotates this vector by an input angle in radians"""
-        mag = self.return_magnitude()
-        ang = self.return_angle()
-        x = mag*cos(ang + rot)
-        y = mag*sin(ang + rot)
+        dirx = SymbolicVector2D(cos(rot), sin(rot))
+        diry = SymbolicVector2D(-sin(rot), cos(rot))
+        x = self.dot(dirx)
+        y = self.dot(diry)
         return SymbolicVector2D(x, y)
 
     def to_complex(self) -> 'Symbol':
