@@ -159,3 +159,70 @@ mesh3.remove_collapsed_lines()
 print('Collapsed Lines Removed\n')
 
 print(mesh3)
+
+#%%
+# Create a MeshCache object
+mesh_cache = MeshCache()
+mesh_cache.add_norm_meta('grids', int, -1)
+mesh_cache.add_quad_meta('norms', int, -1)
+mesh_cache.add_tria_meta('norms', int, -1)
+mesh_cache.add_grid(0.0, 0.0, 0.0)
+mesh_cache.add_grid(1.0, 0.0, 0.0)
+mesh_cache.add_grid(1.0, 1.0, 0.0)
+mesh_cache.add_grid(0.0, 1.0, 0.0)
+mesh_cache.add_norm(0.0, 0.0, 1.0, grids=0)
+mesh_cache.add_norm(0.0, 0.0, 1.0, grids=1)
+mesh_cache.add_norm(0.0, 0.0, 1.0, grids=2)
+mesh_cache.add_norm(0.0, 0.0, 1.0, grids=3)
+mesh_cache.add_quad(0, 0, 1, 2, norms=[0, 0, 1, 2])
+mesh_cache.add_quad(0, 1, 1, 2, norms=[0, 1, 1, 2])
+mesh_cache.add_quad(0, 1, 2, 2, norms=[0, 1, 2, 2])
+mesh_cache.add_quad(0, 1, 2, 2, norms=[0, 1, 2, 2])
+mesh_cache.add_quad(0, 1, 0, 2, norms=[0, 1, 0, 2])
+mesh_cache.add_quad(0, 1, 2, 1, norms=[0, 1, 2, 1])
+
+mesh4 = mesh_cache.to_mesh()
+
+print(mesh4)
+
+mesh4.remove_duplicate_grids()
+
+print('Duplicate Grids Removed\n')
+
+print(mesh4)
+
+mesh4.remove_collapsed_quads()
+
+print('Collapsed Quads Removed\n')
+
+print(mesh4)
+
+mesh4.remove_duplicate_quads()
+
+print('Duplicate Quads Removed\n')
+
+print(mesh4)
+
+mesh4.remove_duplicate_trias()
+
+print('Duplicate Trias Removed\n')
+
+print(mesh4)
+
+mesh4.remove_unreferenced_grids()
+
+print('Unreferenced Grids Removed\n')
+
+print(mesh4)
+
+mesh4.remove_unreferenced_norms()
+
+print('Unreferenced Norms Removed\n')
+
+print(mesh4)
+
+mesh4.remove_unreferenced_grids()
+
+print('Unreferenced Grids Removed\n')
+
+print(mesh4)

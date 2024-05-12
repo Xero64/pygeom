@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
-from numpy import array, float64, hstack, int64, bool_, logical_and, unique, vstack, zeros
+from numpy import (arange, argsort, array, bool_, float64, hstack, int64,
+                   logical_and, take_along_axis, unique, vstack, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
@@ -102,11 +103,15 @@ class Mesh():
     def remove_duplicate_lines(self) -> None:
         if self.lines.size == 0:
             return None
-        data = self.lines
+        minindax1 = argsort(self.lines, axis=1)
+        data = take_along_axis(self.lines, minindax1, axis=1)
         if len(self.linemeta) > 0:
             data = [data]
-            for val in self.linemeta.values():
-                data.append(val.reshape(-1, 1))
+            for value in self.linemeta.values():
+                if value.shape[1] == 2:
+                    data.append(take_along_axis(value, minindax1, axis=1))
+                else:
+                    data.append(value)
             data = hstack(tuple(data))
         _, unind, invind = unique(data, return_index=True,
                                   return_inverse=True, axis=0)
@@ -125,11 +130,15 @@ class Mesh():
     def remove_duplicate_trias(self) -> None:
         if self.trias.size == 0:
             return None
-        data = self.trias
+        minindax1 = argsort(self.trias, axis=1)
+        data = take_along_axis(self.trias, minindax1, axis=1)
         if len(self.triameta) > 0:
             data = [data]
-            for val in self.triameta.values():
-                data.append(val.reshape(-1, 1))
+            for value in self.triameta.values():
+                if value.shape[1] == 3:
+                    data.append(take_along_axis(value, minindax1, axis=1))
+                else:
+                    data.append(value)
             data = hstack(tuple(data))
         _, unind, invind = unique(data, return_index=True,
                                   return_inverse=True, axis=0)
@@ -148,11 +157,15 @@ class Mesh():
     def remove_duplicate_quads(self) -> None:
         if self.quads.size == 0:
             return None
-        data = self.quads
+        minindax1 = argsort(self.quads, axis=1)
+        data = take_along_axis(self.quads, minindax1, axis=1)
         if len(self.quadmeta) > 0:
             data = [data]
-            for val in self.quadmeta.values():
-                data.append(val.reshape(-1, 1))
+            for value in self.quadmeta.values():
+                if value.shape[1] == 4:
+                    data.append(take_along_axis(value, minindax1, axis=1))
+                else:
+                    data.append(value)
             data = hstack(tuple(data))
         _, unind, invind = unique(data, return_index=True,
                                   return_inverse=True, axis=0)
@@ -205,22 +218,127 @@ class Mesh():
     def remove_collapsed_quads(self) -> None:
         if self.quads.size == 0:
             return None
-        check: 'NDArray[bool_]' = self.quads[:, (0, 1, 2, 3)] != self.quads[:, (1, 2, 3, 0)]
+        check: 'NDArray[bool_]' = self.quads[:, (0, 1, 2, 3, 0, 1)] == self.quads[:, (1, 2, 3, 0, 2, 3)]
         sumax1 = check.sum(axis=1)
         chkeq0 = sumax1 == 0
         chkeq1 = sumax1 == 1
-        check = logical_and(chkeq0, chkeq1)
-        self.quads = self.quads[check, ...]
+
+        # Reduce Quads to Trias
+        checkab = logical_and(chkeq1, check[:, 0])
+        checkbc = logical_and(chkeq1, check[:, 1])
+        checkcd = logical_and(chkeq1, check[:, 2])
+        checkda = logical_and(chkeq1, check[:, 3])
+        quad_ab = self.quads[checkab, :]
+        quad_bc = self.quads[checkbc, :]
+        quad_cd = self.quads[checkcd, :]
+        quad_da = self.quads[checkda, :]
+        tria_ab = quad_ab[:, (1, 2, 3)]
+        tria_bc = quad_bc[:, (2, 3, 0)]
+        tria_cd = quad_cd[:, (3, 0, 1)]
+        tria_da = quad_da[:, (0, 1, 2)]
+        if self.trias.size == 0:
+            self.trias = vstack((tria_ab, tria_bc, tria_cd, tria_da))
+        else:
+            self.trias = vstack((self.trias, tria_ab, tria_bc, tria_cd, tria_da))
         for key in self.quadmeta:
-            self.quadmeta[key] = self.quadmeta[key][check, ...]
+            meta = []
+            if key in self.triameta:
+                if self.triameta[key].size > 0:
+                    meta.append(self.triameta[key])
+            if self.quadmeta[key].shape[1] == 4:
+                quad_ab_meta = self.quadmeta[key][checkab, ...]
+                quad_bc_meta = self.quadmeta[key][checkbc, ...]
+                quad_cd_meta = self.quadmeta[key][checkcd, ...]
+                quad_da_meta = self.quadmeta[key][checkda, ...]
+                tria_ab_meta = quad_ab_meta[:, (1, 2, 3)]
+                tria_bc_meta = quad_bc_meta[:, (2, 3, 0)]
+                tria_cd_meta = quad_cd_meta[:, (3, 0, 1)]
+                tria_da_meta = quad_da_meta[:, (0, 1, 2)]
+            else:
+                tria_ab_meta = self.quadmeta[key][checkab, ...]
+                tria_bc_meta = self.quadmeta[key][checkbc, ...]
+                tria_cd_meta = self.quadmeta[key][checkcd, ...]
+                tria_da_meta = self.quadmeta[key][checkda, ...]
+            if tria_ab_meta.size > 0:
+                meta.append(tria_ab_meta)
+            if tria_bc_meta.size > 0:
+                meta.append(tria_bc_meta)
+            if tria_cd_meta.size > 0:
+                meta.append(tria_cd_meta)
+            if tria_da_meta.size > 0:
+                meta.append(tria_da_meta)
+            if len(meta) > 0:
+                self.triameta[key] = vstack(tuple(meta))
+
+        # Reduce to only valid quads
+        self.quads = self.quads[chkeq0, ...]
+        for key in self.quadmeta:
+            self.quadmeta[key] = self.quadmeta[key][chkeq0, ...]
         if 'quads' in self.gridmeta:
-            self.gridmeta['quads'] = self.gridmeta['quads'][check, ...]
+            self.gridmeta['quads'] = self.gridmeta['quads'][chkeq0, ...]
         if 'quads' in self.normmeta:
-            self.normmeta['quads'] = self.normmeta['quads'][check, ...]
+            self.normmeta['quads'] = self.normmeta['quads'][chkeq0, ...]
         if 'quads' in self.linemeta:
-            self.linemeta['quads'] = self.linemeta['quads'][check, ...]
+            self.linemeta['quads'] = self.linemeta['quads'][chkeq0, ...]
         if 'quads' in self.triameta:
-            self.triameta['quads'] = self.triameta['quads'][check, ...]
+            self.triameta['quads'] = self.triameta['quads'][chkeq0, ...]
+
+    def remove_unreferenced_grids(self) -> None:
+        if self.grids.size == 0:
+            return None
+        refind = []
+        if 'grids' in self.normmeta:
+            refind.append(self.normmeta['grids'].flatten())
+        if 'grids' in self.linemeta:
+            refind.append(self.linemeta['grids'].flatten())
+        if 'grids' in self.triameta:
+            refind.append(self.triameta['grids'].flatten())
+        if 'grids' in self.quadmeta:
+            refind.append(self.quadmeta['grids'].flatten())
+        refind = hstack(tuple(refind))
+        refind = unique(refind)
+        revind = zeros(self.grids.shape[0], dtype=int64)
+        revind[refind] = arange(refind.size)
+        self.grids = self.grids[refind, ...]
+        self.lines = revind[self.lines]
+        self.trias = revind[self.trias]
+        self.quads = revind[self.quads]
+        for key in self.gridmeta.keys():
+            self.gridmeta[key] = self.gridmeta[key][refind, ...]
+        if 'grids' in self.normmeta:
+            self.normmeta['grids'] = revind[self.normmeta['grids']]
+        if 'grids' in self.linemeta:
+            self.linemeta['grids'] = revind[self.linemeta['grids']]
+        if 'grids' in self.triameta:
+            self.triameta['grids'] = revind[self.triameta['grids']]
+        if 'grids' in self.quadmeta:
+            self.quadmeta['grids'] = revind[self.quadmeta['grids']]
+
+    def remove_unreferenced_norms(self) -> None:
+        if self.norms.size == 0:
+            return None
+        refind = []
+        if 'norms' in self.gridmeta:
+            refind.append(self.gridmeta['norms'].flatten())
+        if 'norms' in self.linemeta:
+            refind.append(self.linemeta['norms'].flatten())
+        if 'norms' in self.triameta:
+            refind.append(self.triameta['norms'].flatten())
+        if 'norms' in self.quadmeta:
+            refind.append(self.quadmeta['norms'].flatten())
+        refind = hstack(tuple(refind))
+        refind = unique(refind)
+        revind = zeros(self.norms.shape[0], dtype=int64)
+        revind[refind] = arange(refind.size)
+        self.norms = self.norms[refind, ...]
+        for key in self.normmeta:
+            self.normmeta[key] = self.normmeta[key][refind, ...]
+        if 'norms' in self.gridmeta:
+            self.gridmeta['norms'] = revind[self.gridmeta['norms']]
+        if 'norms' in self.linemeta:
+            self.linemeta['norms'] = revind[self.linemeta['norms']]
+        if 'norms' in self.triameta:
+            self.triameta['norms'] = revind[self.triameta['norms']]
 
     def merge(self, mesh: 'Mesh') -> 'Mesh':
 
@@ -377,6 +495,9 @@ class Mesh():
             outstr += '\n'
         return outstr
 
+    def __repr__(self) -> str:
+        return '<Mesh>'
+
 
 class MetaCache():
     key: str = None
@@ -397,7 +518,10 @@ class MetaCache():
         self.data.append(value)
 
     def asarray(self) -> 'NDArray':
-        return array(self.data, dtype=self.dtype)
+        arr = array(self.data, dtype=self.dtype)
+        if len(arr.shape) == 1:
+            arr = arr.reshape(-1, 1)
+        return arr
 
 
 class MeshCache():
@@ -514,3 +638,35 @@ class MeshCache():
                 valarr = valarr.reshape(-1, 1)
             mesh.quadmeta[key] = val.asarray()
         return mesh
+
+    def __str__(self) -> str:
+        outstr = ''
+        if self.grids is not None:
+            outstr += f'grids = \n{self.grids}\n'
+            for key, val in self.gridmeta.items():
+                outstr += f'grids.{key} = \n{val}\n'
+            outstr += '\n'
+        if self.norms is not None:
+            outstr += f'norms = \n{self.norms}\n'
+            for key, val in self.normmeta.items():
+                outstr += f'norms.{key} = \n{val}\n'
+            outstr += '\n'
+        if self.lines is not None:
+            outstr += f'lines = \n{self.lines}\n'
+            for key, val in self.linemeta.items():
+                outstr += f'lines.{key} = \n{val}\n'
+            outstr += '\n'
+        if self.trias is not None:
+            outstr += f'trias = \n{self.trias}\n'
+            for key, val in self.triameta.items():
+                outstr += f'trias.{key} = \n{val}\n'
+            outstr += '\n'
+        if self.quads is not None:
+            outstr += f'quads = \n{self.quads}\n'
+            for key, val in self.quadmeta.items():
+                outstr += f'quads.{key} = \n{val}\n'
+            outstr += '\n'
+        return outstr
+
+    def __repr__(self) -> str:
+        return '<MeshCache>'
