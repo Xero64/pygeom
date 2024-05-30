@@ -7,6 +7,7 @@ from .arrayvector2d import ArrayVector2D as ArrayVector2D
 from .arrayvector2d import zero_arrayvector2d as zero_arrayvector2d
 from .arraytensor2d import ArrayTensor2D as ArrayTensor2D
 from .arraytensor2d import zero_arraytensor2d as zero_arraytensor2d
+from .mesh2d import Mesh2D as Mesh2D
 
 if TYPE_CHECKING:
     from numpy import ndarray

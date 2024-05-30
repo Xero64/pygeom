@@ -1,9 +1,9 @@
 #%%
 # Import Dependencies
-from pygeom.array3d.mesh import Mesh
+from pygeom.array3d import Mesh
 
 #%%
-# Create a MeshCache object
+# Create a Mesh object
 mesh1 = Mesh()
 mesh1.norms.add_meta('grids', int, -1)
 mesh1.quads.add_meta('norms', int, (-1, -1, -1, -1))
@@ -69,7 +69,7 @@ print('Collapsed Lines Removed\n')
 print(mesh1)
 
 #%%
-# Create a MeshCache object
+# Create a Mesh object
 mesh2 = Mesh()
 mesh2.norms.add_meta('grids', int, -1)
 mesh2.quads.add_meta('norms', int, (-1, -1, -1, -1))
@@ -157,7 +157,7 @@ print('Collapsed Lines Removed\n')
 print(mesh3)
 
 #%%
-# Create a MeshCache object
+# Create a Mesh object
 mesh4 = Mesh()
 mesh4.norms.add_meta('grids', int, -1)
 mesh4.quads.add_meta('norms', int, (-1, -1, -1, -1))
@@ -176,6 +176,7 @@ mesh4.quads.add(0, 1, 2, 2, norms=[0, 1, 2, 2])
 mesh4.quads.add(0, 1, 2, 2, norms=[0, 1, 2, 2])
 mesh4.quads.add(0, 1, 0, 2, norms=[0, 1, 0, 2])
 mesh4.quads.add(0, 1, 2, 1, norms=[0, 1, 2, 1])
+mesh4.quads.add(0, 1, 2, 3, norms=[0, 1, 2, 3])
 
 mesh4.resolve_cache()
 
@@ -220,5 +221,11 @@ print(mesh4)
 mesh4.remove_unreferenced_grids()
 
 print('Unreferenced Grids Removed\n')
+
+print(mesh4)
+
+mesh4.collapse_quads_to_trias()
+
+print('Quads Collapsed to Trias\n')
 
 print(mesh4)
