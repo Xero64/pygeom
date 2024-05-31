@@ -118,34 +118,38 @@ class MeshGrids():
         return f'<MeshGrids: size = {self.size:d}>'
 
 
-class MeshNorms():
-    norms: 'NDArray[float64]' = None
+class MeshVectors():
+    label: str = None
+    name: str = None
+    vecs: 'NDArray[float64]' = None
     meta: Dict[str, 'NDArray'] = None
-    norms_cache: List[Tuple[float, float, float]] = None
+    vecs_cache: List[Tuple[float, float, float]] = None
     meta_cache: Dict[str, MetaCache] = None
 
-    def __init__(self) -> None:
-        self.norms = zeros((0, 3), dtype=float64)
+    def __init__(self, label: str, name: str = 'MeshVectors') -> None:
+        self.label = label
+        self.name = name
+        self.vecs = zeros((0, 3), dtype=float64)
         self.meta = {}
-        self.norms_cache = []
+        self.vecs_cache = []
         self.meta_cache = {}
 
     def add_meta(self, key: str, dtype: 'DTypeLike', default: Any) -> None:
         self.meta_cache[key] = MetaCache(key, dtype, default)
 
     def add(self, x: float, y: float, z: float, **kwargs: Dict[str, Any]) -> None:
-        self.norms_cache.append((x, y, z))
+        self.vecs_cache.append((x, y, z))
         for key in self.meta_cache.keys():
             value = kwargs.get(key, self.meta_cache[key].default)
             self.meta_cache[key].append(value)
 
     def clear_cache(self) -> None:
-        self.norms_cache.clear()
+        self.vecs_cache.clear()
         for value in self.meta_cache.values():
             value.clear()
 
     def resolve_cache(self) -> None:
-        self.norms = array(self.norms_cache, dtype=float64)
+        self.vecs = array(self.vecs_cache, dtype=float64)
         for key, value in self.meta_cache.items():
             self.meta[key] = value.asarray()
         self.clear_cache()
@@ -154,7 +158,7 @@ class MeshNorms():
                                          'NDArray[int64]']:
         if self.size == 0:
             return zeros(0, dtype=int64), zeros(0, dtype=int64)
-        data = self.norms
+        data = self.vecs
         if len(self.meta) > 0:
             data = [data]
             for val in self.meta.values():
@@ -167,41 +171,41 @@ class MeshNorms():
         return unind, invind
 
     def apply_inverse(self, invind: 'NDArray[int64]', key: str) -> None:
-        if key == 'norms':
-            raise ValueError('Cannot apply inverse to norms.')
+        if key == self.label:
+            raise ValueError(f'Cannot apply inverse to {self.label:s}.')
         if key in self.meta:
             self.meta[key] = invind[self.meta[key]]
 
-    def __getitem__(self, index: Any) -> 'MeshNorms':
-        meshnorms = MeshNorms()
-        meshnorms.norms = self.norms[index]
-        meshnorms.meta = {}
+    def __getitem__(self, index: Any) -> 'MeshVectors':
+        meshvecs = MeshVectors(self.label, self.name)
+        meshvecs.vecs = self.vecs[index]
+        meshvecs.meta = {}
         for key in self.meta.keys():
-            meshnorms.meta[key] = self.meta[key][index]
-        return meshnorms
+            meshvecs.meta[key] = self.meta[key][index]
+        return meshvecs
 
-    def __setitem__(self, index: Any, value: 'MeshNorms') -> None:
+    def __setitem__(self, index: Any, value: 'MeshVectors') -> None:
         try:
-            self.norms[index] = value.norms
+            self.vecs[index] = value.vecs
             for key in self.meta.keys():
                 self.meta[key][index] = value.meta[key]
         except IndexError:
-            err = 'MeshNorms index out of range.'
+            err = f'{self.name:s} index out of range.'
             raise IndexError(err)
 
     @property
     def size(self) -> int:
-        return self.norms.shape[0]
+        return self.vecs.shape[0]
 
     def __str__(self) -> str:
-        outstr = f'MeshNorms: size = {self.size:d}, dtype = {self.norms.dtype}\n'
-        outstr += f'norms: \n{self.norms:}\n'
+        outstr = f'{self.name:s}: size = {self.size:d}, dtype = {self.vecs.dtype}\n'
+        outstr += f'{self.label}: \n{self.vecs:}\n'
         for key, value in self.meta.items():
             outstr += f'{key}: \n{value:}\n'
         return outstr
 
     def __repr__(self) -> str:
-        return f'<MeshNorms: size = {self.size:d}>'
+        return f'<{self.name:s}: size = {self.size:d}>'
 
 
 class MeshElems():
@@ -315,74 +319,89 @@ class MeshElems():
         return self.grids.shape[0]
 
     def __str__(self) -> str:
-        outstr = f'{self.name:s}: size = {self.size:d}\n'
+        outstr = f'{self.__class__.__qualname__:s}: size = {self.size:d}\n'
         outstr += f'grids: \n{self.grids:}\n'
         for key, value in self.meta.items():
             outstr += f'{key}: \n{value:}\n'
         return outstr
 
     def __repr__(self) -> str:
-        return f'<{self.name:s}: size = {self.size:d}>'
+        return f'<{self.__class__.__qualname__:s}: size = {self.size:d}>'
 
 
 class MeshLines(MeshElems):
-    name: str = 'MeshLines'
     desc: str = 'lines'
     numg: int = 2
 
 
 class MeshTrias(MeshElems):
-    name: str = 'MeshTrias'
     desc: str = 'trias'
     numg: int = 3
 
 
 class MeshQuads(MeshElems):
-    name: str = 'MeshQuads'
     desc: str = 'quads'
     numg: int = 4
 
 
 class Mesh():
     grids: MeshGrids = None
-    norms: MeshNorms = None
     lines: MeshLines = None
     trias: MeshTrias = None
     quads: MeshQuads = None
+    mvecs: Dict[str, MeshVectors] = None
 
     def __init__(self) -> None:
         self.grids = MeshGrids()
-        self.norms = MeshNorms()
         self.lines = MeshLines()
         self.trias = MeshTrias()
         self.quads = MeshQuads()
+        self.mvecs = {}
+
+    def getattr(self, key: str) -> Any:
+        if key not in self.__dict__:
+            if key in self.mvecs:
+                return self.mvecs[key]
+            else:
+                raise AttributeError(f'Mesh has no attribute {key:s}.')
+        else:
+            return self.__dict__[key]
+
+    def add_mesh_vectors(self, label: str, name: str) -> None:
+        self.mvecs[label] = MeshVectors(label, name)
 
     def resolve_cache(self) -> None:
         self.grids.resolve_cache()
-        self.norms.resolve_cache()
         self.lines.resolve_cache()
         self.trias.resolve_cache()
         self.quads.resolve_cache()
+        for mvec in self.mvecs.values():
+            mvec.resolve_cache()
 
     def remove_duplicate_grids(self) -> None:
         if self.grids.size == 0:
             return None
         unind, invind = self.grids.duplicate_indices()
         self.grids = self.grids[unind]
-        self.norms.apply_inverse(invind, 'grids')
         self.lines.apply_inverse(invind, 'grids')
         self.trias.apply_inverse(invind, 'grids')
         self.quads.apply_inverse(invind, 'grids')
+        for mvec in self.mvecs.values():
+            mvec.apply_inverse(invind, 'grids')
 
-    def remove_duplicate_norms(self) -> None:
-        if self.norms.size == 0:
+    def remove_duplicate_vectors(self, label: str) -> None:
+        mvec = self.mvecs[label]
+        if mvec.size == 0:
             return None
-        unind, invind = self.norms.duplicate_indices()
-        self.norms = self.norms[unind]
-        self.grids.apply_inverse(invind, 'norms')
-        self.lines.apply_inverse(invind, 'norms')
-        self.trias.apply_inverse(invind, 'norms')
-        self.quads.apply_inverse(invind, 'norms')
+        unind, invind = mvec.duplicate_indices()
+        self.mvecs[label] = mvec[unind]
+        self.grids.apply_inverse(invind, label)
+        self.lines.apply_inverse(invind, label)
+        self.trias.apply_inverse(invind, label)
+        self.quads.apply_inverse(invind, label)
+        for mlbl, mvec in self.mvecs.items():
+            if mlbl != label:
+                mvec.apply_inverse(invind, label)
 
     def remove_duplicate_lines(self) -> None:
         if self.lines.size == 0:
@@ -390,9 +409,10 @@ class Mesh():
         unind, invind = self.lines.duplicate_indices()
         self.lines = self.lines[unind]
         self.grids.apply_inverse(invind, 'lines')
-        self.norms.apply_inverse(invind, 'lines')
         self.trias.apply_inverse(invind, 'lines')
         self.quads.apply_inverse(invind, 'lines')
+        for mvec in self.mvecs.values():
+            mvec.apply_inverse(invind, 'lines')
 
     def remove_duplicate_trias(self) -> None:
         if self.trias.size == 0:
@@ -400,9 +420,10 @@ class Mesh():
         unind, invind = self.trias.duplicate_indices()
         self.trias = self.trias[unind]
         self.grids.apply_inverse(invind, 'trias')
-        self.norms.apply_inverse(invind, 'trias')
         self.lines.apply_inverse(invind, 'trias')
         self.quads.apply_inverse(invind, 'trias')
+        for mvec in self.mvecs.values():
+            mvec.apply_inverse(invind, 'trias')
 
     def remove_duplicate_quads(self) -> None:
         if self.quads.size == 0:
@@ -410,9 +431,10 @@ class Mesh():
         unind, invind = self.quads.duplicate_indices()
         self.quads = self.quads[unind]
         self.grids.apply_inverse(invind, 'quads')
-        self.norms.apply_inverse(invind, 'quads')
         self.lines.apply_inverse(invind, 'quads')
         self.trias.apply_inverse(invind, 'quads')
+        for mvec in self.mvecs.values():
+            mvec.apply_inverse(invind, 'quads')
 
     def collapse_quads_to_trias(self) -> None:
         ind1 = arange(-1, 3)
@@ -464,14 +486,15 @@ class Mesh():
         refind.append(self.lines.grids.flatten())
         refind.append(self.trias.grids.flatten())
         refind.append(self.quads.grids.flatten())
-        if 'grids' in self.norms.meta:
-            refind.append(self.norms.meta['grids'].flatten())
         if 'grids' in self.lines.meta:
             refind.append(self.lines.meta['grids'].flatten())
         if 'grids' in self.trias.meta:
             refind.append(self.trias.meta['grids'].flatten())
         if 'grids' in self.quads.meta:
             refind.append(self.quads.meta['grids'].flatten())
+        for mvec in self.mvecs.values():
+            if 'grids' in mvec.meta:
+                refind.append(mvec.meta['grids'].flatten())
         refind = hstack(tuple(refind))
         refind = unique(refind)
         invind = zeros(self.grids.size, dtype=int64)
@@ -480,29 +503,31 @@ class Mesh():
         self.lines.apply_inverse(invind, 'grids')
         self.trias.apply_inverse(invind, 'grids')
         self.quads.apply_inverse(invind, 'grids')
-        self.norms.apply_inverse(invind, 'grids')
+        for mvec in self.mvecs.values():
+            mvec.apply_inverse(invind, 'grids')
 
-    def remove_unreferenced_norms(self) -> None:
-        if self.norms.size == 0:
+    def remove_unreferenced_vectors(self, label: str) -> None:
+        mvec = self.mvecs[label]
+        if mvec.size == 0:
             return None
         refind = []
-        if 'norms' in self.grids.meta:
-            refind.append(self.grids.meta['norms'].flatten())
-        if 'norms' in self.lines.meta:
-            refind.append(self.lines.meta['norms'].flatten())
-        if 'norms' in self.trias.meta:
-            refind.append(self.trias.meta['norms'].flatten())
-        if 'norms' in self.quads.meta:
-            refind.append(self.quads.meta['norms'].flatten())
+        if mvec.label in self.grids.meta:
+            refind.append(self.grids.meta[mvec.label].flatten())
+        if mvec.label in self.lines.meta:
+            refind.append(self.lines.meta[mvec.label].flatten())
+        if mvec.label in self.trias.meta:
+            refind.append(self.trias.meta[mvec.label].flatten())
+        if mvec.label in self.quads.meta:
+            refind.append(self.quads.meta[mvec.label].flatten())
         refind = hstack(tuple(refind))
         refind = unique(refind)
-        invind = zeros(self.norms.size, dtype=int64)
+        invind = zeros(mvec.size, dtype=int64)
         invind[refind] = arange(refind.size)
-        self.norms = self.norms[refind]
-        self.grids.apply_inverse(invind, 'norms')
-        self.lines.apply_inverse(invind, 'norms')
-        self.trias.apply_inverse(invind, 'norms')
-        self.quads.apply_inverse(invind, 'norms')
+        self.mvecs[label] = mvec[refind]
+        self.grids.apply_inverse(invind, mvec.label)
+        self.lines.apply_inverse(invind, mvec.label)
+        self.trias.apply_inverse(invind, mvec.label)
+        self.quads.apply_inverse(invind, mvec.label)
 
     def merge(self, mesh: 'Mesh') -> 'Mesh':
 
@@ -515,9 +540,7 @@ class Mesh():
         mergedmesh.grids.meta = {}
         for key, value in self.grids.meta.items():
             meshvalue = mesh.grids.meta[key]
-            if key == 'norms':
-                mergedmesh.grids.meta[key] = vstack((value, meshvalue + self.norms.size))
-            elif key == 'lines':
+            if key == 'lines':
                 mergedmesh.grids.meta[key] = vstack((value, meshvalue + self.lines.size))
             elif key == 'trias':
                 mergedmesh.grids.meta[key] = vstack((value, meshvalue + self.trias.size))
@@ -525,24 +548,37 @@ class Mesh():
                 mergedmesh.grids.meta[key] = vstack((value, meshvalue + self.quads.size))
             else:
                 mergedmesh.grids.meta[key] = vstack((value, meshvalue))
+            if key in self.mvecs:
+                mvec = self.mvecs[key]
+                mergedmesh.grids.meta[key] = vstack((value, meshvalue + mvec.size))
 
-        # Norms
-        mergedmesh.norms.norms = vstack((self.norms.norms, mesh.norms.norms))
+        # Vectors
+        for label, mvec in self.mvecs.items():
 
-        # Norm Meta
-        mergedmesh.norms.meta = {}
-        for key, value in self.norms.meta.items():
-            meshvalue = mesh.norms.meta[key]
-            if key == 'grids':
-                mergedmesh.norms.meta[key] = vstack((value, meshvalue + self.grids.size))
-            elif key == 'lines':
-                mergedmesh.norms.meta[key] = vstack((value, meshvalue + self.lines.size))
-            elif key == 'trias':
-                mergedmesh.norms.meta[key] = vstack((value, meshvalue + self.trias.size))
-            elif key == 'quads':
-                mergedmesh.norms.meta[key] = vstack((value, meshvalue + self.quads.size))
-            else:
-                mergedmesh.norms.meta[key] = vstack((value, meshvalue))
+            mvecself = self.mvecs[label]
+            mvecmesh = mesh.mvecs[label]
+
+            mergedmesh.add_mesh_vectors(label, mvec.name)
+            mvecmerged = mergedmesh.mvecs[label]
+            mvecmerged.vecs = vstack((mvecself.vecs, mvecmesh.vecs))
+
+            # Mesh Vectors Meta
+            mvecmerged.meta = {}
+            for key, value in mvecself.meta.items():
+                meshvalue = mvecmesh.meta[key]
+                if key == 'grids':
+                    mvecmerged.meta[key] = vstack((value, meshvalue + self.grids.size))
+                elif key == 'lines':
+                    mvecmerged.meta[key] = vstack((value, meshvalue + self.lines.size))
+                elif key == 'trias':
+                    mvecmerged.meta[key] = vstack((value, meshvalue + self.trias.size))
+                elif key == 'quads':
+                    mvecmerged.meta[key] = vstack((value, meshvalue + self.quads.size))
+                else:
+                    mvecmerged.meta[key] = vstack((value, meshvalue))
+                if key in self.mvecs:
+                    mvec = self.mvecs[key]
+                    mvecmerged.meta[key] = vstack((value, meshvalue + mvec.size))
 
         # Lines
         mesh_lines_grids = mesh.lines.grids + self.grids.size
@@ -555,14 +591,15 @@ class Mesh():
             meshvalue = mesh.lines.meta[key]
             if key == 'grids':
                 mergedmesh.lines.meta[key] = vstack((value, meshvalue + self.grids.size))
-            elif key == 'norms':
-                mergedmesh.lines.meta[key] = vstack((value, meshvalue + self.norms.size))
             elif key == 'trias':
                 mergedmesh.lines.meta[key] = vstack((value, meshvalue + self.trias.size))
             elif key == 'quads':
                 mergedmesh.lines.meta[key] = vstack((value, meshvalue + self.quads.size))
             else:
                 mergedmesh.lines.meta[key] = vstack((value, meshvalue))
+            if key in self.mvecs:
+                mvec = self.mvecs[key]
+                mergedmesh.lines.meta[key] = vstack((value, meshvalue + mvec.size))
 
         # Trias
         mesh_trias_grids = mesh.trias.grids + self.grids.size
@@ -575,14 +612,15 @@ class Mesh():
             meshvalue = mesh.trias.meta[key]
             if key == 'grids':
                 mergedmesh.trias.meta[key] = vstack((value, meshvalue + self.grids.size))
-            elif key == 'norms':
-                mergedmesh.trias.meta[key] = vstack((value, meshvalue + self.norms.size))
             elif key == 'lines':
                 mergedmesh.trias.meta[key] = vstack((value, meshvalue + self.lines.size))
             elif key == 'quads':
                 mergedmesh.trias.meta[key] = vstack((value, meshvalue + self.quads.size))
             else:
                 mergedmesh.trias.meta[key] = vstack((value, meshvalue))
+            if key in self.mvecs:
+                mvec = self.mvecs[key]
+                mergedmesh.trias.meta[key] = vstack((value, meshvalue + mvec.size))
 
         # Quads
         mesh_quads_grids = mesh.quads.grids + self.grids.size
@@ -595,14 +633,15 @@ class Mesh():
             meshvalue = mesh.quads.meta[key]
             if key == 'grids':
                 mergedmesh.quads.meta[key] = vstack((value, meshvalue + self.grids.size))
-            elif key == 'norms':
-                mergedmesh.quads.meta[key] = vstack((value, meshvalue + self.norms.size))
             elif key == 'lines':
                 mergedmesh.quads.meta[key] = vstack((value, meshvalue + self.lines.size))
             elif key == 'trias':
                 mergedmesh.quads.meta[key] = vstack((value, meshvalue + self.trias.size))
             else:
                 mergedmesh.quads.meta[key] = vstack((value, meshvalue))
+            if key in self.mvecs:
+                mvec = self.mvecs[key]
+                mergedmesh.quads.meta[key] = vstack((value, meshvalue + mvec.size))
 
         return mergedmesh
 
@@ -610,14 +649,14 @@ class Mesh():
         outstr = ''
         if self.grids is not None:
             outstr += f'{self.grids}\n'
-        if self.norms is not None:
-            outstr += f'{self.norms}\n'
         if self.lines is not None:
             outstr += f'{self.lines}\n'
         if self.trias is not None:
             outstr += f'{self.trias}\n'
         if self.quads is not None:
             outstr += f'{self.quads}\n'
+        for mvec in self.mvecs.values():
+            outstr += f'{mvec}\n'
         outstr += '\n'
         return outstr
 

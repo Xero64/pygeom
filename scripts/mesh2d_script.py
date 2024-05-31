@@ -5,19 +5,33 @@ from pygeom.array2d import Mesh2D
 #%%
 # Create a Mesh object
 mesh1 = Mesh2D()
+mesh1.add_mesh_vectors('norms', 'MeshNorms2D')
+mesh1.mvecs['norms'].add_meta('grids', int, -1)
+mesh1.quads.add_meta('norms', int, (-1, -1, -1, -1))
+mesh1.trias.add_meta('norms', int, (-1, -1, -1))
 mesh1.grids.add(-1.0, -1.0)
 mesh1.grids.add(0.0, -1.0)
 mesh1.grids.add(0.0, 0.0)
 mesh1.grids.add(-1.0, 0.0)
-mesh1.quads.add(0, 1, 2, 3)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=0)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=1)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=2)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=3)
+mesh1.quads.add(0, 1, 2, 3, norms=[0, 1, 2, 3])
 mesh1.grids.add(0.0, 0.0)
 mesh1.grids.add(0.0, -1.0)
 mesh1.grids.add(1.0, -1.0)
-mesh1.trias.add(4, 5, 6)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=4)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=5)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=6)
+mesh1.trias.add(4, 5, 6, norms=[4, 5, 6])
 mesh1.grids.add(0.0, 0.0)
 mesh1.grids.add(1.0, -1.0)
 mesh1.grids.add(1.0, 0.0)
-mesh1.trias.add(7, 8, 9)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=7)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=8)
+mesh1.mvecs['norms'].add(0.0, 0.0, grids=9)
+mesh1.trias.add(7, 8, 9, norms=[7, 8, 9])
 mesh1.grids.add(0.0, 0.0)
 mesh1.grids.add(1.0, 0.0)
 mesh1.lines.add(10, 11)
@@ -37,6 +51,12 @@ print('Duplicate Grids Removed\n')
 
 print(mesh1)
 
+mesh1.remove_duplicate_vectors('norms')
+
+print('Duplicate Norms Removed\n')
+
+print(mesh1)
+
 mesh1.remove_duplicate_lines()
 
 print('Duplicate Lines Removed\n')
@@ -52,19 +72,33 @@ print(mesh1)
 #%%
 # Create a Mesh2D object
 mesh2 = Mesh2D()
+mesh2.add_mesh_vectors('norms', 'MeshNorms')
+mesh2.mvecs['norms'].add_meta('grids', int, -1)
+mesh2.quads.add_meta('norms', int, (-1, -1, -1, -1))
+mesh2.trias.add_meta('norms', int, (-1, -1, -1))
 mesh2.grids.add(0.0, 0.0)
 mesh2.grids.add(1.0, 0.0)
 mesh2.grids.add(1.0, 1.0)
 mesh2.grids.add(0.0, 1.0)
-mesh2.quads.add(0, 1, 2, 3)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=0)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=1)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=2)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=3)
+mesh2.quads.add(0, 1, 2, 3, norms=[0, 1, 2, 3])
 mesh2.grids.add(0.0, 0.0)
 mesh2.grids.add(0.0, 1.0)
 mesh2.grids.add(-1.0, 1.0)
-mesh2.trias.add(4, 5, 6)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=4)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=5)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=6)
+mesh2.trias.add(4, 5, 6, norms=[4, 5, 6])
 mesh2.grids.add(0.0, 0.0)
 mesh2.grids.add(-1.0, 1.0)
 mesh2.grids.add(-1.0, 0.0)
-mesh2.trias.add(7, 8, 9)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=7)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=8)
+mesh2.mvecs['norms'].add(0.0, 0.0, grids=9)
+mesh2.trias.add(7, 8, 9, norms=[7, 8, 9])
 
 mesh2.resolve_cache()
 
@@ -73,6 +107,12 @@ print(mesh2)
 mesh2.remove_duplicate_grids()
 
 print('Duplicate Grids Removed\n')
+
+print(mesh2)
+
+mesh2.remove_duplicate_vectors('norms')
+
+print('Duplicate Norms Removed\n')
 
 print(mesh2)
 
@@ -100,6 +140,12 @@ print('Duplicate Grids Removed\n')
 
 print(mesh3)
 
+mesh3.remove_duplicate_vectors('norms')
+
+print('Duplicate Norms Removed\n')
+
+print(mesh3)
+
 mesh3.remove_duplicate_lines()
 
 print('Duplicate Lines Removed\n')
@@ -115,10 +161,18 @@ print(mesh3)
 #%%
 # Create a Mesh2D object
 mesh4 = Mesh2D()
+mesh4.add_mesh_vectors('norms', 'MeshNorms')
+mesh4.mvecs['norms'].add_meta('grids', int, -1)
+mesh4.quads.add_meta('norms', int, (-1, -1, -1, -1))
+mesh4.trias.add_meta('norms', int, (-1, -1, -1))
 mesh4.grids.add(0.0, 0.0)
 mesh4.grids.add(1.0, 0.0)
 mesh4.grids.add(1.0, 1.0)
 mesh4.grids.add(0.0, 1.0)
+mesh4.mvecs['norms'].add(0.0, 0.0, grids=0)
+mesh4.mvecs['norms'].add(0.0, 0.0, grids=1)
+mesh4.mvecs['norms'].add(0.0, 0.0, grids=2)
+mesh4.mvecs['norms'].add(0.0, 0.0, grids=3)
 mesh4.quads.add(0, 0, 1, 2)
 mesh4.quads.add(0, 1, 1, 2)
 mesh4.quads.add(0, 1, 2, 2)
@@ -158,6 +212,12 @@ print(mesh4)
 mesh4.remove_unreferenced_grids()
 
 print('Unreferenced Grids Removed\n')
+
+print(mesh4)
+
+mesh4.remove_unreferenced_vectors('norms')
+
+print('Unreferenced Norms Removed\n')
 
 print(mesh4)
 
