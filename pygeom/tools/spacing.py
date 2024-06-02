@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy import linspace, asarray, cos, cumsum, pi, sqrt, zeros
+from numpy import asarray, cos, cumsum, linspace, pi, sqrt, zeros
 
 if TYPE_CHECKING:
     from numpy import ndarray

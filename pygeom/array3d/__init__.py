@@ -6,7 +6,6 @@ from numpy.linalg import solve
 from .arrayvector import ArrayVector as ArrayVector
 from .arrayvector import arrayvector3d_from_2d as arrayvector3d_from_2d
 from .arrayvector import zero_arrayvector as zero_arrayvector
-from .mesh import Mesh as Mesh
 
 if TYPE_CHECKING:
     from numpy import ndarray
