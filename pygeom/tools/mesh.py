@@ -61,102 +61,6 @@ class MeshObject():
         self.meta[key] = zeros(0, dtype=dtype)
 
 
-class MeshGrids(MeshObject):
-    ndim: int = 3
-    grids: 'NDArray[float64]' = None
-    grids_cache: List[Tuple[float, float, float]] = None
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.grids = zeros((0, self.ndim), dtype=float64)
-        self.grids_cache = []
-
-    def add(self, x: float, y: float, z: float, **kwargs: Dict[str, Any]) -> None:
-        self.grids_cache.append((x, y, z))
-        for key in self.meta_cache.keys():
-            value = kwargs.get(key, self.meta_cache[key].default)
-            self.meta_cache[key].append(value)
-
-    def clear_cache(self) -> None:
-        self.grids_cache.clear()
-        for value in self.meta_cache.values():
-            value.clear()
-
-    def resolve_cache(self) -> None:
-        self.grids = array(self.grids_cache, dtype=float64)
-        for key, value in self.meta_cache.items():
-            self.meta[key] = value.asarray()
-        self.clear_cache()
-
-    def duplicate_indices(self) -> Tuple['NDArray[int64]',
-                                         'NDArray[int64]']:
-        if self.size == 0:
-            return zeros(0, dtype=int64), zeros(0, dtype=int64)
-        data = self.grids
-        if len(self.meta) > 0:
-            data = [data]
-            for val in self.meta.values():
-                if len(val.shape) == 1:
-                    val = val.reshape(-1, 1)
-                data.append(val)
-            data = hstack(tuple(data))
-        _, unind, invind = unique(data, return_index=True,
-                                  return_inverse=True, axis=0)
-        return unind, invind
-
-    def apply_inverse(self, invind: 'NDArray[int64]', key: str) -> None:
-        if key == 'grids':
-            raise ValueError('Cannot apply inverse to grids.')
-        if key in self.meta:
-            self.meta[key] = invind[self.meta[key]]
-
-    def __getitem__(self, index: Any) -> 'MeshGrids':
-        meshgrids = self.__class__()
-        meshgrids.grids_cache = self.grids_cache
-        meshgrids.meta_cache = self.meta_cache
-        meshgrids.grids = self.grids[index]
-        meshgrids.meta = {}
-        for key in self.meta.keys():
-            meshgrids.meta[key] = self.meta[key][index]
-        return meshgrids
-
-    def __setitem__(self, index: Any, value: 'MeshGrids') -> None:
-        try:
-            self.grids[index] = value.grids
-            for key in self.meta.keys():
-                self.meta[key][index] = value.meta[key]
-        except IndexError:
-            err = f'{self.__class__.__qualname__:s} index out of range.'
-            raise IndexError(err)
-
-    @property
-    def size(self) -> int:
-        return self.grids.shape[0]
-
-    def __str__(self) -> str:
-        outstr = f'{self.__class__.__qualname__:s}: size = {self.size:d}, dtype = {self.grids.dtype}\n'
-        outstr += f'grids: \n{self.grids:}\n'
-        for key, value in self.meta.items():
-            outstr += f'{key}: \n{value:}\n'
-        return outstr
-
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__qualname__:s}: size = {self.size:d}>'
-
-
-class MeshGrids2D(MeshGrids):
-    ndim: int = 2
-
-    def add(self, x: float, y: float, **kwargs: Dict[str, Any]) -> None:
-        self.grids_cache.append((x, y))
-        for key in self.meta_cache.keys():
-            value = kwargs.get(key, self.meta_cache[key].default)
-            self.meta_cache[key].append(value)
-
-    def __getitem__(self, index: Any) -> 'MeshGrids2D':
-        return super().__getitem__(index)
-
-
 class MeshVectors(MeshObject):
     ndim: int = 3
     name: str = None
@@ -258,6 +162,22 @@ class MeshVectors2D(MeshVectors):
 
     def __getitem__(self, index: Any) -> 'MeshVectors2D':
         return super().__getitem__(index)
+
+
+class MeshGrids(MeshVectors):
+    name: str = 'MeshGrids'
+    label: str = 'grids'
+
+    def __init__(self, label: str = 'grids', name: str = 'MeshGrids') -> None:
+        super().__init__(label, name)
+
+
+class MeshGrids2D(MeshVectors2D):
+    name: str = 'MeshGrids2D'
+    label: str = 'grids'
+
+    def __init__(self, label: str = 'grids', name: str = 'MeshGrids') -> None:
+        super().__init__(label, name)
 
 
 class MeshElems(MeshObject):
@@ -378,16 +298,19 @@ class MeshElems(MeshObject):
 
 
 class MeshLines(MeshElems):
+    name: str = 'MeshLines'
     desc: str = 'lines'
     numg: int = 2
 
 
 class MeshTrias(MeshElems):
+    name: str = 'MeshTrias'
     desc: str = 'trias'
     numg: int = 3
 
 
 class MeshQuads(MeshElems):
+    name: str = 'MeshQuads'
     desc: str = 'quads'
     numg: int = 4
 
@@ -707,180 +630,128 @@ def merge_meshes(*meshes: Mesh) -> Mesh:
         if not mergedmesh.compare_mesh_template(mesh):
             raise ValueError('Meshes have different templates.')
 
-    # Merge Grids
-    offset = 0
+    grids_offset = 0
+    lines_offset = 0
+    trias_offset = 0
+    quads_offset = 0
+    attrs_offset = {akey: 0 for akey in mergedmesh.attrs.keys()}
+
     grids = []
-    linegrids = []
-    triagrids = []
-    quadgrids = []
-    attrgrids = {akey: [] for akey, attr in mergedmesh.attrs.items() if 'grids' in attr.meta}
+    lines = []
+    trias = []
+    quads = []
+    attrs = {akey: [] for akey in mergedmesh.attrs.keys()}
+
+    grids_meta = {mkey: [] for mkey in mergedmesh.grids.meta.keys()}
+    lines_meta = {mkey: [] for mkey in mergedmesh.lines.meta.keys()}
+    trias_meta = {mkey: [] for mkey in mergedmesh.trias.meta.keys()}
+    quads_meta = {mkey: [] for mkey in mergedmesh.quads.meta.keys()}
+    attrs_meta = {akey: {mkey: [] for mkey in attr.meta.keys()} for akey, attr in mergedmesh.attrs.items()}
+
     for mesh in meshes:
-        grids.append(mesh.grids.grids)
+        if mesh.grids.size > 0:
+            grids.append(mesh.grids.vecs)
+            for mkey in grids_meta:
+                if mkey == 'grids':
+                    grids_meta[mkey].append(mesh.grids.meta[mkey] + grids_offset)
+                elif mkey == 'lines':
+                    grids_meta[mkey].append(mesh.grids.meta[mkey] + lines_offset)
+                elif mkey == 'trias':
+                    grids_meta[mkey].append(mesh.grids.meta[mkey] + trias_offset)
+                elif mkey == 'quads':
+                    grids_meta[mkey].append(mesh.grids.meta[mkey] + quads_offset)
+                elif mkey in mesh.attrs:
+                    grids_meta[mkey].append(mesh.grids.meta[mkey] + attrs_offset[mkey])
+                else:
+                    grids_meta[mkey].append(mesh.grids.meta[mkey])
         if mesh.lines.size > 0:
-            linegrids.append(mesh.lines.grids + offset)
+            lines.append(mesh.lines.grids + grids_offset)
+            for mkey in lines_meta:
+                if mkey == 'grids':
+                    lines_meta[mkey].append(mesh.lines.meta[mkey] + grids_offset)
+                elif mkey == 'lines':
+                    lines_meta[mkey].append(mesh.lines.meta[mkey] + lines_offset)
+                elif mkey == 'trias':
+                    lines_meta[mkey].append(mesh.lines.meta[mkey] + trias_offset)
+                elif mkey == 'quads':
+                    lines_meta[mkey].append(mesh.lines.meta[mkey] + quads_offset)
+                elif mkey in mesh.attrs:
+                    lines_meta[mkey].append(mesh.lines.meta[mkey] + attrs_offset[mkey])
+                else:
+                    lines_meta[mkey].append(mesh.lines.meta[mkey])
         if mesh.trias.size > 0:
-            triagrids.append(mesh.trias.grids + offset)
+            trias.append(mesh.trias.grids + grids_offset)
+            for mkey in trias_meta:
+                if mkey == 'grids':
+                    trias_meta[mkey].append(mesh.trias.meta[mkey] + grids_offset)
+                elif mkey == 'lines':
+                    trias_meta[mkey].append(mesh.trias.meta[mkey] + lines_offset)
+                elif mkey == 'trias':
+                    trias_meta[mkey].append(mesh.trias.meta[mkey] + trias_offset)
+                elif mkey == 'quads':
+                    trias_meta[mkey].append(mesh.trias.meta[mkey] + quads_offset)
+                elif mkey in mesh.attrs:
+                    trias_meta[mkey].append(mesh.trias.meta[mkey] + attrs_offset[mkey])
+                else:
+                    trias_meta[mkey].append(mesh.trias.meta[mkey])
         if mesh.quads.size > 0:
-            quadgrids.append(mesh.quads.grids + offset)
-        for akey in attrgrids:
-            attr = mesh.attrs[akey]
-            if attr.meta['grids'].size > 0:
-                attrgrids[attr.label].append(attr.meta['grids'] + offset)
-        offset += mesh.grids.size
+            quads.append(mesh.quads.grids + grids_offset)
+            for mkey in quads_meta:
+                if mkey == 'grids':
+                    quads_meta[mkey].append(mesh.quads.meta[mkey] + grids_offset)
+                elif mkey == 'lines':
+                    quads_meta[mkey].append(mesh.quads.meta[mkey] + lines_offset)
+                elif mkey == 'trias':
+                    quads_meta[mkey].append(mesh.quads.meta[mkey] + trias_offset)
+                elif mkey == 'quads':
+                    quads_meta[mkey].append(mesh.quads.meta[mkey] + quads_offset)
+                elif mkey in mesh.attrs:
+                    quads_meta[mkey].append(mesh.quads.meta[mkey] + attrs_offset[mkey])
+                else:
+                    quads_meta[mkey].append(mesh.quads.meta[mkey])
+        for akey in mergedmesh.attrs.keys():
+            if mesh.attrs[akey].size > 0:
+                attrs[akey].append(mesh.attrs[akey].vecs)
+                for mkey in attrs_meta[akey]:
+                    if mkey == 'grids':
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey] + grids_offset)
+                    elif mkey == 'lines':
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey] + lines_offset)
+                    elif mkey == 'trias':
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey] + trias_offset)
+                    elif mkey == 'quads':
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey] + quads_offset)
+                    elif mkey in mesh.attrs[akey].meta:
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey] + attrs_offset[akey])
+                    else:
+                        attrs_meta[akey][mkey].append(mesh.attrs[akey].meta[mkey])
+        grids_offset += mesh.grids.size
+        lines_offset += mesh.lines.size
+        trias_offset += mesh.trias.size
+        quads_offset += mesh.quads.size
+        for akey in mergedmesh.attrs.keys():
+            attrs_offset[akey] += mesh.attrs[akey].size
 
     if len(grids) > 0:
-        mergedmesh.grids.grids = vstack(tuple(grids))
-    if len(linegrids) > 0:
-        mergedmesh.lines.grids = vstack(tuple(linegrids))
-    if len(triagrids) > 0:
-        mergedmesh.trias.grids = vstack(tuple(triagrids))
-    if len(quadgrids) > 0:
-        mergedmesh.quads.grids = vstack(tuple(quadgrids))
-    for key in attrgrids:
-        if len(attrgrids[key]) > 0:
-            mergedmesh.attrs[key].meta['grids'] = vstack(tuple(attrgrids[key]))
-
-    # Merge Lines
-    offset = 0
-    lines = []
-    gridlines = []
-    trialines = []
-    quadlines = []
-    attrlines = {akey: [] for akey, attr in mergedmesh.attrs.items() if 'lines' in attr.meta}
-    for mesh in meshes:
-        if mesh.lines.size > 0:
-            lines.append(mesh.lines.grids + offset)
-        if mesh.grids.size > 0 and 'lines' in mesh.grids.meta:
-            gridlines.append(mesh.grids.meta['lines'] + offset)
-        if mesh.trias.size > 0 and 'lines' in mesh.trias.meta:
-            trialines.append(mesh.trias.meta['lines'] + offset)
-        if mesh.quads.size > 0 and 'lines' in mesh.quads.meta:
-            quadlines.append(mesh.quads.meta['lines'] + offset)
-        for akey in attrlines:
-            attr = mesh.attrs[akey]
-            if attr.meta['lines'].size > 0:
-                attrlines[attr.label].append(attr.meta['lines'] + offset)
-        offset += mesh.lines.size
-
+        mergedmesh.grids.vecs = vstack(tuple(grids))
+        for mkey in grids_meta:
+            mergedmesh.grids.meta[mkey] = vstack(tuple(grids_meta[mkey]))
     if len(lines) > 0:
         mergedmesh.lines.grids = vstack(tuple(lines))
-    if len(gridlines) > 0:
-        mergedmesh.grids.meta['lines'] = vstack(tuple(gridlines))
-    if len(trialines) > 0:
-        mergedmesh.trias.meta['lines'] = vstack(tuple(trialines))
-    if len(quadlines) > 0:
-        mergedmesh.quads.meta['lines'] = vstack(tuple(quadlines))
-    for key in attrlines:
-        if len(attrlines[key]) > 0:
-            mergedmesh.attrs[key].meta['lines'] = vstack(tuple(attrlines[key]))
-
-    # Merge Trias
-    offset = 0
-    trias = []
-    gridtrias = []
-    linetrias = []
-    quadtrias = []
-    attrtrias = {akey: [] for akey, attr in mergedmesh.attrs.items() if 'trias' in attr.meta}
-    for mesh in meshes:
-        if mesh.trias.size > 0:
-            trias.append(mesh.trias.grids + offset)
-        if mesh.grids.size > 0 and 'trias' in mesh.grids.meta:
-            gridtrias.append(mesh.grids.meta['trias'] + offset)
-        if mesh.lines.size > 0 and 'trias' in mesh.lines.meta:
-            linetrias.append(mesh.lines.meta['trias'] + offset)
-        if mesh.quads.size > 0 and 'trias' in mesh.quads.meta:
-            quadtrias.append(mesh.quads.meta['trias'] + offset)
-        for akey in attrtrias:
-            attr = mesh.attrs[akey]
-            if attr.meta['trias'].size > 0:
-                attrtrias[attr.label].append(attr.meta['trias'] + offset)
-        offset += mesh.trias.size
-
+        for mkey in lines_meta:
+            mergedmesh.lines.meta[mkey] = vstack(tuple(lines_meta[mkey]))
     if len(trias) > 0:
         mergedmesh.trias.grids = vstack(tuple(trias))
-    if len(gridtrias) > 0:
-        mergedmesh.grids.meta['trias'] = vstack(tuple(gridtrias))
-    if len(linetrias) > 0:
-        mergedmesh.lines.meta['trias'] = vstack(tuple(linetrias))
-    if len(quadtrias) > 0:
-        mergedmesh.quads.meta['trias'] = vstack(tuple(quadtrias))
-    for key in attrtrias:
-        if len(attrtrias[key]) > 0:
-            mergedmesh.attrs[key].meta['trias'] = vstack(tuple(attrtrias[key]))
-
-    # Merge Quads
-    offset = 0
-    quads = []
-    gridquads = []
-    linequads = []
-    triaquads = []
-    attrquads = {akey: [] for akey, attr in mergedmesh.attrs.items() if 'quads' in attr.meta}
-    for mesh in meshes:
-        if mesh.quads.size > 0:
-            quads.append(mesh.quads.grids + offset)
-        if mesh.grids.size > 0 and 'quads' in mesh.grids.meta:
-            gridquads.append(mesh.grids.meta['quads'] + offset)
-        if mesh.lines.size > 0 and 'quads' in mesh.lines.meta:
-            linequads.append(mesh.lines.meta['quads'] + offset)
-        if mesh.trias.size > 0 and 'quads' in mesh.trias.meta:
-            triaquads.append(mesh.trias.meta['quads'] + offset)
-        for akey in attrquads:
-            attr = mesh.attrs[akey]
-            if attr.meta['quads'].size > 0:
-                attrquads[attr.label].append(attr.meta['quads'] + offset)
-        offset += mesh.quads.size
-
+        for mkey in trias_meta:
+            mergedmesh.trias.meta[mkey] = vstack(tuple(trias_meta[mkey]))
     if len(quads) > 0:
         mergedmesh.quads.grids = vstack(tuple(quads))
-    if len(gridquads) > 0:
-        mergedmesh.grids.meta['quads'] = vstack(tuple(gridquads))
-    if len(linequads) > 0:
-        mergedmesh.lines.meta['quads'] = vstack(tuple(linequads))
-    if len(triaquads) > 0:
-        mergedmesh.trias.meta['quads'] = vstack(tuple(triaquads))
-    for key in attrquads:
-        if len(attrquads[key]) > 0:
-            mergedmesh.attrs[key].meta['quads'] = vstack(tuple(attrquads[key]))
-
-    # Merge Attrs
-    for key in mergedmesh.attrs:
-        offset = 0
-        attrs = []
-        gridattrs = []
-        lineattrs = []
-        triaattrs = []
-        quadattrs = []
-        attrattrs = {akey: [] for akey, attr in mergedmesh.attrs.items() if key in attr.meta}
-        attr = mergedmesh.attrs[key]
-        for mesh in meshes:
-            if mesh.attrs[key].size > 0:
-                attrs.append(mesh.attrs[key].vecs)
-            if mesh.grids.size > 0 and key in mesh.grids.meta:
-                gridattrs.append(mesh.grids.meta[key] + offset)
-            if mesh.lines.size > 0 and key in mesh.lines.meta:
-                lineattrs.append(mesh.lines.meta[key] + offset)
-            if mesh.trias.size > 0 and key in mesh.trias.meta:
-                triaattrs.append(mesh.trias.meta[key] + offset)
-            if mesh.quads.size > 0 and key in mesh.quads.meta:
-                quadattrs.append(mesh.quads.meta[key] + offset)
-            for akey in attrattrs:
-                attr = mesh.attrs[akey]
-                if attr.meta[key].size > 0:
-                    attrattrs[attr.label].append(attr.meta[key] + offset)
-            offset += mesh.attrs[key].size
-
-        if len(attrs) > 0:
-            mergedmesh.attrs[key].vecs = vstack(tuple(attrs))
-        if len(gridattrs) > 0:
-            mergedmesh.grids.meta[key] = vstack(tuple(gridattrs))
-        if len(lineattrs) > 0:
-            mergedmesh.lines.meta[key] = vstack(tuple(lineattrs))
-        if len(triaattrs) > 0:
-            mergedmesh.trias.meta[key] = vstack(tuple(triaattrs))
-        if len(quadattrs) > 0:
-            mergedmesh.quads.meta[key] = vstack(tuple(quadattrs))
-        for akey in attrattrs:
-            if len(attrattrs[akey]) > 0:
-                mergedmesh.attrs[akey].meta[key] = vstack(tuple(attrattrs[akey]))
+        for mkey in quads_meta:
+            mergedmesh.quads.meta[mkey] = vstack(tuple(quads_meta[mkey]))
+    for akey in mergedmesh.attrs.keys():
+        if len(attrs[akey]) > 0:
+            mergedmesh.attrs[akey].vecs = vstack(tuple(attrs[akey]))
+            for mkey in attrs_meta[akey]:
+                mergedmesh.attrs[akey].meta[mkey] = vstack(tuple(attrs_meta[akey][mkey]))
 
     return mergedmesh
