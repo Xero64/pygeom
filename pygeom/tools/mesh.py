@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from numpy import (arange, argsort, array, bool_, float64, hstack, int64,
-                   logical_and, take_along_axis, unique, vstack, zeros)
+                   logical_and, take_along_axis, unique, vstack, zeros, round)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
@@ -43,6 +43,15 @@ class MetaCache():
         outstr += f', default = {self.default}'
         outstr += f', size = {self.size:d}'
         outstr += '>'
+        return outstr
+
+    def __str__(self) -> str:
+        outstr = 'MetaCache'
+        outstr += f': key = {self.key:s}'
+        outstr += f', dtype = {self.dtype}'
+        outstr += f', default = {self.default}'
+        outstr += f', size = {self.size:d}'
+        outstr += '\n'
         return outstr
 
 
@@ -92,11 +101,14 @@ class MeshVectors(MeshObject):
             self.meta[key] = value.asarray()
         self.clear_cache()
 
-    def duplicate_indices(self) -> Tuple['NDArray[int64]',
-                                         'NDArray[int64]']:
+    def duplicate_indices(self, decimals: Optional[int] = None) -> Tuple['NDArray[int64]',
+                                                                         'NDArray[int64]']:
         if self.size == 0:
             return zeros(0, dtype=int64), zeros(0, dtype=int64)
-        data = self.vecs
+        if decimals is not None:
+            data = round(self.vecs, decimals=decimals)
+        else:
+            data = self.vecs
         if len(self.meta) > 0:
             data = [data]
             for val in self.meta.values():
@@ -137,12 +149,16 @@ class MeshVectors(MeshObject):
     def size(self) -> int:
         return self.vecs.shape[0]
 
-    def __str__(self) -> str:
+    @property
+    def full_str(self) -> str:
         outstr = f'{self.name:s}: size = {self.size:d}, dtype = {self.vecs.dtype}\n'
         outstr += f'{self.label}: \n{self.vecs:}\n'
         for key, value in self.meta.items():
             outstr += f'{key}: \n{value:}\n'
         return outstr
+
+    def __str__(self) -> str:
+        return f'{self.name:s}: size = {self.size:d}, dtype = {self.vecs.dtype}\n'
 
     def __repr__(self) -> str:
         return f'<{self.name:s}: size = {self.size:d}>'
@@ -286,12 +302,16 @@ class MeshElems(MeshObject):
     def size(self) -> int:
         return self.grids.shape[0]
 
-    def __str__(self) -> str:
+    @property
+    def full_str(self) -> str:
         outstr = f'{self.name:s}: size = {self.size:d}\n'
         outstr += f'grids: \n{self.grids:}\n'
         for key, value in self.meta.items():
             outstr += f'{key}: \n{value:}\n'
         return outstr
+
+    def __str__(self) -> str:
+        return f'{self.name:s}: size = {self.size:d}\n'
 
     def __repr__(self) -> str:
         return f'<{self.name:s}: size = {self.size:d}>'
@@ -360,10 +380,10 @@ class Mesh():
         for attr in self.attrs.values():
             attr.resolve_cache()
 
-    def remove_duplicate_grids(self) -> None:
+    def remove_duplicate_grids(self, decimals: Optional[int] = None) -> None:
         if self.grids.size == 0:
             return None
-        unind, invind = self.grids.duplicate_indices()
+        unind, invind = self.grids.duplicate_indices(decimals=decimals)
         self.grids = self.grids[unind]
         self.lines.apply_inverse(invind, 'grids')
         self.trias.apply_inverse(invind, 'grids')
@@ -371,11 +391,12 @@ class Mesh():
         for attr in self.attrs.values():
             attr.apply_inverse(invind, 'grids')
 
-    def remove_duplicate_vectors(self, label: str) -> None:
+    def remove_duplicate_vectors(self, label: str,
+                                 decimals: Optional[int] = None) -> None:
         attr = self.attrs[label]
         if attr.size == 0:
             return None
-        unind, invind = attr.duplicate_indices()
+        unind, invind = attr.duplicate_indices(decimals=decimals)
         self.attrs[label] = attr[unind]
         self.grids.apply_inverse(invind, label)
         self.lines.apply_inverse(invind, label)
@@ -589,18 +610,34 @@ class Mesh():
         outstr += '\n'
         return outstr
 
+    @property
+    def full_str(self) -> str:
+        outstr = ''
+        if self.grids is not None:
+            outstr += f'{self.grids.full_str}\n'
+        if self.lines is not None:
+            outstr += f'{self.lines.full_str}\n'
+        if self.trias is not None:
+            outstr += f'{self.trias.full_str}\n'
+        if self.quads is not None:
+            outstr += f'{self.quads.full_str}\n'
+        for attr in self.attrs.values():
+            outstr += f'{attr.full_str}\n'
+        outstr += '\n'
+        return outstr
+
     def __str__(self) -> str:
         outstr = ''
         if self.grids is not None:
-            outstr += f'{self.grids}\n'
+            outstr += f'{self.grids}'
         if self.lines is not None:
-            outstr += f'{self.lines}\n'
+            outstr += f'{self.lines}'
         if self.trias is not None:
-            outstr += f'{self.trias}\n'
+            outstr += f'{self.trias}'
         if self.quads is not None:
-            outstr += f'{self.quads}\n'
+            outstr += f'{self.quads}'
         for attr in self.attrs.values():
-            outstr += f'{attr}\n'
+            outstr += f'{attr}'
         outstr += '\n'
         return outstr
 
