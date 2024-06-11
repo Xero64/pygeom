@@ -101,6 +101,28 @@ class MeshVectors(MeshObject):
             self.meta[key] = value.asarray()
         self.clear_cache()
 
+    def append_cache(self) -> None:
+        vecs = array(self.vecs_cache, dtype=float64)
+        meta = {}
+        for key, value in self.meta_cache.items():
+            meta[key] = value.asarray()
+        vec_data = []
+        meta_data = {mkey: [] for mkey in meta.keys()}
+        if self.size > 0:
+            vec_data.append(self.vecs)
+            for key in self.meta.keys():
+                meta_data[key].append(self.meta[key])
+        if len(vecs) > 0:
+            vec_data.append(vecs)
+            for key in meta.keys():
+                meta_data[key].append(meta[key])
+        if len(vec_data) > 0:
+            self.vecs = vstack(tuple(vec_data))
+            for key in meta.keys():
+                if len(meta_data[key]) > 0:
+                    self.meta[key] = vstack(tuple(meta_data[key]))
+        self.clear_cache()
+
     def duplicate_indices(self, decimals: Optional[int] = None) -> Tuple['NDArray[int64]',
                                                                          'NDArray[int64]']:
         if self.size == 0:
@@ -223,6 +245,28 @@ class MeshElems(MeshObject):
         self.grids = array(self.grids_cache, dtype=int64)
         for key, value in self.meta_cache.items():
             self.meta[key] = value.asarray()
+        self.clear_cache()
+
+    def append_cache(self) -> None:
+        grids = array(self.grids_cache, dtype=int64)
+        meta = {}
+        for key, value in self.meta_cache.items():
+            meta[key] = value.asarray()
+        grid_data = []
+        meta_data = {mkey: [] for mkey in meta.keys()}
+        if self.size > 0:
+            grid_data.append(self.grids)
+            for key in self.meta.keys():
+                meta_data[key].append(self.meta[key])
+        if len(grids) > 0:
+            grid_data.append(grids)
+            for key in meta.keys():
+                meta_data[key].append(meta[key])
+        if len(grid_data) > 0:
+            self.grids = vstack(tuple(grid_data))
+            for key in meta.keys():
+                if len(meta_data[key]) > 0:
+                    self.meta[key] = vstack(tuple(meta_data[key]))
         self.clear_cache()
 
     def duplicate_indices(self) -> Tuple['NDArray[int64]',
@@ -379,6 +423,14 @@ class Mesh():
         self.quads.resolve_cache()
         for attr in self.attrs.values():
             attr.resolve_cache()
+
+    def append_cache(self) -> None:
+        self.grids.append_cache()
+        self.lines.append_cache()
+        self.trias.append_cache()
+        self.quads.append_cache()
+        for attr in self.attrs.values():
+            attr.append_cache()
 
     def remove_duplicate_grids(self, decimals: Optional[int] = None) -> None:
         if self.grids.size == 0:
