@@ -1,14 +1,16 @@
 from typing import TYPE_CHECKING, Tuple, Union
 
+from numpy import float64
+
 from ..geom3d import Vector
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from numpy.typing import NDArray
 
     from .arrayvector import ArrayVector
     LineLike = Union['Line', 'Lines']
     from numpy.typing import DTypeLike
-    ArrayLike = Union['ndarray', 'ArrayVector']
+    ArrayLike = Union['NDArray[float64]', 'ArrayVector']
 
 class Line():
     """Line Class"""
@@ -16,7 +18,7 @@ class Line():
     pnta: 'Vector' = None
     pntb: 'Vector' = None
     _lvec: 'Vector' = None
-    _lmag: 'ndarray' = None
+    _lmag: 'NDArray[float64]' = None
     _ldir: 'Vector' = None
 
     def __init__(self, pnta: 'Vector', pntb: 'Vector') -> None:
@@ -30,7 +32,7 @@ class Line():
         return self._lvec
 
     @property
-    def lmag(self) -> 'ndarray':
+    def lmag(self) -> 'NDArray[float64]':
         if self._lmag is None:
             self._lmag = self.lvec.return_magnitude()
         return self._lmag
@@ -50,7 +52,7 @@ class Lines():
     pnta: 'ArrayVector' = None
     pntb: 'ArrayVector' = None
     _lvec: 'ArrayVector' = None
-    _lmag: 'ndarray' = None
+    _lmag: 'NDArray[float64]' = None
     _ldir: 'ArrayVector' = None
 
     def __init__(self, pnta: 'ArrayVector', pntb: 'ArrayVector') -> None:
@@ -64,7 +66,7 @@ class Lines():
         return self._lvec
 
     @property
-    def lmag(self) -> 'ndarray':
+    def lmag(self) -> 'NDArray[float64]':
         if self._lmag is None:
             self._lmag = self.lvec.return_magnitude()
         return self._lmag

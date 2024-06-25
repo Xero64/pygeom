@@ -1,35 +1,34 @@
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple, Union
 
-from numpy import divide, isscalar, split, stack, zeros
+from numpy import divide, float64, isscalar, split, stack, zeros
 
 from ..geom3d.vector import Vector
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
     VectorLike = Union['Vector', 'ArrayVector']
     from ..array2d.arrayvector2d import ArrayVector2D
 
 class ArrayVector(Vector):
     """ArrayVector Class"""
-    x: 'ndarray' = None
-    y: 'ndarray' = None
-    z: 'ndarray' = None
+    x: 'NDArray[float64]' = None
+    y: 'NDArray[float64]' = None
+    z: 'NDArray[float64]' = None
 
-    def __init__(self, x: 'ndarray', y: 'ndarray', z: 'ndarray') -> None:
+    def __init__(self, x: 'NDArray[float64]', y: 'NDArray[float64]', z: 'NDArray[float64]') -> None:
         self.x = x
         self.y = y
         self.z = z
         if isscalar(x) and isscalar(y) and isscalar(z):
             self.__class__ = Vector
 
-    def return_magnitude(self) -> 'ndarray':
+    def return_magnitude(self) -> 'NDArray[float64]':
         """Returns the magnitude array of this array vector"""
         return super().return_magnitude()
 
     def to_unit(self, return_magnitude: bool = False) -> Union['ArrayVector',
                                                                Tuple['ArrayVector',
-                                                                    'ndarray']]:
+                                                                     'NDArray[float64]']]:
         """Returns the unit arrayvector of this arrayvector"""
         mag = self.return_magnitude()
         x = zeros(mag.shape)
@@ -44,7 +43,7 @@ class ArrayVector(Vector):
         else:
             return ArrayVector(x, y, z)
 
-    def dot(self, vec: Vector) -> 'ndarray':
+    def dot(self, vec: Vector) -> 'NDArray[float64]':
         try:
             return super().dot(vec)
         except AttributeError:
@@ -69,17 +68,17 @@ class ArrayVector(Vector):
             err = 'ArrayVector cross product must be with Vector object.'
             raise TypeError(err)
 
-    def rmatmul(self, mat: 'ndarray') -> 'ArrayVector':
+    def rmatmul(self, mat: 'NDArray[float64]') -> 'ArrayVector':
         """Returns the right matrix multiplication of this array vector"""
         vec = self.__rmatmul__(mat)
         vec.__class__ = ArrayVector
         return vec
 
-    def to_xyz(self) -> Tuple['ndarray', 'ndarray', 'ndarray']:
+    def to_xyz(self) -> Tuple['NDArray[float64]', 'NDArray[float64]', 'NDArray[float64]']:
         """Returns the x, y and z values of this ndarray vector"""
         return super().to_xyz()
 
-    def stack_xyz(self) -> 'ndarray':
+    def stack_xyz(self) -> 'NDArray[float64]':
         return stack((self.x, self.y, self.z), axis=-1)
 
     def __mul__(self, obj: Any) -> 'ArrayVector':
@@ -149,7 +148,7 @@ class ArrayVector(Vector):
         outstr += frmstr.format(self.x, self.y, self.z)
         return outstr
 
-    def __matmul__(self, obj: 'ndarray') -> 'ArrayVector':
+    def __matmul__(self, obj: 'NDArray[float64]') -> 'ArrayVector':
         try:
             x = self.x@obj
             y = self.y@obj
@@ -159,7 +158,7 @@ class ArrayVector(Vector):
             err = 'ArrayVector object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
 
-    def __rmatmul__(self, obj: 'ndarray') -> 'ArrayVector':
+    def __rmatmul__(self, obj: 'NDArray[float64]') -> 'ArrayVector':
         try:
             x = obj@self.x
             y = obj@self.y
@@ -212,7 +211,7 @@ class ArrayVector(Vector):
         else:
             raise ValueError('ArrayVector x, y and z should have the same size.')
 
-    def __abs__(self) -> 'ndarray':
+    def __abs__(self) -> 'NDArray[float64]':
         return self.return_magnitude()
 
     def transpose(self) -> 'ArrayVector':

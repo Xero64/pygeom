@@ -1,23 +1,21 @@
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import Any, Tuple
 
-if TYPE_CHECKING:
-    from numpy import number
 
 class Tensor2D():
     """Tensor2D Class"""
-    xx: 'number' = None
-    xy: 'number' = None
-    yx: 'number' = None
-    yy: 'number' = None
+    xx: float = None
+    xy: float = None
+    yx: float = None
+    yy: float = None
 
-    def __init__(self, xx: 'number', xy: 'number',
-                 yx: 'number', yy: 'number') -> None:
+    def __init__(self, xx: float, xy: float,
+                 yx: float, yy: float) -> None:
         self.xx = xx
         self.xy = xy
         self.yx = yx
         self.yy = yy
 
-    def to_xy(self) -> Tuple['number', 'number', 'number', 'number']:
+    def to_xy(self) -> Tuple[float, float, float, float]:
         """Returns the xx, xy, yx and yy values of this tensor."""
         return self.xx, self.xy, self.yx, self.yy
 

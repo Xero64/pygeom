@@ -168,7 +168,7 @@ class SymbolicVector2D(Vector2D):
         return SymbolicVector2D(x, y)
 
     def to_complex(self) -> 'Symbol':
-        """Returns the complex 'number' of this symbolic vector"""
+        """Returns the complex float of this symbolic vector"""
         cplx = self.x + 1j*self.y
         return cplx
 

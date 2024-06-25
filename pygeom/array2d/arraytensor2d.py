@@ -1,23 +1,22 @@
-from typing import TYPE_CHECKING, List, Tuple, Union, Any
+from typing import TYPE_CHECKING, Any, List, Tuple, Union
 
-from numpy import zeros, isscalar
+from numpy import float64, isscalar, zeros
 
 from ..geom2d.tensor2d import Tensor2D
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
     Tensor2DLike = Union['Tensor2D', 'ArrayTensor2D']
 
 class ArrayTensor2D(Tensor2D):
     """ArrayTensor2D Class"""
-    xx: 'ndarray' = None
-    xy: 'ndarray' = None
-    yx: 'ndarray' = None
-    yy: 'ndarray' = None
+    xx: 'NDArray[float64]' = None
+    xy: 'NDArray[float64]' = None
+    yx: 'NDArray[float64]' = None
+    yy: 'NDArray[float64]' = None
 
-    def __init__(self, xx: 'ndarray', xy: 'ndarray',
-                 yx: 'ndarray', yy: 'ndarray') -> None:
+    def __init__(self, xx: 'NDArray[float64]', xy: 'NDArray[float64]',
+                 yx: 'NDArray[float64]', yy: 'NDArray[float64]') -> None:
         self.xx = xx
         self.xy = xy
         self.yx = yx
@@ -25,7 +24,7 @@ class ArrayTensor2D(Tensor2D):
         if isscalar(xx) and isscalar(xy) and isscalar(yx) and isscalar(yy):
             self.__class__ = Tensor2D
 
-    def to_xy(self) -> Tuple['ndarray', 'ndarray', 'ndarray', 'ndarray']:
+    def to_xy(self) -> Tuple['NDArray[float64]', 'NDArray[float64]', 'NDArray[float64]', 'NDArray[float64]']:
         """Returns the xx, xy, yx and yy values of this ndarray tensor"""
         return self.xx, self.xy, self.yx, self.yy
 
@@ -98,7 +97,7 @@ class ArrayTensor2D(Tensor2D):
         frmstr = 'xx:\n{:'+fs+'}\nxy:\n{:'+fs+'}\nyx:\n{:'+fs+'}\nyy:\n{:'+fs+'}\n'
         return frmstr.format(self.xx, self.xy, self.yx, self.yy)
 
-    def __matmul__(self, obj: 'ndarray') -> 'ArrayTensor2D':
+    def __matmul__(self, obj: 'NDArray[float64]') -> 'ArrayTensor2D':
         try:
             xx = self.xx@obj
             xy = self.xy@obj
@@ -109,7 +108,7 @@ class ArrayTensor2D(Tensor2D):
             err = 'ArrayTensor2D object can only be multiplied by a numpy ndarray.'
             raise TypeError(err)
 
-    def __rmatmul__(self, obj: 'ndarray') -> 'ArrayTensor2D':
+    def __rmatmul__(self, obj: 'NDArray[float64]') -> 'ArrayTensor2D':
         try:
             xx = obj@self.xx
             xy = obj@self.xy

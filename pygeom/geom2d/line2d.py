@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from .point2d import Point2D
 
 if TYPE_CHECKING:
-    from numpy import number
     from .vector2d import Vector2D
 
 class Line2D():
@@ -11,7 +10,7 @@ class Line2D():
     pnta: 'Point2D' = None
     pntb: 'Point2D' = None
     _vec: 'Vector2D' = None
-    _length: 'number' = None
+    _length: float = None
     _uvec: 'Vector2D' = None
 
     def __init__(self, pnta: 'Point2D', pntb: 'Point2D') -> None:
@@ -25,7 +24,7 @@ class Line2D():
         return self._vec
 
     @property
-    def length(self) -> 'number':
+    def length(self) -> float:
         if self._length is None:
             self._length = self.vec.return_magnitude()
         return self._length
@@ -40,7 +39,7 @@ class Line2D():
         """Returns the centre point of this line"""
         return (self.pnta + self.pntb)/2
 
-    def ratio_point(self, ratio: 'number') -> 'Vector2D':
+    def ratio_point(self, ratio: float) -> 'Vector2D':
         """Returns a point a certain ratio along the line"""
         return self.pnta + ratio*self.vec
 

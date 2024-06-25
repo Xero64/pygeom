@@ -1,16 +1,17 @@
 from typing import TYPE_CHECKING, Tuple
 
-from numpy import divide, full, absolute, logical_and, argwhere
+from numpy import absolute, argwhere, divide, float64, full, logical_and
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from numpy.typing import NDArray
+
     from .arrayvector import ArrayVector
     from .lines import Lines
     from .triangles import Triangles
 
 def intersection_lines_and_triangles(lines: 'Lines', triangles: 'Triangles',
                                      tolerance: float = 1e-12) -> Tuple['ArrayVector',
-                                                                        'ndarray']:
+                                                                        'NDArray[float64]']:
     """Intersection of Lines and Triangles"""
 
     lnum = lines.size

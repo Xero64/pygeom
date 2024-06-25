@@ -2,23 +2,20 @@ from typing import TYPE_CHECKING, Any, Tuple, Union
 
 from numpy import isclose, sqrt, square
 
-if TYPE_CHECKING:
-    from numpy import number
-
 class Vector():
     """Vector Class"""
-    x: 'number' = None
-    y: 'number' = None
-    z: 'number' = None
+    x: float = None
+    y: float = None
+    z: float = None
 
-    def __init__(self, x: 'number', y: 'number', z: 'number') -> None:
+    def __init__(self, x: float, y: float, z: float) -> None:
         self.x = x
         self.y = y
         self.z = z
 
     def to_unit(self, return_magnitude: bool = False) -> Union['Vector',
                                                                Tuple['Vector',
-                                                                     'number']]:
+                                                                     float]]:
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
         if mag != 0.0:
@@ -34,15 +31,15 @@ class Vector():
         else:
             return Vector(x, y, z)
 
-    def return_magnitude(self) -> 'number':
+    def return_magnitude(self) -> float:
         """Returns the magnitude of this vector"""
         return sqrt(square(self.x) + square(self.y) + square(self.z))
 
-    def to_xyz(self) -> Tuple['number', 'number', 'number']:
+    def to_xyz(self) -> Tuple[float, float, float]:
         """Returns the x, y and z values of this vector"""
         return self.x, self.y, self.z
 
-    def dot(self, vec: 'Vector') -> 'number':
+    def dot(self, vec: 'Vector') -> float:
         try:
             return self.x*vec.x + self.y*vec.y + self.z*vec.z
         except AttributeError:
@@ -69,7 +66,7 @@ class Vector():
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)
 
-    def __abs__(self) -> 'number':
+    def __abs__(self) -> float:
         return self.return_magnitude()
 
     def __mul__(self, obj: Any) -> 'Vector':
@@ -160,7 +157,7 @@ def zero_vector() -> Vector:
     return Vector(0.0, 0.0, 0.0)
 
 def vector_isclose(a: Vector, b: Vector,
-                   rtol: 'number'=1e-09, atol: 'number'=0.0) -> bool:
+                   rtol: float=1e-09, atol: float=0.0) -> bool:
     """Returns True if two vectors are close enough to be considered equal"""
     return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
         isclose(a.y, b.y, rtol=rtol, atol=atol) and \

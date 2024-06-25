@@ -1,31 +1,30 @@
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple, Union
 
-from numpy import divide, isscalar, split, stack, zeros
+from numpy import divide, float64, isscalar, split, stack, zeros
 
 from ..geom2d.vector2d import Vector2D
 
 if TYPE_CHECKING:
-    from numpy import ndarray, number
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
     Vector2DLike = Union['Vector2D', 'ArrayVector2D']
 
 class ArrayVector2D(Vector2D):
     """ArrayVector2D Class"""
-    x: 'ndarray' = None
-    y: 'ndarray' = None
+    x: 'NDArray[float64]' = None
+    y: 'NDArray[float64]' = None
 
-    def __init__(self, x: 'ndarray', y: 'ndarray') -> None:
+    def __init__(self, x: 'NDArray[float64]', y: 'NDArray[float64]') -> None:
         self.x = x
         self.y = y
         if isscalar(x) and isscalar(y):
             self.__class__ = Vector2D
 
-    def return_magnitude(self) -> 'ndarray':
+    def return_magnitude(self) -> 'NDArray[float64]':
         """Returns the magnitude array of this array vector"""
         return super().return_magnitude()
 
     def to_unit(self, return_magnitude: bool = False) -> Union['ArrayVector2D',
-                                                               Tuple['ArrayVector2D', 'ndarray']]:
+                                                               Tuple['ArrayVector2D', 'NDArray[float64]']]:
         """Returns the unit array vector of this array vector"""
         mag = self.return_magnitude()
         x = zeros(mag.shape)
@@ -38,31 +37,31 @@ class ArrayVector2D(Vector2D):
         else:
             return ArrayVector2D(x, y)
 
-    def dot(self, vec: Vector2D) -> 'ndarray':
+    def dot(self, vec: Vector2D) -> 'NDArray[float64]':
         try:
             return super().dot(vec)
         except AttributeError:
             err = 'ArrayVector2D dot product must be with Vector2D object.'
             raise TypeError(err)
 
-    def cross(self, vec: Vector2D) -> 'ndarray':
+    def cross(self, vec: Vector2D) -> 'NDArray[float64]':
         try:
             return super().cross(vec)
         except AttributeError:
             err = 'ArrayVector2D cross product must be with Vector2D object.'
             raise TypeError(err)
 
-    def rmatmul(self, mat: 'ndarray') -> 'ArrayVector2D':
+    def rmatmul(self, mat: 'NDArray[float64]') -> 'ArrayVector2D':
         """Returns the right matrix multiplication of this array vector"""
         vec = self.__rmatmul__(mat)
         vec.__class__ = ArrayVector2D
         return vec
 
-    def to_xy(self) -> Tuple['ndarray', 'ndarray']:
+    def to_xy(self) -> Tuple['NDArray[float64]', 'NDArray[float64]']:
         """Returns the x and y values of this array vector"""
         return super().to_xy()
 
-    def stack_xy(self) -> 'ndarray':
+    def stack_xy(self) -> 'NDArray[float64]':
         return stack((self.x, self.y), axis=-1)
 
     def __mul__(self, obj: Any) -> 'ArrayVector2D':
@@ -132,22 +131,22 @@ class ArrayVector2D(Vector2D):
         outstr += frmstr.format(self.x, self.y)
         return outstr
 
-    def __matmul__(self, obj: 'ndarray') -> 'ArrayVector2D':
+    def __matmul__(self, obj: 'NDArray[float64]') -> 'ArrayVector2D':
         try:
             x = self.x@obj
             y = self.y@obj
             return ArrayVector2D(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a NDArray[float64].'
             raise TypeError(err)
 
-    def __rmatmul__(self, obj: 'ndarray') -> 'ArrayVector2D':
+    def __rmatmul__(self, obj: 'NDArray[float64]') -> 'ArrayVector2D':
         try:
             x = obj@self.x
             y = obj@self.y
             return ArrayVector2D(x, y)
         except AttributeError:
-            err = 'ArrayVector2D object can only be matrix multiplied by a ndarray.'
+            err = 'ArrayVector2D object can only be matrix multiplied by a NDArray[float64].'
             raise TypeError(err)
 
     def __getitem__(self, key) -> 'ArrayVector2D':
@@ -191,7 +190,7 @@ class ArrayVector2D(Vector2D):
         else:
             raise ValueError('ArrayVector2D x and y should have the same size.')
 
-    def __abs__(self) -> 'ndarray':
+    def __abs__(self) -> 'NDArray[float64]':
         return self.return_magnitude()
 
     def transpose(self) -> 'ArrayVector2D':
@@ -237,17 +236,17 @@ class ArrayVector2D(Vector2D):
         for xi, yi in zip(xlst, ylst):
             yield ArrayVector2D(xi, yi).reshape(shape)
 
-    def return_angle(self) -> 'ndarray':
+    def return_angle(self) -> 'NDArray[float64]':
         """Returns the angle array of this array vector from the x axis"""
         return super().return_angle()
 
-    def rotate(self, rot: 'number') -> 'ArrayVector2D':
+    def rotate(self, rot: float) -> 'ArrayVector2D':
         """Rotates this array vector by an input angle in radians"""
         vec = super().rotate(rot)
         vec.__class__ = ArrayVector2D
         return vec
 
-    def to_complex(self) -> 'ndarray':
+    def to_complex(self) -> 'NDArray[float64]':
         """Returns the complex number of this array vector"""
         return super().to_complex()
 

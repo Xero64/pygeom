@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from .point import Point
 
 if TYPE_CHECKING:
-    from numpy import number
     from .vector import Vector
 
 class Line():
@@ -11,7 +10,7 @@ class Line():
     pnta: 'Point' = None
     pntb: 'Point' = None
     _vec: 'Vector' = None
-    _length: 'number' = None
+    _length: float = None
     _direc: 'Vector' = None
 
     def __init__(self, pnta: 'Point', pntb: 'Point') -> None:
@@ -25,7 +24,7 @@ class Line():
         return self._vec
 
     @property
-    def length(self) -> 'number':
+    def length(self) -> float:
         if self._length is None:
             self._length = self.vec.return_magnitude()
         return self._length
@@ -40,7 +39,7 @@ class Line():
         """Returns the centre point of this line"""
         return (self.pnta + self.pntb)/2
 
-    def ratio_point(self, ratio: 'number') -> 'Point':
+    def ratio_point(self, ratio: float) -> 'Point':
         """Returns a point a certain ratio along the line"""
         return self.pnta + ratio*self.vec
 

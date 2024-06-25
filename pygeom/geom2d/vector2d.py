@@ -1,22 +1,20 @@
-from typing import TYPE_CHECKING, Any, Tuple, Union
+from typing import Any, Tuple, Union
 
 from numpy import arctan2, cos, isclose, sin, sqrt, square
 
-if TYPE_CHECKING:
-    from numpy import number
 
 class Vector2D():
     """Vector2D Class"""
-    x: 'number' = None
-    y: 'number' = None
+    x: float = None
+    y: float = None
 
-    def __init__(self, x: 'number', y: 'number') -> None:
+    def __init__(self, x: float, y: float) -> None:
         self.x = x
         self.y = y
 
     def to_unit(self, return_magnitude: bool = False) -> Union['Vector2D',
                                                                Tuple['Vector2D',
-                                                                     'number']]:
+                                                                     float]]:
         """Returns the unit vector of this vector2d"""
         mag = self.return_magnitude()
         if mag != 0.0:
@@ -34,25 +32,25 @@ class Vector2D():
         """Returns the magnitude of this vector2d"""
         return sqrt(square(self.x) + square(self.y))
 
-    def return_angle(self) -> 'number':
+    def return_angle(self) -> float:
         """Returns the angle of this vector from the x axis"""
         return arctan2(self.y, self.x)
 
-    def dot(self, obj: 'Vector2D') -> 'number':
+    def dot(self, obj: 'Vector2D') -> float:
         try:
             return self.x*obj.x + self.y*obj.y
         except AttributeError:
             err = 'Vector2D object can only be dotted with Vector2D object.'
             raise TypeError(err)
 
-    def cross(self, obj: 'Vector2D') -> 'number':
+    def cross(self, obj: 'Vector2D') -> float:
         try:
             return self.x*obj.y - self.y*obj.x
         except AttributeError:
             err = 'Vector2D object can only be crossed with Vector2D object.'
             raise TypeError(err)
 
-    def __abs__(self) -> 'number':
+    def __abs__(self) -> float:
         return self.return_magnitude()
 
     def __mul__(self, obj: Any) -> 'Vector2D':
@@ -132,7 +130,7 @@ class Vector2D():
         except AttributeError:
             return False
 
-    def rotate(self, rot: 'number') -> 'Vector2D':
+    def rotate(self, rot: float) -> 'Vector2D':
         """Rotates this vector by an input angle in radians"""
         mag = self.return_magnitude()
         ang = self.return_angle()
@@ -140,12 +138,12 @@ class Vector2D():
         y = mag*sin(ang + rot)
         return Vector2D(x, y)
 
-    def to_complex(self) -> 'number':
-        """Returns the complex 'number' of this vector"""
+    def to_complex(self) -> float:
+        """Returns the complex float of this vector"""
         cplx = self.x + 1j*self.y
         return cplx
 
-    def to_xy(self) -> Tuple['number', 'number']:
+    def to_xy(self) -> Tuple[float, float]:
         """Returns the x, y values of this vector"""
         return self.x, self.y
 
@@ -159,7 +157,7 @@ def vector2d_from_points(pnta: Vector2D, pntb: Vector2D) -> Vector2D:
     return Vector2D(x, y)
 
 def vector2d_isclose(a: Vector2D, b: Vector2D,
-                     rtol: 'number'=1e-09, atol: 'number'=0.0) -> bool:
+                     rtol: float=1e-09, atol: float=0.0) -> bool:
     """Returns True if two Vector2Ds are close enough to be considered equal."""
     return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
         isclose(a.y, b.y, rtol=rtol, atol=atol)

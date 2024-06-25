@@ -1,13 +1,14 @@
 #%%
 # Import Dependencies
 from typing import TYPE_CHECKING
-from numpy import linspace
-from pygeom.geom2d import Vector2D
-from pygeom.array2d import ArrayVector2D
+
 from matplotlib.pyplot import figure
+from numpy import float64, linspace
+from pygeom.array2d import ArrayVector2D
+from pygeom.geom2d import Vector2D
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from numpy.typing import NDArray
 
 #%%
 # Define Class
@@ -69,7 +70,7 @@ class CubicPiece2D():
         self._sb = value
         self._sa = value - self.length
 
-    def spline_points(self, s: 'ndarray') -> ArrayVector2D:
+    def spline_points(self, s: 'NDArray[float64]') -> ArrayVector2D:
         Axl = (self.sb - s)
         Bxl = (s - self.sa)
         A = Axl/self.length

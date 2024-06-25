@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
 
-from numpy import zeros
+from numpy import float64, zeros
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from numpy.typing import NDArray
 
-def tridiag_solver(a: 'ndarray', b: 'ndarray', c: 'ndarray',
-                   d: 'ndarray') -> 'ndarray':
+def tridiag_solver(a: 'NDArray[float64]', b: 'NDArray[float64]', c: 'NDArray[float64]',
+                   d: 'NDArray[float64]') -> 'NDArray[float64]':
     num = len(b)
     gm = zeros(num)
     bt = b[0]

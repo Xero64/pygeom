@@ -1,14 +1,16 @@
 from typing import TYPE_CHECKING, Tuple, Union
 
+from numpy import float64
+
 from ..geom3d import Vector
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from numpy.typing import NDArray
 
     from .arrayvector import ArrayVector
     TriangleLike = Union['Triangle', 'Triangles']
     from numpy.typing import DTypeLike
-    ArrayLike = Union['ndarray', 'ArrayVector']
+    ArrayLike = Union['NDArray[float64]', 'ArrayVector']
 
 
 class Triangle():
@@ -86,11 +88,11 @@ class Triangles():
     pnta: 'ArrayVector' = None
     pntb: 'ArrayVector' = None
     pntc: 'ArrayVector' = None
-    _pnto: 'ndarray' = None
-    _vecab: 'ndarray' = None
-    _vecbc: 'ndarray' = None
-    _nrm: 'ndarray' = None
-    _jac: 'ndarray' = None
+    _pnto: 'NDArray[float64]' = None
+    _vecab: 'NDArray[float64]' = None
+    _vecbc: 'NDArray[float64]' = None
+    _nrm: 'NDArray[float64]' = None
+    _jac: 'NDArray[float64]' = None
 
     def __init__(self, pnta: 'ArrayVector', pntb: 'ArrayVector', pntc: 'ArrayVector') -> None:
         self.pnta = pnta
@@ -123,7 +125,7 @@ class Triangles():
         return self._nrm
 
     @property
-    def jac(self) -> 'ndarray':
+    def jac(self) -> 'NDArray[float64]':
         if self._jac is None:
             self.nrm
         return self._jac
