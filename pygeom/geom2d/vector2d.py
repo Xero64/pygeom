@@ -138,6 +138,12 @@ class Vector2D():
         y = mag*sin(ang + rot)
         return Vector2D(x, y)
 
+    def rotate_90deg(self) -> 'Vector2D':
+        """Rotates this vector by 90 degrees"""
+        x = -self.y
+        y = self.x
+        return Vector2D(x, y)
+
     def to_complex(self) -> float:
         """Returns the complex float of this vector"""
         cplx = self.x + 1j*self.y

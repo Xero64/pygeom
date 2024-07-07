@@ -126,7 +126,7 @@ class ArrayVector2D(Vector2D):
         return outstr
 
     def __format__(self, frm: str) -> str:
-        outstr = f'ArrayVector 2Dshape: {self.shape:}, dtype: {self.dtype}\n'
+        outstr = f'ArrayVector2D shape: {self.shape:}, dtype: {self.dtype}\n'
         frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\n'
         outstr += frmstr.format(self.x, self.y)
         return outstr
@@ -243,6 +243,12 @@ class ArrayVector2D(Vector2D):
     def rotate(self, rot: float) -> 'ArrayVector2D':
         """Rotates this array vector by an input angle in radians"""
         vec = super().rotate(rot)
+        vec.__class__ = ArrayVector2D
+        return vec
+
+    def rotate_90deg(self) -> 'Vector2D':
+        """Rotates this vector by 90 degrees"""
+        vec = super().rotate_90deg()
         vec.__class__ = ArrayVector2D
         return vec
 
