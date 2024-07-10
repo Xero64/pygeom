@@ -1,39 +1,21 @@
 #%%
 # Import Dependencies
-from math import comb
-from typing import TYPE_CHECKING, List, Union, Tuple
+from typing import TYPE_CHECKING, Tuple, Union
 
 from matplotlib.pyplot import figure
 from numpy import arctan2, asarray, cos, float64, linspace, sin, zeros
 from pygeom.array2d import zero_arrayvector2d
 from pygeom.geom2d import Vector2D
-from sympy import Symbol, Add
+from pygeom.tools.bernstein import (bernstein_polys,
+                                    symbolic_bernstein_poly_derivatives,
+                                    symbolic_bernstein_polys)
+from sympy import Add, Symbol
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
     from pygeom.array2d import ArrayVector2D
     Numeric = Union[float64, NDArray[float64]]
     VectorLike = Union[Vector2D, ArrayVector2D]
-
-#%%
-# Bernstien Polynomial
-def bernstein_poly(n: int, i: int, t: 'Numeric') -> 'Numeric':
-    omt = 1 - t
-    nmi = n - i
-    return comb(n, i)*t**i*omt**nmi
-
-def bernstein_polys(n: int, t: 'Numeric') -> List['Numeric']:
-    return [bernstein_poly(n, i, t) for i in range(n + 1)]
-
-def bernstein_poly_derivative(n: int, i: int, t: 'Numeric') -> 'Numeric':
-    omt = 1 - t
-    nmi = n - i
-    im1 = i - 1
-    nmim1 = nmi - 1
-    return comb(n, i)*(i*t**im1*omt**nmi - t**i*nmi*omt**nmim1)
-
-def bernstein_poly_derivatives(n: int, t: 'Numeric') -> List['Numeric']:
-    return [bernstein_poly_derivative(n, i, t) for i in range(n + 1)]
 
 #%%
 # Define the NurbsCurve class
@@ -65,10 +47,9 @@ class NurbsCurve2D():
         t = linspace(0.0, 1.0, num, dtype=float64)
         return self.evaluate_at_t(t)
 
-num = 101
-
 #%%
 # Define the control points and weights
+num = 21
 a = 2.0
 b = 1.0
 
@@ -85,13 +66,14 @@ pnts = nurbscurve.evaluate_points(num)
 
 th = arctan2(pnts.y, pnts.x)
 r = (pnts.x**2 + pnts.y**2)**0.5
-x = r*cos(th)
-y = r*sin(th)
+x = a*cos(th)
+y = b*sin(th)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
 ax.plot(pnts.x, pnts.y, label='NURBS Curve')
+ax.scatter(pnts.x, pnts.y, label='NURBS Points')
 ax.plot(x, y, label='Ellipse')
 ax.set_aspect('equal')
 _ = ax.legend()
@@ -119,7 +101,7 @@ class BezierCurve2D():
 
     def symbolic_expression(self) -> Tuple[Add, Add]:
         t = Symbol('t', real=True)
-        polys = bernstein_polys(self.degree, t)
+        polys = symbolic_bernstein_polys(self.degree, t)
         expr_x = 0
         expr_y = 0
         for point, poly in zip(self.points, polys):
@@ -129,7 +111,7 @@ class BezierCurve2D():
 
     def symbolic_derivative(self) -> Tuple[Add, Add]:
         t = Symbol('t', real=True)
-        polys = bernstein_poly_derivatives(self.degree, t)
+        polys = symbolic_bernstein_poly_derivatives(self.degree, t)
         der_x = 0
         der_y = 0
         for point, poly in zip(self.points, polys):
@@ -141,18 +123,19 @@ class BezierCurve2D():
         t = linspace(0.0, 1.0, num, dtype=float64)
         return self.evaluate_at_t(t)
 
-num = 101
-
 #%%
 # Define the control points
-# ctlpts = zero_arrayvector2d(7)
-# ctlpts[0] = Vector2D(0.0, 0.0)
-# ctlpts[1] = Vector2D(0.0, 0.05)
-# ctlpts[2] = Vector2D(0.2, 0.15)
-# ctlpts[3] = Vector2D(0.4, 0.12)
-# ctlpts[4] = Vector2D(0.6, 0.08)
-# ctlpts[5] = Vector2D(0.8, 0.04)
-# ctlpts[6] = Vector2D(1.0, 0.0)
+
+num = 21
+
+ctlpts = zero_arrayvector2d(7)
+ctlpts[0] = Vector2D(0.0, 0.0)
+ctlpts[1] = Vector2D(0.0, 0.05)
+ctlpts[2] = Vector2D(0.2, 0.15)
+ctlpts[3] = Vector2D(0.4, 0.12)
+ctlpts[4] = Vector2D(0.6, 0.08)
+ctlpts[5] = Vector2D(0.8, 0.04)
+ctlpts[6] = Vector2D(1.0, 0.0)
 
 ctlpts = zero_arrayvector2d(3)
 ctlpts[0] = Vector2D(0.0, 0.0)
