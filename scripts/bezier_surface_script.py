@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import asarray, float64, pi, zeros, sqrt
-from pygeom.array3d import zero_arrayvector, NurbsSurface
+from numpy import float64, zeros, sqrt
+from pygeom.array3d import zero_arrayvector, RationalBezierSurface
 from pygeom.geom3d import Vector
 
 if TYPE_CHECKING:
@@ -47,12 +47,9 @@ weights[2, 2] = 1.0
 print(f'Control Points:\n{ctlpts}\n')
 print(f'Weights:\n{weights}\n')
 
-uknots = asarray([0.0, 0.0, 0.0, 0.5, 0.5, 0.5], dtype=float64)*pi
-vknots = asarray([0.0, 0.0, 0.0, 0.5, 0.5, 0.5], dtype=float64)*pi
+beziersurface = RationalBezierSurface(ctlpts, weights)
 
-nurbssurface = NurbsSurface(ctlpts, weights, uknots, vknots)
-
-pnts = nurbssurface.evaluate_points(numu, numv)
+pnts = beziersurface.evaluate_points(numu, numv)
 
 #%%
 # Plot the NURBS Surface
@@ -63,5 +60,5 @@ ax.view_init(elev=45, azim=45, roll=0)
 ax.grid(True)
 ax.plot(ctlpts.x, ctlpts.y, ctlpts.z, 'ro', label='Control Points')
 ax.plot_wireframe(pnts.x, pnts.y, pnts.z, label='NURBS Surface')
-ax.set_box_aspect([ro+ri, ro+ri, ri])
+ax.set_box_aspect([ro, ro, ro-ri])
 _ = ax.legend()

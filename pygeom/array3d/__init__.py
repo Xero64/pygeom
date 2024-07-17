@@ -6,6 +6,13 @@ from numpy.linalg import solve
 from .arrayvector import ArrayVector as ArrayVector
 from .arrayvector import arrayvector3d_from_2d as arrayvector3d_from_2d
 from .arrayvector import zero_arrayvector as zero_arrayvector
+from .beziercurve import BezierCurve as BezierCurve
+from .beziercurve import RationalBezierCurve as RationalBezierCurve
+from .beziersurface import RationalBezierSurface as RationalBezierSurface
+from .nurbscurve import BSplineCurve as BSplineCurve
+from .nurbscurve import NurbsCurve as NurbsCurve
+from .nurbssurface import BSplineSurface as BSplineSurface
+from .nurbssurface import NurbsSurface as NurbsSurface
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

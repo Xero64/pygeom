@@ -7,6 +7,10 @@ from .arraytensor2d import ArrayTensor2D as ArrayTensor2D
 from .arraytensor2d import zero_arraytensor2d as zero_arraytensor2d
 from .arrayvector2d import ArrayVector2D as ArrayVector2D
 from .arrayvector2d import zero_arrayvector2d as zero_arrayvector2d
+from .beziercurve2d import BezierCurve2D as BezierCurve2D
+from .beziercurve2d import RationalBezierCurve2D as RationalBezierCurve2D
+from .nurbscurve2d import BSplineCurve2D as BSplineCurve2D
+from .nurbscurve2d import NurbsCurve2D as NurbsCurve2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

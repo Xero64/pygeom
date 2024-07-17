@@ -2,7 +2,7 @@ from typing import Any, Tuple, Union
 
 from pygeom.geom3d.vector import Vector
 from sympy import (Symbol, diff, expand, expand_trig, integrate, simplify,
-                   sqrt, trigsimp)
+                   sqrt, trigsimp, collect)
 
 
 class SymbolicVector(Vector):
@@ -29,6 +29,11 @@ class SymbolicVector(Vector):
         return SymbolicVector(expand(self.x),
                               expand(self.y),
                               expand(self.z))
+
+    def collect(self, *args) -> 'SymbolicVector':
+        return SymbolicVector(collect(self.x, *args),
+                              collect(self.y, *args),
+                              collect(self.z, *args))
 
     def expand_trig(self) -> 'SymbolicVector':
         return SymbolicVector(expand_trig(self.x),
