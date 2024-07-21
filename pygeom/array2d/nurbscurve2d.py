@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
-from numpy import asarray, float64, linspace
+from numpy import concatenate, float64, full, linspace, ones
 
 from ..geom2d import Vector2D
-from ..tools.basis import basis_derivatives, basis_functions
+from ..tools.basis import (basis_derivatives, basis_functions, default_knots,
+                           knot_linspace)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -25,6 +26,11 @@ class BSplineCurve2D():
         self.degree = ctlpnts.size - 1
         if degree is not None:
             self.degree = degree
+
+    def reset(self) -> None:
+        for attr in self.__dict__:
+            if attr.startswith('_'):
+                setattr(self, attr, None)
 
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.knots, u)
@@ -64,16 +70,19 @@ class NurbsCurve2D():
     weights: 'NDArray[float64]' = None
     degree: int = None
     knots: 'NDArray[float64]' = None
+    endpoint: bool = None
+    closed: bool = None
     _wpoints: 'ArrayVector2D' = None
+    _cknots: 'NDArray[float64]' = None
 
-    def __init__(self, ctlpnts: 'ArrayVector2D', weights: 'NDArray[float64]',
-                 knots: 'NDArray[float64]', degree: int = None) -> None:
-        self.ctlpnts = ctlpnts
-        self.weights = weights
-        self.knots = knots
-        self.degree = ctlpnts.size - 1
-        if degree is not None:
-            self.degree = degree
+    def __init__(self, ctlpnts: 'ArrayVector2D', **kwargs: Dict[str, Any]) -> None:
+        self.ctlpnts = ctlpnts.flatten()
+        self.weights = kwargs.get('weights', ones(ctlpnts.size, dtype=float64))
+        self.degree = kwargs.get('degree', self.ctlpnts.size - 1)
+        self.knots = kwargs.get('knots', default_knots(self.ctlpnts.size,
+                                                       self.degree))
+        self.endpoint = kwargs.get('endpoint', True)
+        self.closed = kwargs.get('closed', False)
 
     @property
     def wpoints(self) -> 'ArrayVector2D':
@@ -81,17 +90,25 @@ class NurbsCurve2D():
             self._wpoints = self.ctlpnts*self.weights
         return self._wpoints
 
+    @property
+    def cknots(self) -> 'NDArray[float64]':
+        if self._cknots is None:
+            if self.endpoint:
+                kbeg = full(self.degree, self.knots[0])
+                kend = full(self.degree, self.knots[-1])
+                self._cknots = concatenate((kbeg, self.knots, kend))
+            else:
+                self._cknots = self.knots
+        return self._cknots
+
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_functions(self.degree, self.knots, u)
+        return basis_functions(self.degree, self.cknots, u)
 
     def basis_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_derivatives(self.degree, self.knots, u)
+        return basis_derivatives(self.degree, self.cknots, u)
 
     def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
-        print(f'Nu = {Nu}')
-        print(f'Nu.shape = {Nu.shape}')
-        print(f'wpoints = {self.wpoints}')
         numer = self.wpoints@Nu
         denom = self.weights@Nu
         points = numer/denom
@@ -106,19 +123,18 @@ class NurbsCurve2D():
         dnumer = self.wpoints@dNu
         denom = self.weights@Nu
         ddenom = self.weights@dNu
-        vectors = (dnumer*denom - numer*ddenom)/denom**2
-        if vectors.size == 1:
-            vectors = vectors[0]
-        return vectors
+        tangents = (dnumer*denom - numer*ddenom)/denom**2
+        if tangents.size == 1:
+            tangents = tangents[0]
+        return tangents
+
+    def evaluate_u(self, num: int) -> 'NDArray[float64]':
+        return knot_linspace(num, self.knots)
 
     def evaluate_points(self, num: int) -> 'ArrayVector2D':
-        tmin = self.knots.min()
-        tmax = self.knots.max()
-        u = linspace(tmin, tmax, num, dtype=float64)
+        u = self.evaluate_u(num)
         return self.evaluate_points_at_u(u)
 
     def evaluate_tangents(self, num: int) -> 'ArrayVector2D':
-        tmin = self.knots.min()
-        tmax = self.knots.max()
-        u = linspace(tmin, tmax, num, dtype=float64)
+        u = self.evaluate_u(num)
         return self.evaluate_tangents_at_u(u)

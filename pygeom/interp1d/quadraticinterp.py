@@ -331,8 +331,6 @@ class QuadraticCentreInterpSolver():
             for i, dxi in enumerate(self.dx):
                 kmat[i+1:, i] += dxi/2
                 kmat[i+1:, i+1] += dxi/2
-                # print(kmat)
-            # self._kmat = kmat
             self._kmat = zeros((self.num, self.num))
             kopp = kmat[-1, :]/2
             for i in range(self.num):

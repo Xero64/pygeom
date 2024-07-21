@@ -238,6 +238,12 @@ class ArrayVector(Vector):
         z = self.z.reshape(shape, order=order)
         return ArrayVector(x, y, z)
 
+    def flatten(self, order='C') -> 'ArrayVector':
+        x = self.x.flatten(order=order)
+        y = self.y.flatten(order=order)
+        z = self.z.flatten(order=order)
+        return ArrayVector(x, y, z)
+
     def to_tuple(self) -> Tuple[Vector, ...]:
         return [Vector(xi, yi, zi) for xi, yi, zi in zip(self.x, self.y, self.z)]
 

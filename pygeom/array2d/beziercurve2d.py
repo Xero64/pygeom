@@ -39,7 +39,7 @@ class BezierCurve2D():
     def bernstein_derivatives(self, t: 'Numeric') -> 'NDArray[float64]':
         return bernstein_derivatives(self.degree, t)
 
-    def evaluate_at_t(self, t: 'Numeric') -> 'VectorLike':
+    def evaluate_points_at_t(self, t: 'Numeric') -> 'VectorLike':
         polys = bernstein_polynomials(self.degree, t)
         points = self.ctlpnts@polys
         if points.size == 1:
@@ -73,7 +73,7 @@ class BezierCurve2D():
 
     def evaluate_points(self, num: int) -> 'ArrayVector2D':
         t = linspace(0.0, 1.0, num, dtype=float64)
-        return self.evaluate_at_t(t)
+        return self.evaluate_points_at_t(t)
 
     def evaluate_tangents(self, num: int) -> 'ArrayVector2D':
         t = linspace(0.0, 1.0, num, dtype=float64)

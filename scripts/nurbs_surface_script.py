@@ -2,10 +2,11 @@
 # Import Dependencies
 from typing import TYPE_CHECKING, Union
 
-from matplotlib.pyplot import figure
-from mpl_toolkits.mplot3d import Axes3D
-from numpy import asarray, float64, pi, zeros, sqrt
-from pygeom.array3d import zero_arrayvector, NurbsSurface
+from k3d import Plot as k3dPlot
+from k3d import mesh as k3dmesh
+from k3d import points as k3dpoints
+from numpy import arange, asarray, float64, sqrt, zeros
+from pygeom.array3d import NurbsSurface, zero_arrayvector
 from pygeom.geom3d import Vector
 
 if TYPE_CHECKING:
@@ -15,53 +16,216 @@ if TYPE_CHECKING:
     VectorLike = Union[Vector, ArrayVector]
 
 #%%
-# Define the control points and weights
-numu = 19
-numv = 19
+# Create a Nurbs Torus Surface
+numu = 20
+numv = 20
 
-ro = 3.0
+ro = 4.0
 ri = 2.0
+rm = (ro + ri)/2
+ra = (ro - ri)/2
 
-ctlpts = zero_arrayvector((3, 3))
-ctlpts[0, 0] = Vector(ro, 0.0, 0.0)
-ctlpts[1, 0] = Vector(ro, ro, 0.0)
-ctlpts[2, 0] = Vector(0.0, ro, 0.0)
-ctlpts[0, 1] = Vector(ro, 0.0, ro-ri)
-ctlpts[1, 1] = Vector(ro, ro, ro-ri)
-ctlpts[2, 1] = Vector(0.0, ro, ro-ri)
-ctlpts[0, 2] = Vector(ri, 0.0, ro-ri)
-ctlpts[1, 2] = Vector(ri, ri, ro-ri)
-ctlpts[2, 2] = Vector(0.0, ri, ro-ri)
+ctlpnts = zero_arrayvector((9, 9))
+ctlpnts[0, 0] = Vector(ro, 0.0, 0.0)
+ctlpnts[1, 0] = Vector(ro, ro, 0.0)
+ctlpnts[2, 0] = Vector(0.0, ro, 0.0)
+ctlpnts[3, 0] = Vector(-ro, ro, 0.0)
+ctlpnts[4, 0] = Vector(-ro, 0.0, 0.0)
+ctlpnts[5, 0] = Vector(-ro, -ro, 0.0)
+ctlpnts[6, 0] = Vector(0.0, -ro, 0.0)
+ctlpnts[7, 0] = Vector(ro, -ro, 0.0)
+ctlpnts[8, 0] = Vector(ro, 0.0, 0.0)
+ctlpnts[0, 1] = Vector(ro, 0.0, ra)
+ctlpnts[1, 1] = Vector(ro, ro, ra)
+ctlpnts[2, 1] = Vector(0.0, ro, ra)
+ctlpnts[3, 1] = Vector(-ro, ro, ra)
+ctlpnts[4, 1] = Vector(-ro, 0.0, ra)
+ctlpnts[5, 1] = Vector(-ro, -ro, ra)
+ctlpnts[6, 1] = Vector(0.0, -ro, ra)
+ctlpnts[7, 1] = Vector(ro, -ro, ra)
+ctlpnts[8, 1] = Vector(ro, 0.0, ra)
+ctlpnts[0, 2] = Vector(rm, 0.0, ra)
+ctlpnts[1, 2] = Vector(rm, rm, ra)
+ctlpnts[2, 2] = Vector(0.0, rm, ra)
+ctlpnts[3, 2] = Vector(-rm, rm, ra)
+ctlpnts[4, 2] = Vector(-rm, 0.0, ra)
+ctlpnts[5, 2] = Vector(-rm, -rm, ra)
+ctlpnts[6, 2] = Vector(0.0, -rm, ra)
+ctlpnts[7, 2] = Vector(rm, -rm, ra)
+ctlpnts[8, 2] = Vector(rm, 0.0, ra)
+ctlpnts[0, 3] = Vector(ri, 0.0, ra)
+ctlpnts[1, 3] = Vector(ri, ri, ra)
+ctlpnts[2, 3] = Vector(0.0, ri, ra)
+ctlpnts[3, 3] = Vector(-ri, ri, ra)
+ctlpnts[4, 3] = Vector(-ri, 0.0, ra)
+ctlpnts[5, 3] = Vector(-ri, -ri, ra)
+ctlpnts[6, 3] = Vector(0.0, -ri, ra)
+ctlpnts[7, 3] = Vector(ri, -ri, ra)
+ctlpnts[8, 3] = Vector(ri, 0.0, ra)
+ctlpnts[0, 4] = Vector(ri, 0.0, 0.0)
+ctlpnts[1, 4] = Vector(ri, ri, 0.0)
+ctlpnts[2, 4] = Vector(0.0, ri, 0.0)
+ctlpnts[3, 4] = Vector(-ri, ri, 0.0)
+ctlpnts[4, 4] = Vector(-ri, 0.0, 0.0)
+ctlpnts[5, 4] = Vector(-ri, -ri, 0.0)
+ctlpnts[6, 4] = Vector(0.0, -ri, 0.0)
+ctlpnts[7, 4] = Vector(ri, -ri, 0.0)
+ctlpnts[8, 4] = Vector(ri, 0.0, 0.0)
+ctlpnts[0, 5] = Vector(ri, 0.0, -ra)
+ctlpnts[1, 5] = Vector(ri, ri, -ra)
+ctlpnts[2, 5] = Vector(0.0, ri, -ra)
+ctlpnts[3, 5] = Vector(-ri, ri, -ra)
+ctlpnts[4, 5] = Vector(-ri, 0.0, -ra)
+ctlpnts[5, 5] = Vector(-ri, -ri, -ra)
+ctlpnts[6, 5] = Vector(0.0, -ri, -ra)
+ctlpnts[7, 5] = Vector(ri, -ri, -ra)
+ctlpnts[8, 5] = Vector(ri, 0.0, -ra)
+ctlpnts[0, 6] = Vector(rm, 0.0, -ra)
+ctlpnts[1, 6] = Vector(rm, rm, -ra)
+ctlpnts[2, 6] = Vector(0.0, rm, -ra)
+ctlpnts[3, 6] = Vector(-rm, rm, -ra)
+ctlpnts[4, 6] = Vector(-rm, 0.0, -ra)
+ctlpnts[5, 6] = Vector(-rm, -rm, -ra)
+ctlpnts[6, 6] = Vector(0.0, -rm, -ra)
+ctlpnts[7, 6] = Vector(rm, -rm, -ra)
+ctlpnts[8, 6] = Vector(rm, 0.0, -ra)
+ctlpnts[0, 7] = Vector(ro, 0.0, -ra)
+ctlpnts[1, 7] = Vector(ro, ro, -ra)
+ctlpnts[2, 7] = Vector(0.0, ro, -ra)
+ctlpnts[3, 7] = Vector(-ro, ro, -ra)
+ctlpnts[4, 7] = Vector(-ro, 0.0, -ra)
+ctlpnts[5, 7] = Vector(-ro, -ro, -ra)
+ctlpnts[6, 7] = Vector(0.0, -ro, -ra)
+ctlpnts[7, 7] = Vector(ro, -ro, -ra)
+ctlpnts[8, 7] = Vector(ro, 0.0, -ra)
+ctlpnts[0, 8] = Vector(ro, 0.0, 0.0)
+ctlpnts[1, 8] = Vector(ro, ro, 0.0)
+ctlpnts[2, 8] = Vector(0.0, ro, 0.0)
+ctlpnts[3, 8] = Vector(-ro, ro, 0.0)
+ctlpnts[4, 8] = Vector(-ro, 0.0, 0.0)
+ctlpnts[5, 8] = Vector(-ro, -ro, 0.0)
+ctlpnts[6, 8] = Vector(0.0, -ro, 0.0)
+ctlpnts[7, 8] = Vector(ro, -ro, 0.0)
+ctlpnts[8, 8] = Vector(ro, 0.0, 0.0)
 
-weights = zeros((3, 3), dtype=float64)
+weights = zeros((9, 9), dtype=float64)
 weights[0, 0] = 1.0
 weights[1, 0] = 1.0/sqrt(2.0)
 weights[2, 0] = 1.0
+weights[3, 0] = 1.0/sqrt(2.0)
+weights[4, 0] = 1.0
+weights[5, 0] = 1.0/sqrt(2.0)
+weights[6, 0] = 1.0
+weights[7, 0] = 1.0/sqrt(2.0)
+weights[8, 0] = 1.0
 weights[0, 1] = 1.0/sqrt(2.0)
 weights[1, 1] = 0.5
 weights[2, 1] = 1.0/sqrt(2.0)
+weights[3, 1] = 0.5
+weights[4, 1] = 1.0/sqrt(2.0)
+weights[5, 1] = 0.5
+weights[6, 1] = 1.0/sqrt(2.0)
+weights[7, 1] = 0.5
+weights[8, 1] = 1.0/sqrt(2.0)
 weights[0, 2] = 1.0
 weights[1, 2] = 1.0/sqrt(2.0)
 weights[2, 2] = 1.0
+weights[3, 2] = 1.0/sqrt(2.0)
+weights[4, 2] = 1.0
+weights[5, 2] = 1.0/sqrt(2.0)
+weights[6, 2] = 1.0
+weights[7, 2] = 1.0/sqrt(2.0)
+weights[8, 2] = 1.0
+weights[0, 3] = 1.0/sqrt(2.0)
+weights[1, 3] = 0.5
+weights[2, 3] = 1.0/sqrt(2.0)
+weights[3, 3] = 0.5
+weights[4, 3] = 1.0/sqrt(2.0)
+weights[5, 3] = 0.5
+weights[6, 3] = 1.0/sqrt(2.0)
+weights[7, 3] = 0.5
+weights[8, 3] = 1.0/sqrt(2.0)
+weights[0, 4] = 1.0
+weights[1, 4] = 1.0/sqrt(2.0)
+weights[2, 4] = 1.0
+weights[3, 4] = 1.0/sqrt(2.0)
+weights[4, 4] = 1.0
+weights[5, 4] = 1.0/sqrt(2.0)
+weights[6, 4] = 1.0
+weights[7, 4] = 1.0/sqrt(2.0)
+weights[8, 4] = 1.0
+weights[0, 5] = 1.0/sqrt(2.0)
+weights[1, 5] = 0.5
+weights[2, 5] = 1.0/sqrt(2.0)
+weights[3, 5] = 0.5
+weights[4, 5] = 1.0/sqrt(2.0)
+weights[5, 5] = 0.5
+weights[6, 5] = 1.0/sqrt(2.0)
+weights[7, 5] = 0.5
+weights[8, 5] = 1.0/sqrt(2.0)
+weights[0, 6] = 1.0
+weights[1, 6] = 1.0/sqrt(2.0)
+weights[2, 6] = 1.0
+weights[3, 6] = 1.0/sqrt(2.0)
+weights[4, 6] = 1.0
+weights[5, 6] = 1.0/sqrt(2.0)
+weights[6, 6] = 1.0
+weights[7, 6] = 1.0/sqrt(2.0)
+weights[8, 6] = 1.0
+weights[0, 7] = 1.0/sqrt(2.0)
+weights[1, 7] = 0.5
+weights[2, 7] = 1.0/sqrt(2.0)
+weights[3, 7] = 0.5
+weights[4, 7] = 1.0/sqrt(2.0)
+weights[5, 7] = 0.5
+weights[6, 7] = 1.0/sqrt(2.0)
+weights[7, 7] = 0.5
+weights[8, 7] = 1.0/sqrt(2.0)
+weights[0, 8] = 1.0
+weights[1, 8] = 1.0/sqrt(2.0)
+weights[2, 8] = 1.0
+weights[3, 8] = 1.0/sqrt(2.0)
+weights[4, 8] = 1.0
+weights[5, 8] = 1.0/sqrt(2.0)
+weights[6, 8] = 1.0
+weights[7, 8] = 1.0/sqrt(2.0)
+weights[8, 8] = 1.0
 
-print(f'Control Points:\n{ctlpts}\n')
-print(f'Weights:\n{weights}\n')
+nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
-uknots = asarray([0.0, 0.0, 0.0, 0.5, 0.5, 0.5], dtype=float64)*pi
-vknots = asarray([0.0, 0.0, 0.0, 0.5, 0.5, 0.5], dtype=float64)*pi
-
-nurbssurface = NurbsSurface(ctlpts, weights, uknots, vknots)
+print(f'Control Points:\n{nurbssurface.ctlpnts}\n')
+print(f'Weights:\n{nurbssurface.weights}\n')
+print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
+print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
 
 pnts = nurbssurface.evaluate_points(numu, numv)
+tgtsu, tgtsv = nurbssurface.evaluate_tangents(numu, numv)
+nrms = tgtsu.cross(tgtsv)
 
 #%%
-# Plot the NURBS Surface
-fig = figure(figsize=(12, 8))
-ax = Axes3D(fig)
-fig.add_axes(ax)
-ax.view_init(elev=45, azim=45, roll=0)
-ax.grid(True)
-ax.plot(ctlpts.x, ctlpts.y, ctlpts.z, 'ro', label='Control Points')
-ax.plot_wireframe(pnts.x, pnts.y, pnts.z, label='NURBS Surface')
-ax.set_box_aspect([ro+ri, ro+ri, ri])
-_ = ax.legend()
+# Plot the NURBS Surface using K3D
+u, v = nurbssurface.evaluate_uv(numu, numv)
+num = u.size*v.size
+ind = arange(num, dtype=int).reshape(u.size, v.size)
+
+faces = []
+for i in range(u.size-1):
+    for j in range(v.size-1):
+        faces.append([ind[i, j], ind[i+1, j], ind[i+1, j+1]])
+        faces.append([ind[i, j], ind[i+1, j+1], ind[i, j+1]])
+
+faces = asarray(faces, dtype=int)
+
+pnts = pnts.reshape(num)
+nrms = nrms.reshape(num)
+
+pntsxyz = pnts.stack_xyz()
+nrmsxyz = nrms.stack_xyz()
+
+plot = k3dPlot()
+mesh = k3dmesh(pntsxyz.astype('float32'), faces.astype('uint32'),
+               nrmsxyz.astype('float32'), color=0xffd500, flat_shading=False)
+ctlptsxyz = ctlpnts.stack_xyz()
+plot += k3dpoints(ctlptsxyz.astype('float32'), point_size=0.1, color=0xff0000)
+plot += mesh
+plot.display()

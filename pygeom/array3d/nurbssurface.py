@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Tuple, Union
 
-from numpy import asarray, float64, linspace
-from pygeom.tools.basis import basis_derivatives, basis_functions
+from numpy import concatenate, float64, full, linspace, ones
+
+from ..tools.basis import (basis_derivatives, basis_functions, default_knots,
+                           knot_linspace)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -43,10 +45,6 @@ class BSplineSurface():
         return dNu, dNv
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
-        if isinstance(u, float64):
-            u = asarray([u], dtype=float64)
-        if isinstance(v, float64):
-            v = asarray([v], dtype=float64)
         Nu, Nv = self.basis_functions(u, v)
         points = (self.ctlpnts.transpose()@Nu).transpose()@Nv
         if points.size == 1:
@@ -55,10 +53,6 @@ class BSplineSurface():
 
     def evaluate_tangents_at_uv(self, u: 'Numeric', v: 'Numeric') -> Tuple['VectorLike',
                                                                            'VectorLike']:
-        if isinstance(u, float64):
-            u = asarray([u], dtype=float64)
-        if isinstance(v, float64):
-            v = asarray([v], dtype=float64)
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_derivatives(u, v)
         tangent_u = (self.ctlpnts.transpose()@dNu).transpose()@Nv
@@ -93,25 +87,34 @@ class BSplineSurface():
 class NurbsSurface():
     ctlpnts: 'ArrayVector' = None
     weights: 'NDArray[float64]' = None
-    uknots: 'NDArray[float64]' = None
-    vknots: 'NDArray[float64]' = None
     udegree: int = None
     vdegree: int = None
+    uknots: 'NDArray[float64]' = None
+    vknots: 'NDArray[float64]' = None
     _wpoints: 'ArrayVector' = None
+    _cuknots: 'NDArray[float64]' = None
+    _cvknots: 'NDArray[float64]' = None
 
-    def __init__(self, ctlpnts: 'ArrayVector', weights: 'NDArray[float64]',
-                 uknots: 'NDArray[float64]', vknots: 'NDArray[float64]',
-                 udegree: int = None, vdegree: int = None) -> None:
+    def __init__(self, ctlpnts: 'ArrayVector', **kwargs: Dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts
-        self.weights = weights
-        self.uknots = uknots
-        self.vknots = vknots
-        self.udegree = ctlpnts.shape[0] - 1
-        self.vdegree = ctlpnts.shape[1] - 1
-        if udegree is not None:
-            self.udegree = udegree
-        if vdegree is not None:
-            self.vdegree = vdegree
+
+        self.weights = kwargs.get('weights', ones(ctlpnts.shape, dtype=float64))
+        if self.ctlpnts.shape != self.weights.shape:
+            raise ValueError('Control points and weights must have the same shape.')
+
+        usize = self.ctlpnts.shape[0] - 1
+        self.udegree = kwargs.get('udegree', usize)
+        self.uknots = kwargs.get('uknots', default_knots(usize + 1,
+                                                         self.udegree))
+        self.uendpoint = kwargs.get('uendpoint', True)
+        self.uclosed = kwargs.get('uclosed', False)
+
+        vsize = self.ctlpnts.shape[1] - 1
+        self.vdegree = kwargs.get('vdegree', vsize)
+        self.vknots = kwargs.get('vknots', default_knots(vsize + 1,
+                                                         self.vdegree))
+        self.vendpoint = kwargs.get('vendpoint', True)
+        self.vclosed = kwargs.get('vclosed', False)
 
     @property
     def wpoints(self) -> 'ArrayVector':
@@ -119,16 +122,38 @@ class NurbsSurface():
             self._wpoints = self.ctlpnts*self.weights
         return self._wpoints
 
+    @property
+    def cuknots(self) -> 'NDArray[float64]':
+        if self._cuknots is None:
+            if self.uendpoint:
+                kbeg = full(self.udegree, self.uknots[0])
+                kend = full(self.udegree, self.uknots[-1])
+                self._cuknots = concatenate((kbeg, self.uknots, kend))
+            else:
+                self._cuknots = self.uknots
+        return self._cuknots
+
+    @property
+    def cvknots(self) -> 'NDArray[float64]':
+        if self._cvknots is None:
+            if self.vendpoint:
+                kbeg = full(self.vdegree, self.vknots[0])
+                kend = full(self.vdegree, self.vknots[-1])
+                self._cvknots = concatenate((kbeg, self.vknots, kend))
+            else:
+                self._cvknots = self.vknots
+        return self._cvknots
+
     def basis_functions(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
                                                                    'NDArray[float64]']:
-        Nu = basis_functions(self.udegree, self.uknots, u)
-        Nv = basis_functions(self.vdegree, self.vknots, v)
+        Nu = basis_functions(self.udegree, self.cuknots, u)
+        Nv = basis_functions(self.vdegree, self.cvknots, v)
         return Nu, Nv
 
     def basis_derivatives(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
                                                                      'NDArray[float64]']:
-        dNu = basis_derivatives(self.udegree, self.uknots, u)
-        dNv = basis_derivatives(self.vdegree, self.vknots, v)
+        dNu = basis_derivatives(self.udegree, self.cuknots, u)
+        dNv = basis_derivatives(self.vdegree, self.cvknots, v)
         return dNu, dNv
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
@@ -160,12 +185,8 @@ class NurbsSurface():
 
     def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray[float64]',
                                                          'NDArray[float64]']:
-        umin = self.uknots.min()
-        umax = self.uknots.max()
-        u = linspace(umin, umax, numu, dtype=float64)
-        vmin = self.vknots.min()
-        vmax = self.vknots.max()
-        v = linspace(vmin, vmax, numv, dtype=float64)
+        u = knot_linspace(numu, self.uknots)
+        v = knot_linspace(numv, self.vknots)
         return u, v
 
     def evaluate_points(self, numu: int, numv: int) -> 'ArrayVector':
@@ -175,5 +196,4 @@ class NurbsSurface():
     def evaluate_tangents(self, numu: int, numv: int) -> Tuple['ArrayVector',
                                                                'ArrayVector']:
         u, v = self.evaluate_uv(numu, numv)
-        tangents_u, tangents_v = self.evaluate_tangents_at_uv(u, v)
-        return tangents_u, tangents_v
+        return self.evaluate_tangents_at_uv(u, v)

@@ -11,11 +11,11 @@ if TYPE_CHECKING:
     Numeric = Union[float64, NDArray[float64]]
 
 #%%
-# Define Nurbs Basis Functions
+# Define Parameter
 t = linspace(0.0, 1.0, 121, dtype=float64)
 
 #%%
-# Plot the Nurbs Basis Functions Degree 0
+# Plot the Bernstein Polynomials Degree 0
 p = 0
 Bt = bernstein_polynomials(p, t)
 
@@ -27,7 +27,7 @@ for i in range(Bt.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis Functions Degree 1
+# Plot the Bernstein Polynomials Degree 1
 p = 1
 Bt = bernstein_polynomials(p, t)
 
@@ -39,7 +39,7 @@ for i in range(Bt.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis First Derivative Degree 1
+# Plot the Bernstein Derivatives Degree 1
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 1
@@ -60,7 +60,7 @@ for i in range(dNu_check.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis Functions Degree 2
+# Plot the Bernstein Polynomials Degree 2
 p = 2
 Bt = bernstein_polynomials(p, t)
 
@@ -72,7 +72,7 @@ for i in range(Bt.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis First Derivative Degree 2
+# Plot the Bernstein Derivatives Degree 2
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 2
@@ -93,7 +93,7 @@ for i in range(dNu_check.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis Functions Degree 3
+# Plot the Bernstein Polynomials Degree 3
 p = 3
 Bt = bernstein_polynomials(p, t)
 
@@ -105,7 +105,7 @@ for i in range(Bt.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis First Derivative Degree 3
+# Plot the Bernstein Derivatives Degree 3
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 3
@@ -126,7 +126,7 @@ for i in range(dNu_check.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis Functions Degree 4
+# Plot the Bernstein Polynomials Degree 4
 p = 4
 Bt = bernstein_polynomials(p, t)
 
@@ -138,7 +138,7 @@ for i in range(Bt.shape[0]):
 _ = ax.legend()
 
 #%%
-# Plot the Nurbs Basis First Derivative Degree 4
+# Plot the Bernstein Derivatives Degree 4
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 4

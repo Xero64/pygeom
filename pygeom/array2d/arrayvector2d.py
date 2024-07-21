@@ -213,6 +213,11 @@ class ArrayVector2D(Vector2D):
         y = self.y.reshape(shape, order=order)
         return ArrayVector2D(x, y)
 
+    def flatten(self, order='C') -> 'ArrayVector2D':
+        x = self.x.flatten(order=order)
+        y = self.y.flatten(order=order)
+        return ArrayVector2D(x, y)
+
     def to_tuple(self) -> Tuple[Vector2D, ...]:
         return [Vector2D(xi, yi) for xi, yi in zip(self.x, self.y)]
 

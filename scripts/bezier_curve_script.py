@@ -7,7 +7,7 @@ from numpy import cos, float64, linspace, pi, sin, asarray
 from pygeom.array2d import (BezierCurve2D, RationalBezierCurve2D,
                             zero_arrayvector2d)
 from pygeom.geom2d import Vector2D
-from sympy import Symbol
+from sympy import Symbol, sqrt
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -130,6 +130,60 @@ fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
 ax.plot(pnts.x, pnts.y, label='Rational Bezier Curve')
+ax.scatter(pnts.x, pnts.y, label='Points')
+ax.plot(x, y, label='Circle')
+ax.set_aspect('equal')
+_ = ax.legend()
+
+#%%
+# Symbolic
+expr = beziercurve.symbolic_expression()
+
+print(f'expr = {expr.simplify()}\n')
+
+dexpr = beziercurve.symbolic_derivative()
+
+print(f'dexpr = {dexpr.simplify()}\n')
+
+dexpr_check = expr.diff(t)
+
+print(f'dexpr_check = {dexpr_check.simplify()}\n')
+
+d2expr = dexpr.diff(t)
+
+print(f'd2expr = {d2expr.simplify()}\n')
+
+rc = dexpr.return_magnitude()**3/dexpr_check.cross(d2expr)
+
+print(f'r = {rc.simplify().factor()}\n')
+
+#%%
+# Define the control points
+num = 21
+r = 2
+
+K = 4/3*(sqrt(2) - 1)
+ang = pi/2
+K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
+
+ctlpts = zero_arrayvector2d(4, dtype=int)
+ctlpts[0] = Vector2D(r, 0)
+ctlpts[1] = Vector2D(r, K*r)
+ctlpts[2] = Vector2D(K*r, r)
+ctlpts[3] = Vector2D(0, r)
+
+beziercurve = BezierCurve2D(ctlpts)
+
+pnts = beziercurve.evaluate_points(num)
+
+th = linspace(0, 0.5, num)*pi
+x = r*cos(th)
+y = r*sin(th)
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(pnts.x, pnts.y, label='Bezier Curve')
 ax.scatter(pnts.x, pnts.y, label='Points')
 ax.plot(x, y, label='Circle')
 ax.set_aspect('equal')

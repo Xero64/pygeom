@@ -369,7 +369,6 @@ class CubicSpline2D():
     def line_intersection_points(self, line: 'InfiniteLine2D',
                                  all_roots=False) -> List['Point2D']:
         edct = self.line_intersection(line, all_roots=all_roots)
-        print(f'edct = {edct}')
         pnts = []
         for i in edct:
             ia = i
