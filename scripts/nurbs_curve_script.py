@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
-from numpy import arctan2, asarray, cos, float64, linspace, pi, sin, sqrt
+from numpy import arctan2, asarray, cos, float64, linspace, pi, sin, sqrt, gradient
 from pygeom.array2d import NurbsCurve2D, zero_arrayvector2d
 from pygeom.geom2d import Vector2D
 
@@ -31,7 +31,15 @@ nurbscurve = NurbsCurve2D(ctlpts, weights=weights)
 u = nurbscurve.evaluate_u(num)
 
 npnts = nurbscurve.evaluate_points_at_u(u)
-nvecs = nurbscurve.evaluate_tangents_at_u(u)
+nvecs = nurbscurve.evaluate_first_derivatives_at_u(u)
+ncurs = nurbscurve.evaluate_second_derivatives_at_u(u)
+
+dnvecx = gradient(npnts.x, u)
+dnvecy = gradient(npnts.y, u)
+d2nvecx = gradient(nvecs.x, u)
+d2nvecy = gradient(nvecs.y, u)
+
+kappan = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
 bt = arctan2(npnts.y, npnts.x)
 # th = bt
@@ -41,10 +49,14 @@ y = b*sin(th)
 r = sqrt(x**2 + y**2)
 dxdt = -a*sin(th)*pi/2
 dydt = b*cos(th)*pi/2
+d2xdt2 = -a*cos(th)*(pi/2)**2
+d2ydt2 = -b*sin(th)*(pi/2)**2
+
+kappae = (d2ydt2*dxdt - d2xdt2*dydt)/(dxdt**2 + dydt**2)**(3/2)
 
 tp = linspace(0.5, 0.5, 1)
 npnt = nurbscurve.evaluate_points_at_u(tp)
-nvec = nurbscurve.evaluate_tangents_at_u(tp)
+nvec = nurbscurve.evaluate_first_derivatives_at_u(tp)
 
 print(f'tp = {tp}')
 print(f'npnt = {npnt}')
@@ -69,6 +81,9 @@ thn = arctan2(npnts.y, npnts.x)
 ale = arctan2(dydt, dxdt)
 aln = arctan2(nvecs.y, nvecs.x)
 
+bte = arctan2(d2ydt2, d2xdt2)
+btn = arctan2(ncurs.y, ncurs.x)
+
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
@@ -79,8 +94,44 @@ _ = ax.legend()
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, ale, label='Ellipse Tangent Angle')
-ax.plot(u, aln, '-.', label='NURBS Tangent Angle')
+ax.plot(u, ale, label='Ellipse First Derivative Angle')
+ax.plot(u, aln, '-.', label='NURBS First Derivative Angle')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, dxdt, label='Ellipse dX')
+ax.plot(u, dydt, label='Ellipse dY')
+ax.plot(u, nvecs.x, '-.', label='NURBS dX')
+ax.plot(u, nvecs.y, '-.', label='NURBS dY')
+ax.plot(u, dnvecx, '-.', label='NURBS dX Gradient')
+ax.plot(u, dnvecy, '-.', label='NURBS dY Gradient')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, bte, label='Ellipse Second Derivative Angle')
+ax.plot(u, btn, '-.', label='NURBS Second Derivative Angle')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, d2xdt2, label='Ellipse d2X')
+ax.plot(u, d2ydt2, label='Ellipse d2Y')
+ax.plot(u, ncurs.x, '-.', label='NURBS d2X')
+ax.plot(u, ncurs.y, '-.', label='NURBS d2Y')
+ax.plot(u, d2nvecx, '-.', label='NURBS d2X Gradient')
+ax.plot(u, d2nvecy, '-.', label='NURBS d2Y Gradient')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, kappae, label='Ellipse Curvature')
+ax.plot(u, kappan, '-.', label='NURBS Curvative')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
@@ -106,7 +157,9 @@ nurbscurve = NurbsCurve2D(ctlpts, weights=weights)
 
 u = nurbscurve.evaluate_u(num)
 npnts = nurbscurve.evaluate_points(num)
-nvecs = nurbscurve.evaluate_tangents(num)
+nvecs = nurbscurve.evaluate_first_derivatives(num)
+ncurs = nurbscurve.evaluate_second_derivatives(num)
+kappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
 th = u*pi/2
 x = r*cos(th)
@@ -116,7 +169,7 @@ dydt = r*cos(th)*pi/2
 
 tp = linspace(0.5, 0.5, 1)
 npnt = nurbscurve.evaluate_points_at_u(tp)
-nvec = nurbscurve.evaluate_tangents_at_u(tp)
+nvec = nurbscurve.evaluate_first_derivatives_at_u(tp)
 
 print(f'tp = {tp}')
 print(f'npnt = {npnt}')
@@ -246,7 +299,7 @@ for i in range(dNu.shape[0]):
 _ = ax.legend()
 
 pnts = nurbscurve.evaluate_points(num)
-vecs = nurbscurve.evaluate_tangents(num)
+vecs = nurbscurve.evaluate_first_derivatives(num)
 
 th = arctan2(pnts.y, pnts.x)
 th[th < 0.0] += 2.0*pi
@@ -324,7 +377,7 @@ for i in range(dNu.shape[0]):
 _ = ax.legend()
 
 pnts = nurbscurve.evaluate_points(num)
-vecs = nurbscurve.evaluate_tangents(num)
+vecs = nurbscurve.evaluate_first_derivatives(num)
 
 th = linspace(0.0, 2*pi, 4*num, dtype=float64)
 # th[-1] = 2.0*pi
