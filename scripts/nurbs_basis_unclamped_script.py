@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
 from numpy import asarray, float64, linspace, gradient, zeros
-from pygeom.tools.basis import basis_functions, basis_derivatives, basis_second_derivatives
+from pygeom.tools.basis import basis_functions, basis_first_derivatives, basis_second_derivatives
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -42,7 +42,7 @@ for i in range(Nu.shape[0]):
     ax.plot(u, Nu[i, :], label=f'N_{i}^{p}')
 _ = ax.legend()
 
-dNu = basis_derivatives(p, k, u)
+dNu = basis_first_derivatives(p, k, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -64,7 +64,7 @@ for i in range(Nu.shape[0]):
     ax.plot(u, Nu[i, :], label=f'N_{i}^{p}')
 _ = ax.legend()
 
-dNu = basis_derivatives(p, k, u)
+dNu = basis_first_derivatives(p, k, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -104,7 +104,7 @@ for i in range(Nu.shape[0]):
     ax.plot(u, Nu[i, :], label=f'N_{i}^{p}')
 _ = ax.legend()
 
-dNu = basis_derivatives(p, k, u)
+dNu = basis_first_derivatives(p, k, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()

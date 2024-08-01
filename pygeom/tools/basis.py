@@ -37,8 +37,8 @@ def basis_functions(p: int, k: 'NDArray[float64]',
                 Nu[i] = slope1*prevNu[i] + slope2*prevNu[i + 1]
     return Nu
 
-def basis_derivatives(p: int, k: 'NDArray[float64]',
-                      u: 'NDArray[float64]') -> 'NDArray[float64]':
+def basis_first_derivatives(p: int, k: 'NDArray[float64]',
+                            u: 'NDArray[float64]') -> 'NDArray[float64]':
     m = k.size - 1
     if isscalar(u):
         dNu = zeros(m - p, dtype=float64)
@@ -69,7 +69,7 @@ def basis_second_derivatives(p: int, k: 'NDArray[float64]',
     kp = k.copy()
     if kp[-1] == kp[-2]:
         kp = kp[:-1]
-    pdNu = p*basis_derivatives(p - 1, kp, u)
+    pdNu = p*basis_first_derivatives(p - 1, kp, u)
     for i in range(m - p):
         Dk1 = k[i + p] - k[i]
         Dk2 = k[i + p + 1] - k[i + 1]

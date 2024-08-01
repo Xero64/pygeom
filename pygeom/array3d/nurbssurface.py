@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Dict, Tuple, Union
 
 from numpy import concatenate, float64, full, linspace, ones
 
-from ..tools.basis import (basis_derivatives, basis_functions, default_knots,
+from ..tools.basis import (basis_first_derivatives, basis_functions, default_knots,
                            knot_linspace)
 
 if TYPE_CHECKING:
@@ -38,10 +38,10 @@ class BSplineSurface():
         Nv = basis_functions(self.vdegree, self.vknots, v)
         return Nu, Nv
 
-    def basis_derivatives(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
+    def basis_first_derivatives(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
                                                                      'NDArray[float64]']:
-        dNu = basis_derivatives(self.udegree, self.uknots, u)
-        dNv = basis_derivatives(self.vdegree, self.vknots, v)
+        dNu = basis_first_derivatives(self.udegree, self.uknots, u)
+        dNv = basis_first_derivatives(self.vdegree, self.vknots, v)
         return dNu, dNv
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
@@ -54,7 +54,7 @@ class BSplineSurface():
     def evaluate_tangents_at_uv(self, u: 'Numeric', v: 'Numeric') -> Tuple['VectorLike',
                                                                            'VectorLike']:
         Nu, Nv = self.basis_functions(u, v)
-        dNu, dNv = self.basis_derivatives(u, v)
+        dNu, dNv = self.basis_first_derivatives(u, v)
         tangent_u = (self.ctlpnts.transpose()@dNu).transpose()@Nv
         tangent_v = (self.ctlpnts.transpose()@Nu).transpose()@dNv
         if tangent_u.size == 1:
@@ -150,10 +150,10 @@ class NurbsSurface():
         Nv = basis_functions(self.vdegree, self.cvknots, v)
         return Nu, Nv
 
-    def basis_derivatives(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
+    def basis_first_derivatives(self, u: 'Numeric', v: 'Numeric') -> Tuple['NDArray[float64]',
                                                                      'NDArray[float64]']:
-        dNu = basis_derivatives(self.udegree, self.cuknots, u)
-        dNv = basis_derivatives(self.vdegree, self.cvknots, v)
+        dNu = basis_first_derivatives(self.udegree, self.cuknots, u)
+        dNv = basis_first_derivatives(self.vdegree, self.cvknots, v)
         return dNu, dNv
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
@@ -168,7 +168,7 @@ class NurbsSurface():
     def evaluate_tangents_at_uv(self, u: 'Numeric', v: 'Numeric') -> Tuple['VectorLike',
                                                                            'VectorLike']:
         Nu, Nv = self.basis_functions(u, v)
-        dNu, dNv = self.basis_derivatives(u, v)
+        dNu, dNv = self.basis_first_derivatives(u, v)
         numer = (self.wpoints.transpose()@Nu).transpose()@Nv
         dnumer_u = (self.wpoints.transpose()@dNu).transpose()@Nv
         dnumer_v = (self.wpoints.transpose()@Nu).transpose()@dNv

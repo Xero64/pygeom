@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 from numpy import concatenate, float64, full, linspace, ones
 
 from ..geom2d import Vector2D
-from ..tools.basis import (basis_derivatives, basis_functions, default_knots,
+from ..tools.basis import (basis_first_derivatives, basis_functions, default_knots,
                            knot_linspace, basis_second_derivatives)
 
 if TYPE_CHECKING:
@@ -35,8 +35,8 @@ class BSplineCurve2D():
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.knots, u)
 
-    def basis_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_derivatives(self.degree, self.knots, u)
+    def basis_first_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
+        return basis_first_derivatives(self.degree, self.knots, u)
 
     def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
@@ -46,7 +46,7 @@ class BSplineCurve2D():
         return points
 
     def evaluate_tangents_at_u(self, u: 'Numeric') -> 'VectorLike':
-        dNu = self.basis_derivatives(u)
+        dNu = self.basis_first_derivatives(u)
         tangents = self.ctlpnts@dNu
         if tangents.size == 1:
             tangents = tangents[0]
@@ -105,8 +105,8 @@ class NurbsCurve2D():
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.cknots, u)
 
-    def basis_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_derivatives(self.degree, self.cknots, u)
+    def basis_first_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
+        return basis_first_derivatives(self.degree, self.cknots, u)
 
     def basis_second_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_second_derivatives(self.degree, self.cknots, u)
@@ -122,7 +122,7 @@ class NurbsCurve2D():
 
     def evaluate_first_derivatives_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
-        dNu = self.basis_derivatives(u)
+        dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
         dnumer = self.wpoints@dNu
         denom = self.weights@Nu
@@ -134,7 +134,7 @@ class NurbsCurve2D():
 
     def evaluate_second_derivatives_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
-        dNu = self.basis_derivatives(u)
+        dNu = self.basis_first_derivatives(u)
         d2Nu = self.basis_second_derivatives(u)
         numer = self.wpoints@Nu
         dnumer = self.wpoints@dNu
@@ -142,10 +142,6 @@ class NurbsCurve2D():
         denom = self.weights@Nu
         ddenom = self.weights@dNu
         d2denom = self.weights@d2Nu
-        # denom2 = denom**2
-        # ddenom2 = 2*denom*ddenom
-        # numer2 = (dnumer*denom - numer*ddenom)
-        # dnumer2 = (d2numer*denom - 2*dnumer*ddenom + numer*d2denom)
         deriv2 = (d2numer*denom**2 - dnumer*2*ddenom*denom + numer*2*ddenom**2 - numer*d2denom*denom)/denom**3
         if deriv2.size == 1:
             deriv2 = deriv2[0]

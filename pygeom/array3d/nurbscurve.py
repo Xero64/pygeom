@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, Union
 from numpy import concatenate, float64, full, linspace, ones
 
 from ..geom3d import Vector
-from ..tools.basis import (basis_derivatives, basis_functions, default_knots,
+from ..tools.basis import (basis_first_derivatives, basis_functions, default_knots,
                            knot_linspace)
 
 if TYPE_CHECKING:
@@ -35,8 +35,8 @@ class BSplineCurve():
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.knots, u)
 
-    def basis_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_derivatives(self.degree, self.knots, u)
+    def basis_first_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
+        return basis_first_derivatives(self.degree, self.knots, u)
 
     def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
@@ -46,7 +46,7 @@ class BSplineCurve():
         return points
 
     def evaluate_tangents_at_u(self, u: 'Numeric') -> 'VectorLike':
-        dNu = self.basis_derivatives(u)
+        dNu = self.basis_first_derivatives(u)
         tangents = self.ctlpnts@dNu
         if tangents.size == 1:
             tangents = tangents[0]
@@ -104,8 +104,8 @@ class NurbsCurve():
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.cknots, u)
 
-    def basis_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_derivatives(self.degree, self.cknots, u)
+    def basis_first_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
+        return basis_first_derivatives(self.degree, self.cknots, u)
 
     def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
@@ -118,7 +118,7 @@ class NurbsCurve():
 
     def evaluate_tangents_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
-        dNu = self.basis_derivatives(u)
+        dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
         dnumer = self.wpoints@dNu
         denom = self.weights@Nu

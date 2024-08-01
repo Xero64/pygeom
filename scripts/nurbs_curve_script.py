@@ -3,8 +3,8 @@
 from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
-from numpy import arctan2, asarray, cos, float64, linspace, pi, sin, sqrt, gradient
-from pygeom.array2d import NurbsCurve2D, zero_arrayvector2d
+from numpy import arctan2, asarray, cos, float64, linspace, pi, sin, sqrt
+from pygeom.array2d import NurbsCurve2D, zero_arrayvector2d, ArrayVector2D
 from pygeom.geom2d import Vector2D
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     VectorLike = Union[Vector2D, ArrayVector2D]
 
 #%%
-# Define the control points and weights
+# Quarter Ellipse
 num = 20
 a = 2.0
 b = 1.0
@@ -34,115 +34,96 @@ npnts = nurbscurve.evaluate_points_at_u(u)
 nvecs = nurbscurve.evaluate_first_derivatives_at_u(u)
 ncurs = nurbscurve.evaluate_second_derivatives_at_u(u)
 
-dnvecx = gradient(npnts.x, u)
-dnvecy = gradient(npnts.y, u)
-d2nvecx = gradient(nvecs.x, u)
-d2nvecy = gradient(nvecs.y, u)
+nkappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
-kappan = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
+Nu = nurbscurve.basis_functions(u)
+dNu = nurbscurve.basis_first_derivatives(u)
+d2Nu = nurbscurve.basis_second_derivatives(u)
 
-bt = arctan2(npnts.y, npnts.x)
-# th = bt
-th = u*pi/2
-x = a*cos(th)
-y = b*sin(th)
-r = sqrt(x**2 + y**2)
-dxdt = -a*sin(th)*pi/2
-dydt = b*cos(th)*pi/2
-d2xdt2 = -a*cos(th)*(pi/2)**2
-d2ydt2 = -b*sin(th)*(pi/2)**2
+wpNu = nurbscurve.wpoints@Nu
+wpdNu = nurbscurve.wpoints@dNu
+wpd2Nu = nurbscurve.wpoints@d2Nu
 
-kappae = (d2ydt2*dxdt - d2xdt2*dydt)/(dxdt**2 + dydt**2)**(3/2)
+th = wpNu.return_angle()
 
-tp = linspace(0.5, 0.5, 1)
-npnt = nurbscurve.evaluate_points_at_u(tp)
-nvec = nurbscurve.evaluate_first_derivatives_at_u(tp)
+magwpNu2 = wpNu.return_magnitude()**2
 
-print(f'tp = {tp}')
-print(f'npnt = {npnt}')
-print(f'npnt.return_angle() = {npnt.return_angle()/(pi/2)}')
-print(f'nvec = {nvec}')
-print(f'nvec.return_angle() = {nvec.return_angle()/(pi/2)}')
+dthdu = wpNu.cross(wpdNu)/magwpNu2
+d2thdu2 = wpNu.cross(wpd2Nu)/magwpNu2 - wpNu.cross(wpdNu)*wpNu.dot(wpdNu)*2/magwpNu2**2
+
+r = a*b/sqrt(a**2*sin(th)**2 + b**2*cos(th)**2)
+x = r*cos(th)
+y = r*sin(th)
+
+drdth = a*b*(b**2 - a**2)*sin(th)*cos(th)/(a**2*sin(th)**2 + b**2*cos(th)**2)**(3/2)
+dxdth = drdth*cos(th) - r*sin(th)
+dydth = drdth*sin(th) + r*cos(th)
+
+d2rdth2 = a*b*(b**2 - a**2)*(3*(b**2 - a**2)*sin(th)**2*cos(th)**2 - (a**2*sin(th)**2 + b**2*cos(th)**2)*sin(th)**2 + (a**2*sin(th)**2 + b**2*cos(th)**2)*cos(th)**2)/(a**2*sin(th)**2 + b**2*cos(th)**2)**(5/2)
+d2xdth2 = d2rdth2*cos(th) - 2*drdth*sin(th) - r*cos(th)
+d2ydth2 = d2rdth2*sin(th) + 2*drdth*cos(th) - r*sin(th)
+
+epnts = ArrayVector2D(x, y)
+evecs = ArrayVector2D(dxdth, dydth)*dthdu
+ecurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+
+ekappa = evecs.cross(ecurs)/evecs.return_magnitude()**3
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(x, y, label='Ellipse Curve')
-ax.scatter(x, y, label='Ellipse Points')
+ax.plot(u, th, label='Ellipse Angle')
+ax.plot(u, dthdu, label='Ellipse Angle Derivative')
+ax.plot(u, d2thdu2, label='Ellipse Angle Second Derivative')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(epnts.x, epnts.y, label='Ellipse Curve')
+ax.scatter(epnts.x, epnts.y, label='Ellipse Points')
 ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
 ax.scatter(npnts.x, npnts.y, label='NURBS Points')
 ax.set_aspect('equal')
 ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
 _ = ax.legend()
 
-the = arctan2(y, x)
-thn = arctan2(npnts.y, npnts.x)
-
-ale = arctan2(dydt, dxdt)
-aln = arctan2(nvecs.y, nvecs.x)
-
-bte = arctan2(d2ydt2, d2xdt2)
-btn = arctan2(ncurs.y, ncurs.x)
-
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, the, label='Ellipse Position Angle')
-ax.plot(u, thn, '-.', label='NURBS Position Angle')
+ax.plot(u, epnts.x, label='Ellipse X')
+ax.plot(u, epnts.y, label='Ellipse Y')
+ax.plot(u, npnts.x, '-.', label='NURBS X')
+ax.plot(u, npnts.y, '-.', label='NURBS Y')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, ale, label='Ellipse First Derivative Angle')
-ax.plot(u, aln, '-.', label='NURBS First Derivative Angle')
+ax.plot(u, evecs.x, label='Ellipse dXdu')
+ax.plot(u, evecs.y, label='Ellipse dYdu')
+ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
+ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, dxdt, label='Ellipse dX')
-ax.plot(u, dydt, label='Ellipse dY')
-ax.plot(u, nvecs.x, '-.', label='NURBS dX')
-ax.plot(u, nvecs.y, '-.', label='NURBS dY')
-ax.plot(u, dnvecx, '-.', label='NURBS dX Gradient')
-ax.plot(u, dnvecy, '-.', label='NURBS dY Gradient')
+ax.plot(u, ecurs.x, label='Ellipse d2Xdu2')
+ax.plot(u, ecurs.y, label='Ellipse d2Ydu2')
+ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
+ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, bte, label='Ellipse Second Derivative Angle')
-ax.plot(u, btn, '-.', label='NURBS Second Derivative Angle')
-_ = ax.legend()
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, d2xdt2, label='Ellipse d2X')
-ax.plot(u, d2ydt2, label='Ellipse d2Y')
-ax.plot(u, ncurs.x, '-.', label='NURBS d2X')
-ax.plot(u, ncurs.y, '-.', label='NURBS d2Y')
-ax.plot(u, d2nvecx, '-.', label='NURBS d2X Gradient')
-ax.plot(u, d2nvecy, '-.', label='NURBS d2Y Gradient')
-_ = ax.legend()
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, kappae, label='Ellipse Curvature')
-ax.plot(u, kappan, '-.', label='NURBS Curvative')
-_ = ax.legend()
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, thn, label='Actual Angle')
-ax.plot(u, th, label='Expected Angle')
+ax.plot(u, ekappa, label='Ellipse Curvature')
+ax.plot(u, nkappa, '-.', label='NURBS Curvative')
 _ = ax.legend()
 
 #%%
-# Define the control points and weights
+# Quarter Circle
 num = 20
 r = 1.0
 
@@ -159,28 +140,53 @@ u = nurbscurve.evaluate_u(num)
 npnts = nurbscurve.evaluate_points(num)
 nvecs = nurbscurve.evaluate_first_derivatives(num)
 ncurs = nurbscurve.evaluate_second_derivatives(num)
-kappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
-th = u*pi/2
+nkappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
+
+Nu = nurbscurve.basis_functions(u)
+dNu = nurbscurve.basis_first_derivatives(u)
+d2Nu = nurbscurve.basis_second_derivatives(u)
+
+wpNu = nurbscurve.wpoints@Nu
+wpdNu = nurbscurve.wpoints@dNu
+wpd2Nu = nurbscurve.wpoints@d2Nu
+
+th = wpNu.return_angle()
+
+magwpNu2 = wpNu.return_magnitude()**2
+
+dthdu = wpNu.cross(wpdNu)/magwpNu2
+d2thdu2 = wpNu.cross(wpd2Nu)/magwpNu2 - wpNu.cross(wpdNu)*wpNu.dot(wpdNu)*2/magwpNu2**2
+
 x = r*cos(th)
 y = r*sin(th)
-dxdt = -r*sin(th)*pi/2
-dydt = r*cos(th)*pi/2
 
-tp = linspace(0.5, 0.5, 1)
-npnt = nurbscurve.evaluate_points_at_u(tp)
-nvec = nurbscurve.evaluate_first_derivatives_at_u(tp)
+drdth = 0
+dxdth = -r*sin(th)
+dydth = r*cos(th)
 
-print(f'tp = {tp}')
-print(f'npnt = {npnt}')
-print(f'npnt.return_angle() = {npnt.return_angle()/(pi/2)}')
-print(f'nvec = {nvec}')
-print(f'nvec.return_angle() = {nvec.return_angle()/(pi/2)}')
+d2xdth2 = -r*cos(th)
+d2ydth2 = -r*sin(th)
+
+cpnts = ArrayVector2D(x, y)
+cvecs = ArrayVector2D(dxdth, dydth)*dthdu
+ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+
+ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(x, y, label='Circle')
+ax.plot(u, th, label='Circle Angle')
+ax.plot(u, dthdu, label='Circle Angle Derivative')
+ax.plot(u, d2thdu2, label='Circle Angle Second Derivative')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(cpnts.x, cpnts.y, label='Circle Curve')
+ax.scatter(cpnts.x, cpnts.y, label='Circle Points')
 ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
 ax.scatter(npnts.x, npnts.y, label='NURBS Points')
 ax.set_aspect('equal')
@@ -190,71 +196,39 @@ _ = ax.legend()
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, x, label='Circle X')
-ax.plot(u, y, label='Circle Y')
-ax.plot(u, npnts.x, '-.', label='NURBS Curve X')
-ax.plot(u, npnts.y, '-.', label='NURBS Curve Y')
+ax.plot(u, cpnts.x, label='Circle X')
+ax.plot(u, cpnts.y, label='Circle Y')
+ax.plot(u, npnts.x, '-.', label='NURBS X')
+ax.plot(u, npnts.y, '-.', label='NURBS Y')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, dxdt, label='Circle dX')
-ax.plot(u, dydt, label='Circle dY')
-ax.plot(u, nvecs.x, '-.', label='NURBS Curve dX')
-ax.plot(u, nvecs.y, '-.', label='NURBS Curve dY')
+ax.plot(u, cvecs.x, label='Circle dXdu')
+ax.plot(u, cvecs.y, label='Circle dYdu')
+ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
+ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
 _ = ax.legend()
 
-actual_th = arctan2(npnts.y, npnts.x)
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, actual_th, label='Actual Angle')
-ax.plot(u, th, label='Expected Angle')
+ax.plot(u, ccurs.x, label='Circle d2Xdu2')
+ax.plot(u, ccurs.y, label='Circle d2Ydu2')
+ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
+ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, ckappa, label='Circle Curvature')
+ax.plot(u, nkappa, '-.', label='NURBS Curvative')
 _ = ax.legend()
 
 #%%
-# Define the control points and weights
-num = 37
-r = 2.0
-
-ctlpts = zero_arrayvector2d(3, dtype=float64)
-ctlpts[0] = Vector2D(r, 0.0)
-ctlpts[1] = Vector2D(r, r)
-ctlpts[2] = Vector2D(0.0, r)
-
-weights = asarray([1.0, 1.0/sqrt(2.0), 1.0], dtype=float64)
-
-nurbscurve = NurbsCurve2D(ctlpts, weights=weights)
-
-u = nurbscurve.evaluate_u(num)
-pnts = nurbscurve.evaluate_points(num)
-
-th = arctan2(pnts.y, pnts.x)
-x = r*cos(th)
-y = r*sin(th)
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(pnts.x, pnts.y, label='NURBS Curve')
-ax.scatter(pnts.x, pnts.y, label='NURBS Points')
-ax.plot(x, y, label='Circle')
-ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
-ax.set_aspect('equal')
-_ = ax.legend()
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, pnts.x, label='NURBS Curve X')
-ax.plot(u, pnts.y, label='NURBS Curve Y')
-ax.plot(th*2/pi, x, label='Circle X')
-ax.plot(th*2/pi, y, label='Circle Y')
-_ = ax.legend()
-
-#%%
-# Define the control points and weights
+# Full Circle
 num = 20
 r = 2.0
 
@@ -272,17 +246,15 @@ ctlpts[8] = Vector2D(r, 0.0)
 w = 1.0/sqrt(2.0)
 
 weights = asarray([1.0, w, 1.0, w, 1.0, w, 1.0, w, 1.0], dtype=float64)
-# knots = asarray([0.0, 0.5, 0.5, 1.0, 1.0, 1.5, 1.5, 2.0], dtype=float64)
 
 nurbscurve = NurbsCurve2D(ctlpts, weights=weights, degree=2)
 print(f'nurbscurve.degree = {nurbscurve.degree}')
 print(f'nurbscurve.knots = {nurbscurve.knots}')
 
-
 u = nurbscurve.evaluate_u(num)
 
 Nu = nurbscurve.basis_functions(u)
-dNu = nurbscurve.basis_derivatives(u)
+dNu = nurbscurve.basis_first_derivatives(u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -298,47 +270,97 @@ for i in range(dNu.shape[0]):
     ax.plot(u, dNu[i, :], label=f'dN_{i}^{nurbscurve.degree}')
 _ = ax.legend()
 
-pnts = nurbscurve.evaluate_points(num)
-vecs = nurbscurve.evaluate_first_derivatives(num)
+npnts = nurbscurve.evaluate_points(num)
+nvecs = nurbscurve.evaluate_first_derivatives(num)
+ncurs = nurbscurve.evaluate_second_derivatives(num)
+nkappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
-th = arctan2(pnts.y, pnts.x)
-th[th < 0.0] += 2.0*pi
-th[-1] = 2.0*pi
+Nu = nurbscurve.basis_functions(u)
+dNu = nurbscurve.basis_first_derivatives(u)
+d2Nu = nurbscurve.basis_second_derivatives(u)
+
+wpNu = nurbscurve.wpoints@Nu
+wpdNu = nurbscurve.wpoints@dNu
+wpd2Nu = nurbscurve.wpoints@d2Nu
+
+th = wpNu.return_angle()
+
+magwpNu2 = wpNu.return_magnitude()**2
+
+dthdu = wpNu.cross(wpdNu)/magwpNu2
+d2thdu2 = wpNu.cross(wpd2Nu)/magwpNu2 - wpNu.cross(wpdNu)*wpNu.dot(wpdNu)*2/magwpNu2**2
+
 x = r*cos(th)
 y = r*sin(th)
-dx = -r*sin(th)
-dy = r*cos(th)
+
+drdth = 0
+dxdth = -r*sin(th)
+dydth = r*cos(th)
+
+d2xdth2 = -r*cos(th)
+d2ydth2 = -r*sin(th)
+
+cpnts = ArrayVector2D(x, y)
+cvecs = ArrayVector2D(dxdth, dydth)*dthdu
+ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+
+ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(pnts.x, pnts.y, label='NURBS Curve')
-ax.scatter(pnts.x, pnts.y, label='NURBS Points')
-ax.plot(x, y, label='Circle')
-ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
+ax.plot(u, th, label='Circle Angle')
+ax.plot(u, dthdu, label='Circle Angle Derivative')
+ax.plot(u, d2thdu2, label='Circle Angle Second Derivative')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(cpnts.x, cpnts.y, label='Circle Curve')
+ax.scatter(cpnts.x, cpnts.y, label='Circle Points')
+ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
+ax.scatter(npnts.x, npnts.y, label='NURBS Points')
 ax.set_aspect('equal')
+ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, pnts.x, label='NURBS Curve X')
-ax.plot(u, pnts.y, label='NURBS Curve Y')
-ax.plot(th/2/pi, x, label='Circle X')
-ax.plot(th/2/pi, y, label='Circle Y')
+ax.plot(u, cpnts.x, label='Circle X')
+ax.plot(u, cpnts.y, label='Circle Y')
+ax.plot(u, npnts.x, '-.', label='NURBS X')
+ax.plot(u, npnts.y, '-.', label='NURBS Y')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, vecs.x, label='NURBS Curve dX')
-ax.plot(u, vecs.y, label='NURBS Curve dY')
-ax.plot(th/2/pi, dx, label='Circle dX')
-ax.plot(th/2/pi, dy, label='Circle dY')
+ax.plot(u, cvecs.x, label='Circle dXdu')
+ax.plot(u, cvecs.y, label='Circle dYdu')
+ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
+ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, ccurs.x, label='Circle d2Xdu2')
+ax.plot(u, ccurs.y, label='Circle d2Ydu2')
+ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
+ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, ckappa, label='Circle Curvature')
+ax.plot(u, nkappa, '-.', label='NURBS Curvative')
 _ = ax.legend()
 
 #%%
-# Define the control points and weights
+# Full Circle from 3 Points
 num = 20
 r = 2.0
 
@@ -357,10 +379,13 @@ weights = asarray([1.0, w, 1.0, w, 1.0, w, 1.0], dtype=float64)
 
 nurbscurve = NurbsCurve2D(ctlpts, weights=weights, degree=2)
 
+print(f'nurbscurve.degree = {nurbscurve.degree}')
+print(f'nurbscurve.knots = {nurbscurve.knots}')
+
 u = nurbscurve.evaluate_u(num)
 
 Nu = nurbscurve.basis_functions(u)
-dNu = nurbscurve.basis_derivatives(u)
+dNu = nurbscurve.basis_first_derivatives(u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -376,41 +401,91 @@ for i in range(dNu.shape[0]):
     ax.plot(u, dNu[i, :], label=f'dN_{i}^{nurbscurve.degree}')
 _ = ax.legend()
 
-pnts = nurbscurve.evaluate_points(num)
-vecs = nurbscurve.evaluate_first_derivatives(num)
+npnts = nurbscurve.evaluate_points(num)
+nvecs = nurbscurve.evaluate_first_derivatives(num)
+ncurs = nurbscurve.evaluate_second_derivatives(num)
+nkappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
 
-th = linspace(0.0, 2*pi, 4*num, dtype=float64)
-# th[-1] = 2.0*pi
+Nu = nurbscurve.basis_functions(u)
+dNu = nurbscurve.basis_first_derivatives(u)
+d2Nu = nurbscurve.basis_second_derivatives(u)
+
+wpNu = nurbscurve.wpoints@Nu
+wpdNu = nurbscurve.wpoints@dNu
+wpd2Nu = nurbscurve.wpoints@d2Nu
+
+th = wpNu.return_angle()
+
+magwpNu2 = wpNu.return_magnitude()**2
+
+dthdu = wpNu.cross(wpdNu)/magwpNu2
+d2thdu2 = wpNu.cross(wpd2Nu)/magwpNu2 - wpNu.cross(wpdNu)*wpNu.dot(wpdNu)*2/magwpNu2**2
+
 x = r*cos(th)
 y = r*sin(th)
-dx = -r*sin(th)
-dy = r*cos(th)
+
+drdth = 0
+dxdth = -r*sin(th)
+dydth = r*cos(th)
+
+d2xdth2 = -r*cos(th)
+d2ydth2 = -r*sin(th)
+
+cpnts = ArrayVector2D(x, y)
+cvecs = ArrayVector2D(dxdth, dydth)*dthdu
+ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+
+ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(pnts.x, pnts.y, label='NURBS Curve')
-ax.scatter(pnts.x, pnts.y, label='NURBS Points')
-ax.plot(x, y, label='Circle')
-ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
-ax.plot(ctlpts.x, ctlpts.y, color='r', label='Control Points')
+ax.plot(u, th, label='Circle Angle')
+ax.plot(u, dthdu, label='Circle Angle Derivative')
+ax.plot(u, d2thdu2, label='Circle Angle Second Derivative')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(cpnts.x, cpnts.y, label='Circle Curve')
+ax.scatter(cpnts.x, cpnts.y, label='Circle Points')
+ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
+ax.scatter(npnts.x, npnts.y, label='NURBS Points')
 ax.set_aspect('equal')
+ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, pnts.x, label='NURBS Curve X')
-ax.plot(u, pnts.y, label='NURBS Curve Y')
-ax.plot(th/2/pi, x, label='Circle X')
-ax.plot(th/2/pi, y, label='Circle Y')
+ax.plot(u, cpnts.x, label='Circle X')
+ax.plot(u, cpnts.y, label='Circle Y')
+ax.plot(u, npnts.x, '-.', label='NURBS X')
+ax.plot(u, npnts.y, '-.', label='NURBS Y')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
-ax.plot(u, vecs.x, label='NURBS Curve dX')
-ax.plot(u, vecs.y, label='NURBS Curve dY')
-ax.plot(th/2/pi, dx, label='Circle dX')
-ax.plot(th/2/pi, dy, label='Circle dY')
+ax.plot(u, cvecs.x, label='Circle dXdu')
+ax.plot(u, cvecs.y, label='Circle dYdu')
+ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
+ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, ccurs.x, label='Circle d2Xdu2')
+ax.plot(u, ccurs.y, label='Circle d2Ydu2')
+ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
+ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, ckappa, label='Circle Curvature')
+ax.plot(u, nkappa, '-.', label='NURBS Curvative')
 _ = ax.legend()

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
 from numpy import asarray, concatenate, float64, full, linspace, gradient
-from pygeom.tools.basis import basis_functions, basis_derivatives
+from pygeom.tools.basis import basis_functions, basis_first_derivatives
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -47,7 +47,7 @@ dNu_check: 'NDArray' = gradient(Nu, u, axis=1)
 
 p = 1
 kcl = concatenate((full(p, k[0]), k, full(p, k[-1])))
-dNu = basis_derivatives(p, kcl, u)
+dNu = basis_first_derivatives(p, kcl, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -82,7 +82,7 @@ dNu_check: 'NDArray' = gradient(Nu, u, axis=1)
 
 p = 2
 kcl = concatenate((full(p, k[0]), k, full(p, k[-1])))
-dNu = basis_derivatives(p, kcl, u)
+dNu = basis_first_derivatives(p, kcl, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -117,7 +117,7 @@ dNu_check: 'NDArray' = gradient(Nu, u, axis=1)
 
 p = 3
 kcl = concatenate((full(p, k[0]), k, full(p, k[-1])))
-dNu = basis_derivatives(p, kcl, u)
+dNu = basis_first_derivatives(p, kcl, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -152,7 +152,7 @@ dNu_check: 'NDArray' = gradient(Nu, u, axis=1)
 
 p = 4
 kcl = concatenate((full(p, k[0]), k, full(p, k[-1])))
-dNu = basis_derivatives(p, kcl, u)
+dNu = basis_first_derivatives(p, kcl, u)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
