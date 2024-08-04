@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING, Any, Dict, Union
 
-from numpy import concatenate, float64, full, linspace, ones
+from numpy import concatenate, float64, full, ones
 
 from ..geom2d import Vector2D
-from ..tools.basis import (basis_first_derivatives, basis_functions, default_knots,
-                           knot_linspace, basis_second_derivatives)
+from ..tools.basis import (basis_first_derivatives, basis_functions,
+                           basis_second_derivatives, default_knots,
+                           knot_linspace)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -13,65 +14,12 @@ if TYPE_CHECKING:
     VectorLike = Union[Vector2D, ArrayVector2D]
 
 
-class BSplineCurve2D():
-    ctlpnts: 'ArrayVector2D' = None
-    knots: 'NDArray[float64]' = None
-    degree: int = None
-    _wpoints: 'ArrayVector2D' = None
-
-    def __init__(self, ctlpnts: 'ArrayVector2D',
-                 knots: 'NDArray[float64]', degree: int = None) -> None:
-        self.ctlpnts = ctlpnts
-        self.knots = knots
-        self.degree = ctlpnts.size - 1
-        if degree is not None:
-            self.degree = degree
-
-    def reset(self) -> None:
-        for attr in self.__dict__:
-            if attr.startswith('_'):
-                setattr(self, attr, None)
-
-    def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_functions(self.degree, self.knots, u)
-
-    def basis_first_derivatives(self, u: 'Numeric') -> 'NDArray[float64]':
-        return basis_first_derivatives(self.degree, self.knots, u)
-
-    def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
-        Nu = self.basis_functions(u)
-        points = self.ctlpnts@Nu
-        if points.size == 1:
-            points = points[0]
-        return points
-
-    def evaluate_tangents_at_u(self, u: 'Numeric') -> 'VectorLike':
-        dNu = self.basis_first_derivatives(u)
-        tangents = self.ctlpnts@dNu
-        if tangents.size == 1:
-            tangents = tangents[0]
-        return tangents
-
-    def evaluate_points(self, num: int) -> 'ArrayVector2D':
-        umin = self.knots.min()
-        umax = self.knots.max()
-        u = linspace(umin, umax, num, dtype=float64)
-        return self.evaluate_points_at_u(u)
-
-    def evaluate_tangents(self, num: int) -> 'ArrayVector2D':
-        umin = self.knots.min()
-        umax = self.knots.max()
-        u = linspace(umin, umax, num, dtype=float64)
-        return self.evaluate_tangents_at_u(u)
-
-
 class NurbsCurve2D():
     ctlpnts: 'ArrayVector2D' = None
     weights: 'NDArray[float64]' = None
     degree: int = None
     knots: 'NDArray[float64]' = None
     endpoint: bool = None
-    closed: bool = None
     _wpoints: 'ArrayVector2D' = None
     _cknots: 'NDArray[float64]' = None
 
@@ -83,7 +31,6 @@ class NurbsCurve2D():
         self.knots = kwargs.get('knots', default_knots(self.ctlpnts.size,
                                                        self.degree))
         self.endpoint = kwargs.get('endpoint', True)
-        self.closed = kwargs.get('closed', False)
 
     @property
     def wpoints(self) -> 'ArrayVector2D':
@@ -101,6 +48,11 @@ class NurbsCurve2D():
             else:
                 self._cknots = self.knots
         return self._cknots
+    
+    @property
+    def rational(self) -> bool:
+        check: 'NDArray[float64]' = self.weights == 1.0
+        return not check.all()
 
     def basis_functions(self, u: 'Numeric') -> 'NDArray[float64]':
         return basis_functions(self.degree, self.cknots, u)
@@ -114,8 +66,11 @@ class NurbsCurve2D():
     def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
         Nu = self.basis_functions(u)
         numer = self.wpoints@Nu
-        denom = self.weights@Nu
-        points = numer/denom
+        if self.rational:
+            denom = self.weights@Nu
+            points = numer/denom
+        else:
+            points = numer
         if points.size == 1:
             points = points[0]
         return points
@@ -125,9 +80,12 @@ class NurbsCurve2D():
         dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
         dnumer = self.wpoints@dNu
-        denom = self.weights@Nu
-        ddenom = self.weights@dNu
-        deriv1 = (dnumer*denom - numer*ddenom)/denom**2
+        if self.rational:
+            denom = self.weights@Nu
+            ddenom = self.weights@dNu
+            deriv1 = (dnumer*denom - numer*ddenom)/denom**2
+        else:
+            deriv1 = dnumer
         if deriv1.size == 1:
             deriv1 = deriv1[0]
         return deriv1
@@ -139,10 +97,13 @@ class NurbsCurve2D():
         numer = self.wpoints@Nu
         dnumer = self.wpoints@dNu
         d2numer = self.wpoints@d2Nu
-        denom = self.weights@Nu
-        ddenom = self.weights@dNu
-        d2denom = self.weights@d2Nu
-        deriv2 = (d2numer*denom**2 - dnumer*2*ddenom*denom + numer*2*ddenom**2 - numer*d2denom*denom)/denom**3
+        if self.rational:
+            denom = self.weights@Nu
+            ddenom = self.weights@dNu
+            d2denom = self.weights@d2Nu
+            deriv2 = (d2numer*denom**2 - dnumer*2*ddenom*denom + numer*2*ddenom**2 - numer*d2denom*denom)/denom**3
+        else:
+            deriv2 = d2numer
         if deriv2.size == 1:
             deriv2 = deriv2[0]
         return deriv2
@@ -161,3 +122,33 @@ class NurbsCurve2D():
     def evaluate_second_derivatives(self, num: int) -> 'ArrayVector2D':
         u = self.evaluate_u(num)
         return self.evaluate_second_derivatives_at_u(u)
+    
+    def __repr__(self) -> str:
+        return f'<NurbsCurve2D: degree={self.degree:d}>'
+    
+    def __str__(self) -> str:
+        outstr = f'NurbsCurve2D\n'
+        outstr += f'  degree: {self.degree:d}\n'
+        outstr += f'  control points: \n{self.ctlpnts}\n'
+        outstr += f'  weights: {self.weights}\n'
+        outstr += f'  knots: {self.knots}\n'
+        outstr += f'  endpoint: {self.endpoint}\n'
+        return outstr
+
+
+class BSplineCurve2D(NurbsCurve2D):
+
+    def __init__(self, ctlpnts: 'ArrayVector2D', **kwargs: Dict[str, Any]) -> None:
+        kwargs['weights'] = ones(ctlpnts.shape, dtype=float64)
+        super().__init__(ctlpnts, **kwargs)
+
+    def __repr__(self) -> str:
+        return f'<BSplineCurve2D: degree={self.degree:d}>'
+    
+    def __str__(self) -> str:
+        outstr = f'BSplineCurve2D\n'
+        outstr += f'  degree: {self.degree:d}\n'
+        outstr += f'  control points: \n{self.ctlpnts}\n'
+        outstr += f'  knots: {self.knots}\n'
+        outstr += f'  endpoint: {self.endpoint}\n'
+        return outstr

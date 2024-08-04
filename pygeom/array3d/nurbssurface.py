@@ -102,17 +102,15 @@ class NurbsSurface():
         if self.ctlpnts.shape != self.weights.shape:
             raise ValueError('Control points and weights must have the same shape.')
 
-        usize = self.ctlpnts.shape[0] - 1
-        self.udegree = kwargs.get('udegree', usize)
-        self.uknots = kwargs.get('uknots', default_knots(usize + 1,
-                                                         self.udegree))
+        usize = self.ctlpnts.shape[0]
+        self.udegree = kwargs.get('udegree', usize - 1)
+        self.uknots = kwargs.get('uknots', default_knots(usize, self.udegree))
         self.uendpoint = kwargs.get('uendpoint', True)
         self.uclosed = kwargs.get('uclosed', False)
 
-        vsize = self.ctlpnts.shape[1] - 1
-        self.vdegree = kwargs.get('vdegree', vsize)
-        self.vknots = kwargs.get('vknots', default_knots(vsize + 1,
-                                                         self.vdegree))
+        vsize = self.ctlpnts.shape[1]
+        self.vdegree = kwargs.get('vdegree', vsize - 1)
+        self.vknots = kwargs.get('vknots', default_knots(vsize, self.vdegree))
         self.vendpoint = kwargs.get('vendpoint', True)
         self.vclosed = kwargs.get('vclosed', False)
 
@@ -158,8 +156,8 @@ class NurbsSurface():
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
         Nu, Nv = self.basis_functions(u, v)
-        numer = (self.wpoints.transpose()@Nu).transpose()@Nv
-        denom = (self.weights.transpose()@Nu).transpose()@Nv
+        numer = self.wpoints.rmatmul(Nu.transpose())@Nv
+        denom = Nu.transpose()@self.weights@Nv
         points = numer/denom
         if points.size == 1:
             points = points[0]
@@ -169,12 +167,12 @@ class NurbsSurface():
                                                                            'VectorLike']:
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_first_derivatives(u, v)
-        numer = (self.wpoints.transpose()@Nu).transpose()@Nv
-        dnumer_u = (self.wpoints.transpose()@dNu).transpose()@Nv
-        dnumer_v = (self.wpoints.transpose()@Nu).transpose()@dNv
-        denom = (self.weights.transpose()@Nu).transpose()@Nv
-        ddenom_u = (self.weights.transpose()@dNu).transpose()@Nv
-        ddenom_v = (self.weights.transpose()@Nu).transpose()@dNv
+        numer = self.wpoints.rmatmul(Nu.transpose())@Nv
+        dnumer_u = self.wpoints.rmatmul(dNu.transpose())@Nv
+        dnumer_v = self.wpoints.rmatmul(Nu.transpose())@dNv
+        denom = Nu.transpose()@self.weights@Nv
+        ddenom_u = dNu.transpose()@self.weights@Nv
+        ddenom_v = Nu.transpose()@self.weights@dNv
         tangent_u = (dnumer_u*denom - numer*ddenom_u)/denom**2
         tangent_v = (dnumer_v*denom - numer*ddenom_v)/denom**2
         if tangent_u.size == 1:
