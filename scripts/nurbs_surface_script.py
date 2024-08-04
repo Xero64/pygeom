@@ -2,18 +2,84 @@
 # Import Dependencies
 from typing import TYPE_CHECKING, Union
 
-from k3d import Plot as k3dPlot
-from k3d import mesh as k3dmesh
-from k3d import points as k3dpoints
-from numpy import arange, asarray, float64, sqrt, zeros
+from numpy import float64, sqrt, zeros
 from pygeom.array3d import NurbsSurface, zero_arrayvector
 from pygeom.geom3d import Vector
+from pygeom.tools.k3d import Plot, k3d_nurbs_control_points, k3d_nurbs_surface, k3d_nurbs_control_polygon
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
     from pygeom.array3d import ArrayVector
     Numeric = Union[float64, NDArray[float64]]
     VectorLike = Union[Vector, ArrayVector]
+
+#%%
+# Create a Nurbs Cylinder Surface
+numu = 20
+numv = 20
+
+radius = 4.0
+height = 8.0
+
+ctlpnts = zero_arrayvector((9, 2))
+
+ctlpnts[0, 0] = Vector(radius, -height/2, 0.0)
+ctlpnts[1, 0] = Vector(radius, -height/2, -radius)
+ctlpnts[2, 0] = Vector(0.0, -height/2, -radius)
+ctlpnts[3, 0] = Vector(-radius, -height/2, -radius)
+ctlpnts[4, 0] = Vector(-radius, -height/2, 0.0)
+ctlpnts[5, 0] = Vector(-radius, -height/2, radius)
+ctlpnts[6, 0] = Vector(0.0, -height/2, radius)
+ctlpnts[7, 0] = Vector(radius, -height/2, radius)
+ctlpnts[8, 0] = Vector(radius, -height/2, 0.0)
+ctlpnts[0, 1] = Vector(radius, height/2, 0.0)
+ctlpnts[1, 1] = Vector(radius, height/2, -radius)
+ctlpnts[2, 1] = Vector(0.0, height/2, -radius)
+ctlpnts[3, 1] = Vector(-radius, height/2, -radius)
+ctlpnts[4, 1] = Vector(-radius, height/2, 0.0)
+ctlpnts[5, 1] = Vector(-radius, height/2, radius)
+ctlpnts[6, 1] = Vector(0.0, height/2, radius)
+ctlpnts[7, 1] = Vector(radius, height/2, radius)
+ctlpnts[8, 1] = Vector(radius, height/2, 0.0)
+
+weights = zeros((9, 2), dtype=float64)
+weights[0, 0] = 1.0
+weights[1, 0] = 1.0/sqrt(2.0)
+weights[2, 0] = 1.0
+weights[3, 0] = 1.0/sqrt(2.0)
+weights[4, 0] = 1.0
+weights[5, 0] = 1.0/sqrt(2.0)
+weights[6, 0] = 1.0
+weights[7, 0] = 1.0/sqrt(2.0)
+weights[8, 0] = 1.0
+weights[0, 1] = 1.0
+weights[1, 1] = 1.0/sqrt(2.0)
+weights[2, 1] = 1.0
+weights[3, 1] = 1.0/sqrt(2.0)
+weights[4, 1] = 1.0
+weights[5, 1] = 1.0/sqrt(2.0)
+weights[6, 1] = 1.0
+weights[7, 1] = 1.0/sqrt(2.0)
+weights[8, 1] = 1.0
+
+nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=1)
+
+print(f'Control Points:\n{nurbssurface.ctlpnts}\n')
+print(f'Weights:\n{nurbssurface.weights}\n')
+print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
+print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
+
+#%%
+# Plot the NURBS Surface using K3D
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
+k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
+
+plot = Plot()
+plot += k3dpnts
+plot += k3dmesh
+plot += k3dpoly
+plot.display()
 
 #%%
 # Create a Nurbs Torus Surface
@@ -204,30 +270,14 @@ nrms = tgtsu.cross(tgtsv)
 
 #%%
 # Plot the NURBS Surface using K3D
-u, v = nurbssurface.evaluate_uv(numu, numv)
-num = u.size*v.size
-ind = arange(num, dtype=int).reshape(u.size, v.size)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
+k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
 
-faces = []
-for i in range(u.size-1):
-    for j in range(v.size-1):
-        faces.append([ind[i, j], ind[i+1, j], ind[i+1, j+1]])
-        faces.append([ind[i, j], ind[i+1, j+1], ind[i, j+1]])
-
-faces = asarray(faces, dtype=int)
-
-pnts = pnts.reshape(num)
-nrms = nrms.reshape(num)
-
-pntsxyz = pnts.stack_xyz()
-nrmsxyz = nrms.stack_xyz()
-
-plot = k3dPlot()
-mesh = k3dmesh(pntsxyz.astype('float32'), faces.astype('uint32'),
-               nrmsxyz.astype('float32'), color=0xffd500, flat_shading=False)
-ctlptsxyz = ctlpnts.stack_xyz()
-plot += k3dpoints(ctlptsxyz.astype('float32'), point_size=0.1, color=0xff0000)
-plot += mesh
+plot = Plot()
+plot += k3dpnts
+plot += k3dmesh
+plot += k3dpoly
 plot.display()
 
 #%%
@@ -356,36 +406,15 @@ print(f'Weights:\n{nurbssurface.weights}\n')
 print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
 print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
 
-pnts = nurbssurface.evaluate_points(numu, numv)
-tgtsu, tgtsv = nurbssurface.evaluate_tangents(numu, numv)
-nrms = tgtsu.cross(tgtsv)
-
 #%%
 # Plot the NURBS Surface using K3D
-u, v = nurbssurface.evaluate_uv(numu, numv)
-num = u.size*v.size
-ind = arange(num, dtype=int).reshape(u.size, v.size)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
+k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
+ctlptsxyz = ctlpnts.stack_xyz().astype('float32')
 
-faces = []
-for i in range(u.size-1):
-    for j in range(v.size-1):
-        faces.append([ind[i, j], ind[i+1, j], ind[i+1, j+1]])
-        faces.append([ind[i, j], ind[i+1, j+1], ind[i, j+1]])
-
-faces = asarray(faces, dtype=int)
-
-pnts = pnts.reshape(num)
-nrms = nrms.reshape(num)
-
-pntsxyz = pnts.stack_xyz()
-nrmsxyz = nrms.stack_xyz()
-
-plot = k3dPlot()
-mesh = k3dmesh(pntsxyz.astype('float32'), faces.astype('uint32'),
-               nrmsxyz.astype('float32'), color=0xffd500, flat_shading=False)
-ctlptsxyz = ctlpnts.flatten().stack_xyz()
-weightsps = weights.flatten()
-plot += k3dpoints(ctlptsxyz.astype('float32'),
-                  point_sizes=weightsps.astype('float32'), color=0xff0000)
-plot += mesh
+plot = Plot()
+plot += k3dpnts
+plot += k3dmesh
+plot += k3dpoly
 plot.display()

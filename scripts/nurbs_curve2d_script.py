@@ -3,9 +3,10 @@
 from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
-from numpy import arctan2, asarray, cos, float64, linspace, pi, sin, sqrt
-from pygeom.array2d import NurbsCurve2D, zero_arrayvector2d, ArrayVector2D
+from numpy import asarray, cos, float64, pi, sin, sqrt
+from pygeom.array2d import ArrayVector2D, NurbsCurve2D, zero_arrayvector2d
 from pygeom.geom2d import Vector2D
+from pygeom.tools.k3d import Plot, k3d_nurbs_control_points, k3d_nurbs_curve
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -489,3 +490,10 @@ ax.grid(True)
 ax.plot(u, ckappa, label='Circle Curvature')
 ax.plot(u, nkappa, '-.', label='NURBS Curvative')
 _ = ax.legend()
+
+#%%
+# k3d Plot
+plot = Plot()
+plot += k3d_nurbs_curve(nurbscurve)
+plot += k3d_nurbs_control_points(nurbscurve, scale=0.2)
+plot.display()

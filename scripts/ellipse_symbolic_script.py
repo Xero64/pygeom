@@ -16,7 +16,6 @@ xn = Function('xn', real=True)(u)
 yn = Function('yn', real=True)(u)
 xn_val = Symbol('npnts.x', real=True)
 yn_val = Symbol('npnts.y', real=True)
-# rm = Symbol('rm', real=True, positive=True)
 dxn_val = Symbol('nvecs.x', real=True)
 dyn_val = Symbol('nvecs.y', real=True)
 d2xn_val = Symbol('ncurs.x', real=True)
@@ -34,14 +33,9 @@ print(f'eqn = {eqn}\n')
 r = solve(eqn, r_val)[1]
 print(f'r = {r}\n')
 
-# r = a*b/sqrt((b*cos(th))**2 + (a*sin(th))**2)
-# print(f'r = {r}\n')
-
 sbs = {
     Derivative(rth, th): drdth_val,
-    Derivative(rth, (th, 2)): d2rdth2_val,
-    # (b*cos(th))**2: rm**2 - (a*sin(th))**2,
-    # b**2*cos(th)**2: rm**2 - a**2*sin(th)**2
+    Derivative(rth, (th, 2)): d2rdth2_val
 }
 
 drdth = r.diff(th).together()
