@@ -129,6 +129,7 @@ class NurbsCurve():
         outstr += f'  control points: \n{self.ctlpnts}\n'
         outstr += f'  weights: {self.weights}\n'
         outstr += f'  knots: {self.knots}\n'
+        outstr += f'  cknots: {self.cknots}\n'
         outstr += f'  endpoint: {self.endpoint}\n'
         return outstr
 
