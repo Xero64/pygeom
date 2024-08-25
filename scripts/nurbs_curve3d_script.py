@@ -22,25 +22,48 @@ num = 20
 r = 2.0
 l = 8.0
 
-ang = pi/2
-K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
+# ang = pi/2
+# K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
 
-ctlpts = zero_arrayvector(13)
-ctlpts[0] = Vector(r, 0, 0*l/12)
-ctlpts[1] = Vector(r, K*r, 1*l/12)
-ctlpts[2] = Vector(K*r, r, 2*l/12)
-ctlpts[3] = Vector(0, r, 3*l/12)
-ctlpts[4] = Vector(-K*r, r, 4*l/12)
-ctlpts[5] = Vector(-r, K*r, 5*l/12)
-ctlpts[6] = Vector(-r, 0, 6*l/12)
-ctlpts[7] = Vector(-r, -K*r, 7*l/12)
-ctlpts[8] = Vector(-K*r, -r, 8*l/12)
-ctlpts[9] = Vector(0, -r, 9*l/12)
-ctlpts[10] = Vector(K*r, -r, 10*l/12)
-ctlpts[11] = Vector(r, -K*r, 11*l/12)
-ctlpts[12] = Vector(r, 0, 12*l/12)
+# h = l/8
+# d = r
 
-nurbscurve = NurbsCurve(ctlpts, degree=3)
+# Kh = K*h
+# Kd = K*d
+
+# ctlpts = zero_arrayvector(13)
+# ctlpts[0] = Vector(r, 0.0, 0*l/12)
+# ctlpts[3] = Vector(0.0, r, 3*l/12)
+# ctlpts[6] = Vector(-r, 0.0, 6*l/12)
+# ctlpts[9] = Vector(0.0, -r, 9*l/12)
+# ctlpts[12] = Vector(r, 0.0, 12*l/12)
+# ctlpts[1] = ctlpts[0] + Vector(0.0, Kd, Kh)
+# ctlpts[2] = ctlpts[3] - Vector(-Kd, 0.0, Kh)
+# ctlpts[4] = ctlpts[3] + Vector(-Kd, 0.0, Kh)
+# ctlpts[5] = ctlpts[6] - Vector(0.0, -Kd, Kh)
+# ctlpts[7] = ctlpts[6] + Vector(0.0, -Kd, Kh)
+# ctlpts[8] = ctlpts[9] - Vector(Kd, 0.0, Kh)
+# ctlpts[10] = ctlpts[9] + Vector(Kd, 0.0, Kh)
+# ctlpts[11] = ctlpts[12] - Vector(0.0, Kd, Kh)
+
+# nurbscurve = NurbsCurve(ctlpts, degree=3)
+# print(nurbscurve)
+
+ctlpts = zero_arrayvector(9)
+ctlpts[0] = Vector(r, 0.0, 0*l/8)
+ctlpts[1] = Vector(r, r, 1*l/8)
+ctlpts[2] = Vector(0.0, r, 2*l/8)
+ctlpts[3] = Vector(-r, r, 3*l/8)
+ctlpts[4] = Vector(-r, 0.0, 4*l/8)
+ctlpts[5] = Vector(-r, -r, 5*l/8)
+ctlpts[6] = Vector(0.0, -r, 6*l/8)
+ctlpts[7] = Vector(r, -r, 7*l/8)
+ctlpts[8] = Vector(r, 0.0, 8*l/8)
+
+weights = full(9, 1.0)
+weights[1::2] = 1.0/2.0**0.5
+
+nurbscurve = NurbsCurve(ctlpts, degree=2, weights=weights)
 print(nurbscurve)
 
 u = nurbscurve.evaluate_u(num)
@@ -107,6 +130,11 @@ hcurs = ArrayVector(d2xdth2*dthdu**2, d2ydth2*dthdu**2, d2zdu2) + ArrayVector(dx
 
 hkappa = hvecs.cross(hcurs)/hvecs.return_magnitude()**3
 
+dpnts = hpnts - npnts
+dvecs = hvecs - nvecs
+dcurs = hcurs - ncurs
+dkappa = hkappa - nkappa
+
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
@@ -140,12 +168,28 @@ _ = ax.legend()
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
+ax.plot(u, dpnts.x, label='Difference X')
+ax.plot(u, dpnts.y, label='Difference Y')
+ax.plot(u, dpnts.z, label='Difference Z')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
 ax.plot(u, hvecs.x, label='Helix dXdu')
 ax.plot(u, hvecs.y, label='Helix dYdu')
 ax.plot(u, hvecs.z, label='Helix dZdu')
 ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
 ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
 ax.plot(u, nvecs.z, '-.', label='NURBS dZdu')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, dvecs.x, label='Difference dXdu')
+ax.plot(u, dvecs.y, label='Difference dYdu')
+ax.plot(u, dvecs.z, label='Difference dZdu')
 _ = ax.legend()
 
 fig = figure(figsize=(12, 8))
@@ -162,12 +206,28 @@ _ = ax.legend()
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
 ax.grid(True)
+ax.plot(u, dcurs.x, label='Difference d2Xdu2')
+ax.plot(u, dcurs.y, label='Difference d2Ydu2')
+ax.plot(u, dcurs.z, label='Difference d2Zdu2')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
 ax.plot(u, hkappa.x, label='Helix Curvature X')
 ax.plot(u, hkappa.y, label='Helix Curvature Y')
 ax.plot(u, hkappa.z, label='Helix Curvature Z')
 ax.plot(u, nkappa.x, '-.', label='NURBS Curvative X')
 ax.plot(u, nkappa.y, '-.', label='NURBS Curvature Y')
 ax.plot(u, nkappa.z, '-.', label='NURBS Curvature Z')
+_ = ax.legend()
+
+fig = figure(figsize=(12, 8))
+ax = fig.gca()
+ax.grid(True)
+ax.plot(u, dkappa.x, label='Difference Curvature X')
+ax.plot(u, dkappa.y, label='Difference Curvature Y')
+ax.plot(u, dkappa.z, label='Difference Curvature Z')
 _ = ax.legend()
 
 #%%
