@@ -13,6 +13,8 @@ from .nurbscurve import BSplineCurve as BSplineCurve
 from .nurbscurve import NurbsCurve as NurbsCurve
 from .nurbssurface import BSplineSurface as BSplineSurface
 from .nurbssurface import NurbsSurface as NurbsSurface
+from .paramcurve import ParamCurve as ParamCurve
+from .paramsurface import ParamSurface as ParamSurface
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

@@ -11,6 +11,7 @@ from .beziercurve2d import BezierCurve2D as BezierCurve2D
 from .beziercurve2d import RationalBezierCurve2D as RationalBezierCurve2D
 from .nurbscurve2d import BSplineCurve2D as BSplineCurve2D
 from .nurbscurve2d import NurbsCurve2D as NurbsCurve2D
+from .paramcurve2d import ParamCurve2D as ParamCurve2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
