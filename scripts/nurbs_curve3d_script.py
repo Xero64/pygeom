@@ -7,7 +7,7 @@ from numpy import arctan2, cos, float64, full, hstack, pi, sin, zeros
 from pygeom.array2d import ArrayVector2D
 from pygeom.array3d import ArrayVector, NurbsCurve, zero_arrayvector
 from pygeom.geom3d import Vector
-from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points, k3d_nurbs_curve,
+from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points, k3d_curve,
                               line)
 
 if TYPE_CHECKING:
@@ -233,7 +233,7 @@ _ = ax.legend()
 #%%
 # k3d Plot
 plot = Plot()
-plot += k3d_nurbs_curve(nurbscurve)
+plot += k3d_curve(nurbscurve)
 plot += k3d_nurbs_control_points(nurbscurve, scale=0.2)
 plot += line(hstack((x.reshape(-1, 1), y.reshape(-1, 1), z.reshape(-1, 1))).astype('float32'),
              color=0xff0000)

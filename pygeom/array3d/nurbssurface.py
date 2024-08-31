@@ -46,7 +46,7 @@ class BSplineSurface():
 
     def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
         Nu, Nv = self.basis_functions(u, v)
-        points = (self.ctlpnts.transpose()@Nu).transpose()@Nv
+        points = self.ctlpnts.rmatmul(Nu.transpose())@Nv
         if points.size == 1:
             points = points[0]
         return points
@@ -55,8 +55,8 @@ class BSplineSurface():
                                                                            'VectorLike']:
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_first_derivatives(u, v)
-        tangent_u = (self.ctlpnts.transpose()@dNu).transpose()@Nv
-        tangent_v = (self.ctlpnts.transpose()@Nu).transpose()@dNv
+        tangent_u = self.ctlpnts.rmatmul(dNu.transpose())@Nv
+        tangent_v = self.ctlpnts.rmatmul(Nu.transpose())@dNv
         if tangent_u.size == 1:
             tangent_u = tangent_u[0]
         if tangent_v.size == 1:

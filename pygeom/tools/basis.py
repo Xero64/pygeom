@@ -80,10 +80,14 @@ def basis_second_derivatives(p: int, k: 'NDArray[float64]',
     return d2Nu
 
 def default_knots(numpnt: int, degree: int) -> 'NDArray[float64]':
+    if degree < 1:
+        raise ValueError('default_knots degree may not be less than 1.')
     numk = (numpnt - 1) // degree
     link = linspace(0.0, 1.0, numk + 1, dtype=float64)
     fullknots = link.repeat(degree)
-    return fullknots[degree-1:-degree+1]
+    if degree > 1:
+        fullknots = fullknots[degree-1:-degree+1]
+    return fullknots
 
 def knot_linspace(num: int, knots: 'NDArray[float64]') -> 'NDArray[float64]':
     unknots = unique(knots)

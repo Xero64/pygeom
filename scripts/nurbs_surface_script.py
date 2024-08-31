@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Union
 from numpy import float64, sqrt, zeros
 from pygeom.array3d import NurbsSurface, zero_arrayvector
 from pygeom.geom3d import Vector
-from pygeom.tools.k3d import Plot, k3d_nurbs_control_points, k3d_nurbs_surface, k3d_nurbs_control_polygon
+from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
+                              k3d_nurbs_control_polygon, k3d_surface,
+                              k3d_surface_normals, k3d_surface_tangents)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -23,24 +25,24 @@ height = 8.0
 
 ctlpnts = zero_arrayvector((9, 2))
 
-ctlpnts[0, 0] = Vector(radius, -height/2, 0.0)
-ctlpnts[1, 0] = Vector(radius, -height/2, -radius)
-ctlpnts[2, 0] = Vector(0.0, -height/2, -radius)
-ctlpnts[3, 0] = Vector(-radius, -height/2, -radius)
-ctlpnts[4, 0] = Vector(-radius, -height/2, 0.0)
-ctlpnts[5, 0] = Vector(-radius, -height/2, radius)
-ctlpnts[6, 0] = Vector(0.0, -height/2, radius)
-ctlpnts[7, 0] = Vector(radius, -height/2, radius)
-ctlpnts[8, 0] = Vector(radius, -height/2, 0.0)
-ctlpnts[0, 1] = Vector(radius, height/2, 0.0)
-ctlpnts[1, 1] = Vector(radius, height/2, -radius)
-ctlpnts[2, 1] = Vector(0.0, height/2, -radius)
-ctlpnts[3, 1] = Vector(-radius, height/2, -radius)
-ctlpnts[4, 1] = Vector(-radius, height/2, 0.0)
-ctlpnts[5, 1] = Vector(-radius, height/2, radius)
-ctlpnts[6, 1] = Vector(0.0, height/2, radius)
-ctlpnts[7, 1] = Vector(radius, height/2, radius)
-ctlpnts[8, 1] = Vector(radius, height/2, 0.0)
+ctlpnts[0, 0] = Vector(radius, 0.0, -height/2)
+ctlpnts[1, 0] = Vector(radius, radius, -height/2)
+ctlpnts[2, 0] = Vector(0.0, radius, -height/2)
+ctlpnts[3, 0] = Vector(-radius, radius, -height/2)
+ctlpnts[4, 0] = Vector(-radius, 0.0, -height/2)
+ctlpnts[5, 0] = Vector(-radius, -radius, -height/2)
+ctlpnts[6, 0] = Vector(0.0, -radius, -height/2)
+ctlpnts[7, 0] = Vector(radius, -radius, -height/2)
+ctlpnts[8, 0] = Vector(radius, 0.0, -height/2)
+ctlpnts[0, 1] = Vector(radius, 0.0, height/2)
+ctlpnts[1, 1] = Vector(radius, radius, height/2)
+ctlpnts[2, 1] = Vector(0.0, radius, height/2)
+ctlpnts[3, 1] = Vector(-radius, radius, height/2)
+ctlpnts[4, 1] = Vector(-radius, 0.0, height/2)
+ctlpnts[5, 1] = Vector(-radius, -radius, height/2)
+ctlpnts[6, 1] = Vector(0.0, -radius, height/2)
+ctlpnts[7, 1] = Vector(radius, -radius, height/2)
+ctlpnts[8, 1] = Vector(radius, 0.0, height/2)
 
 weights = zeros((9, 2), dtype=float64)
 weights[0, 0] = 1.0
@@ -72,20 +74,22 @@ print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
 #%%
 # Plot the NURBS Surface using K3D
 k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
-k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
+k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
+plot += k3dnrml
+plot += k3dtgtu
+plot += k3dtgtv
 plot.display()
 
 #%%
 # Create a Nurbs Torus Surface
-numu = 20
-numv = 20
-
 ro = 4.0
 ri = 2.0
 rm = (ro + ri)/2
@@ -271,133 +275,127 @@ nrms = tgtsu.cross(tgtsv)
 #%%
 # Plot the NURBS Surface using K3D
 k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
-k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
+k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
+plot += k3dnrml
+plot += k3dtgtu
+plot += k3dtgtv
 plot.display()
 
 #%%
 # Create a Nurbs Sphere Surface
-numu = 20
-numv = 20
-
 radius = 4.0
 
-ctlpnts = zero_arrayvector((5, 9))
+ctlpnts = zero_arrayvector((9, 5))
 
-ctlpnts[0, 0] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 0] = Vector(radius, radius, 0.0)
-ctlpnts[2, 0] = Vector(0.0, radius, 0.0)
-ctlpnts[3, 0] = Vector(-radius, radius, 0.0)
-ctlpnts[4, 0] = Vector(-radius, 0.0, 0.0)
+ctlpnts[0, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[1, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[2, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[3, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[4, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[5, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[6, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[7, 0] = Vector(0.0, 0.0, -radius)
+ctlpnts[8, 0] = Vector(0.0, 0.0, -radius)
 
-ctlpnts[0, 1] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 1] = Vector(radius, radius, radius)
-ctlpnts[2, 1] = Vector(0.0, radius, radius)
-ctlpnts[3, 1] = Vector(-radius, radius, radius)
-ctlpnts[4, 1] = Vector(-radius, 0.0, 0.0)
+ctlpnts[0, 1] = Vector(radius, 0.0, -radius)
+ctlpnts[1, 1] = Vector(radius, radius, -radius)
+ctlpnts[2, 1] = Vector(0.0, radius, -radius)
+ctlpnts[3, 1] = Vector(-radius, radius, -radius)
+ctlpnts[4, 1] = Vector(-radius, 0.0, -radius)
+ctlpnts[5, 1] = Vector(-radius, -radius, -radius)
+ctlpnts[6, 1] = Vector(0.0, -radius, -radius)
+ctlpnts[7, 1] = Vector(radius, -radius, -radius)
+ctlpnts[8, 1] = Vector(radius, 0.0, -radius)
 
 ctlpnts[0, 2] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 2] = Vector(radius, 0.0, radius)
-ctlpnts[2, 2] = Vector(0.0, 0.0, radius)
-ctlpnts[3, 2] = Vector(-radius, 0.0, radius)
+ctlpnts[1, 2] = Vector(radius, radius, 0.0)
+ctlpnts[2, 2] = Vector(0.0, radius, 0.0)
+ctlpnts[3, 2] = Vector(-radius, radius, 0.0)
 ctlpnts[4, 2] = Vector(-radius, 0.0, 0.0)
+ctlpnts[5, 2] = Vector(-radius, -radius, 0.0)
+ctlpnts[6, 2] = Vector(0.0, -radius, 0.0)
+ctlpnts[7, 2] = Vector(radius, -radius, 0.0)
+ctlpnts[8, 2] = Vector(radius, 0.0, 0.0)
 
-ctlpnts[0, 3] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 3] = Vector(radius, -radius, radius)
-ctlpnts[2, 3] = Vector(0.0, -radius, radius)
-ctlpnts[3, 3] = Vector(-radius, -radius, radius)
-ctlpnts[4, 3] = Vector(-radius, 0.0, 0.0)
+ctlpnts[0, 3] = Vector(radius, 0.0, radius)
+ctlpnts[1, 3] = Vector(radius, radius, radius)
+ctlpnts[2, 3] = Vector(0.0, radius, radius)
+ctlpnts[3, 3] = Vector(-radius, radius, radius)
+ctlpnts[4, 3] = Vector(-radius, 0.0, radius)
+ctlpnts[5, 3] = Vector(-radius, -radius, radius)
+ctlpnts[6, 3] = Vector(0.0, -radius, radius)
+ctlpnts[7, 3] = Vector(radius, -radius, radius)
+ctlpnts[8, 3] = Vector(radius, 0.0, radius)
 
-ctlpnts[0, 4] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 4] = Vector(radius, -radius, 0.0)
-ctlpnts[2, 4] = Vector(0.0, -radius, 0.0)
-ctlpnts[3, 4] = Vector(-radius, -radius, 0.0)
-ctlpnts[4, 4] = Vector(-radius, 0.0, 0.0)
+ctlpnts[0, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[1, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[2, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[3, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[4, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[5, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[6, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[7, 4] = Vector(0.0, 0.0, radius)
+ctlpnts[8, 4] = Vector(0.0, 0.0, radius)
 
-ctlpnts[0, 5] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 5] = Vector(radius, -radius, -radius)
-ctlpnts[2, 5] = Vector(0.0, -radius, -radius)
-ctlpnts[3, 5] = Vector(-radius, -radius, -radius)
-ctlpnts[4, 5] = Vector(-radius, 0.0, 0.0)
-
-ctlpnts[0, 6] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 6] = Vector(radius, 0.0, -radius)
-ctlpnts[2, 6] = Vector(0.0, 0.0, -radius)
-ctlpnts[3, 6] = Vector(-radius, 0.0, -radius)
-ctlpnts[4, 6] = Vector(-radius, 0.0, 0.0)
-
-ctlpnts[0, 7] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 7] = Vector(radius, radius, -radius)
-ctlpnts[2, 7] = Vector(0.0, radius, -radius)
-ctlpnts[3, 7] = Vector(-radius, radius, -radius)
-ctlpnts[4, 7] = Vector(-radius, 0.0, 0.0)
-
-ctlpnts[0, 8] = Vector(radius, 0.0, 0.0)
-ctlpnts[1, 8] = Vector(radius, radius, 0.0)
-ctlpnts[2, 8] = Vector(0.0, radius, 0.0)
-ctlpnts[3, 8] = Vector(-radius, radius, 0.0)
-ctlpnts[4, 8] = Vector(-radius, 0.0, 0.0)
-
-weights = zeros((5, 9), dtype=float64)
+weights = zeros((9, 5), dtype=float64)
 
 weights[0, 0] = 1.0
 weights[1, 0] = 1.0/sqrt(2.0)
 weights[2, 0] = 1.0
 weights[3, 0] = 1.0/sqrt(2.0)
 weights[4, 0] = 1.0
+weights[5, 0] = 1.0/sqrt(2.0)
+weights[6, 0] = 1.0
+weights[7, 0] = 1.0/sqrt(2.0)
+weights[8, 0] = 1.0
 
 weights[0, 1] = 1.0/sqrt(2.0)
 weights[1, 1] = 0.5
 weights[2, 1] = 1.0/sqrt(2.0)
 weights[3, 1] = 0.5
 weights[4, 1] = 1.0/sqrt(2.0)
+weights[5, 1] = 0.5
+weights[6, 1] = 1.0/sqrt(2.0)
+weights[7, 1] = 0.5
+weights[8, 1] = 1.0/sqrt(2.0)
 
 weights[0, 2] = 1.0
 weights[1, 2] = 1.0/sqrt(2.0)
 weights[2, 2] = 1.0
 weights[3, 2] = 1.0/sqrt(2.0)
 weights[4, 2] = 1.0
+weights[5, 2] = 1.0/sqrt(2.0)
+weights[6, 2] = 1.0
+weights[7, 2] = 1.0/sqrt(2.0)
+weights[8, 2] = 1.0
 
 weights[0, 3] = 1.0/sqrt(2.0)
 weights[1, 3] = 0.5
 weights[2, 3] = 1.0/sqrt(2.0)
 weights[3, 3] = 0.5
 weights[4, 3] = 1.0/sqrt(2.0)
+weights[5, 3] = 0.5
+weights[6, 3] = 1.0/sqrt(2.0)
+weights[7, 3] = 0.5
+weights[8, 3] = 1.0/sqrt(2.0)
 
 weights[0, 4] = 1.0
 weights[1, 4] = 1.0/sqrt(2.0)
 weights[2, 4] = 1.0
 weights[3, 4] = 1.0/sqrt(2.0)
 weights[4, 4] = 1.0
-
-weights[0, 5] = 1.0/sqrt(2.0)
-weights[1, 5] = 0.5
-weights[2, 5] = 1.0/sqrt(2.0)
-weights[3, 5] = 0.5
-weights[4, 5] = 1.0/sqrt(2.0)
-
-weights[0, 6] = 1.0
-weights[1, 6] = 1.0/sqrt(2.0)
-weights[2, 6] = 1.0
-weights[3, 6] = 1.0/sqrt(2.0)
-weights[4, 6] = 1.0
-
-weights[0, 7] = 1.0/sqrt(2.0)
-weights[1, 7] = 0.5
-weights[2, 7] = 1.0/sqrt(2.0)
-weights[3, 7] = 0.5
-weights[4, 7] = 1.0/sqrt(2.0)
-
-weights[0, 8] = 1.0
-weights[1, 8] = 1.0/sqrt(2.0)
-weights[2, 8] = 1.0
-weights[3, 8] = 1.0/sqrt(2.0)
-weights[4, 8] = 1.0
+weights[5, 4] = 1.0/sqrt(2.0)
+weights[6, 4] = 1.0
+weights[7, 4] = 1.0/sqrt(2.0)
+weights[8, 4] = 1.0
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
@@ -409,12 +407,16 @@ print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
 #%%
 # Plot the NURBS Surface using K3D
 k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
-k3dmesh = k3d_nurbs_surface(nurbssurface, unum=20, vnum=20)
+k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
-ctlptsxyz = ctlpnts.stack_xyz().astype('float32')
+k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
+plot += k3dnrml
+plot += k3dtgtu
+plot += k3dtgtv
 plot.display()
