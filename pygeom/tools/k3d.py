@@ -33,6 +33,53 @@ def k3d_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Line:
 
     return line(k3dpnts, **kwargs)
 
+def k3d_curve_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+
+    unum = kwargs.get('unum', 12)
+    scale = kwargs.pop('scale', 1.0)
+
+    kwargs.setdefault('color', 0x00ff00)
+
+    pnts = curve.evaluate_points(unum)
+    tgts = curve.evaluate_first_derivatives(unum).to_unit()
+
+    pntsxyz = pnts.stack_xyz().astype('float32')
+    tgtsxyz = tgts.stack_xyz().astype('float32')*scale
+
+    return vectors(pntsxyz, tgtsxyz, **kwargs)
+
+def k3d_curve_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+
+    unum = kwargs.get('unum', 12)
+    scale = kwargs.pop('scale', 1.0)
+
+    kwargs.setdefault('color', 0xff0000)
+
+    pnts = curve.evaluate_points(unum)
+    nrms = curve.evaluate_second_derivatives(unum).to_unit()
+
+    pntsxyz = pnts.stack_xyz().astype('float32')
+    nrmsxyz = nrms.stack_xyz().astype('float32')*scale
+
+    return vectors(pntsxyz, nrmsxyz, **kwargs)
+
+def k3d_curve_binormals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+
+    unum = kwargs.get('unum', 12)
+    scale = kwargs.pop('scale', 1.0)
+
+    kwargs.setdefault('color', 0x0000ff)
+
+    pnts = curve.evaluate_points(unum)
+    tgts = curve.evaluate_first_derivatives(unum).to_unit()
+    nrms = curve.evaluate_second_derivatives(unum).to_unit()
+    bins = tgts.cross(nrms).to_unit()
+
+    pntsxyz = pnts.stack_xyz().astype('float32')
+    binsxyz = bins.stack_xyz().astype('float32')*scale
+
+    return vectors(pntsxyz, binsxyz, **kwargs)
+
 def k3d_surface(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Mesh:
 
     unum = kwargs.get('unum', 12)
@@ -67,6 +114,8 @@ def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Vec
     vnum = kwargs.get('vnum', 12)
     kwargs.setdefault('color', 0xff0000)
     scale = kwargs.pop('scale', 1.0)
+    kwargs.setdefault('head_size', 0.1)
+    kwargs.setdefault('line_width', 0.01)
 
     pnts = surface.evaluate_points(unum, vnum)
     utgts, vtgts = surface.evaluate_tangents(unum, vnum)
@@ -85,6 +134,8 @@ def k3d_surface_tangents(surface: 'SurfaceLike',
     unum = kwargs.get('unum', 12)
     vnum = kwargs.get('vnum', 12)
     scale = kwargs.pop('scale', 1.0)
+    kwargs.setdefault('head_size', 0.1)
+    kwargs.setdefault('line_width', 0.01)
 
     kwargsu = kwargs.copy()
     kwargsu.setdefault('color', 0x00ff00)
