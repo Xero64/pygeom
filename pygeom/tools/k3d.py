@@ -82,14 +82,18 @@ def k3d_curve_binormals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors
 
 def k3d_surface(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Mesh:
 
-    unum = kwargs.get('unum', 12)
-    vnum = kwargs.get('vnum', 12)
+    unum = kwargs.pop('unum', 12)
+    vnum = kwargs.pop('vnum', 12)
     kwargs.setdefault('color', 0xffd500)
     kwargs.setdefault('wireframe', False)
     kwargs.setdefault('flat_shading', False)
 
-    pnts = surface.evaluate_points(unum, vnum)
-    utgts, vtgts = surface.evaluate_tangents(unum, vnum)
+    u, v = surface.evaluate_uv(unum, vnum)
+    u = kwargs.pop('u', u)
+    v = kwargs.pop('v', v)
+
+    pnts = surface.evaluate_points_at_uv(u, v)
+    utgts, vtgts = surface.evaluate_tangents_at_uv(u, v)
     nrms = utgts.cross(vtgts).to_unit()
 
     num = pnts.size
@@ -110,15 +114,19 @@ def k3d_surface(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Mesh:
 
 def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Vectors:
 
-    unum = kwargs.get('unum', 12)
-    vnum = kwargs.get('vnum', 12)
-    kwargs.setdefault('color', 0xff0000)
+    unum = kwargs.pop('unum', 12)
+    vnum = kwargs.pop('vnum', 12)
     scale = kwargs.pop('scale', 1.0)
+    kwargs.setdefault('color', 0xff0000)
     kwargs.setdefault('head_size', 0.1)
     kwargs.setdefault('line_width', 0.01)
 
-    pnts = surface.evaluate_points(unum, vnum)
-    utgts, vtgts = surface.evaluate_tangents(unum, vnum)
+    u, v = surface.evaluate_uv(unum, vnum)
+    u = kwargs.pop('u', u)
+    v = kwargs.pop('v', v)
+
+    pnts = surface.evaluate_points_at_uv(u, v)
+    utgts, vtgts = surface.evaluate_tangents_at_uv(u, v)
     nrms = utgts.cross(vtgts).to_unit()
 
     num = pnts.size
@@ -131,11 +139,18 @@ def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Vec
 def k3d_surface_tangents(surface: 'SurfaceLike',
                          **kwargs: Dict[str, Any]) -> Tuple[Vectors, Vectors]:
 
-    unum = kwargs.get('unum', 12)
-    vnum = kwargs.get('vnum', 12)
+    unum = kwargs.pop('unum', 12)
+    vnum = kwargs.pop('vnum', 12)
     scale = kwargs.pop('scale', 1.0)
     kwargs.setdefault('head_size', 0.1)
     kwargs.setdefault('line_width', 0.01)
+
+    u, v = surface.evaluate_uv(unum, vnum)
+    u = kwargs.pop('u', u)
+    v = kwargs.pop('v', v)
+
+    pnts = surface.evaluate_points_at_uv(u, v)
+    tgtsu, tgtsv = surface.evaluate_tangents_at_uv(u, v)
 
     kwargsu = kwargs.copy()
     kwargsu.setdefault('color', 0x00ff00)
