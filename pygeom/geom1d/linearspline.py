@@ -1,6 +1,7 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 from matplotlib.pyplot import figure
+
 
 class LinearSpline():
     x: List[float] = None # X Value List

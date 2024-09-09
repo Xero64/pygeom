@@ -1,16 +1,16 @@
 from typing import TYPE_CHECKING
 
-from numpy import float64, zeros
+from numpy import zeros
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-def tridiag_solver(a: 'NDArray[float64]', b: 'NDArray[float64]', c: 'NDArray[float64]',
-                   d: 'NDArray[float64]') -> 'NDArray[float64]':
+def tridiag_solver(a: 'NDArray', b: 'NDArray', c: 'NDArray',
+                   d: 'NDArray') -> 'NDArray':
 
     num = b.size
-    gm = zeros(num, dtype=float64)
-    r = zeros(d.shape, dtype=float64)
+    gm = zeros(num)
+    r = zeros(d.shape)
 
     bt = b[0]
     r[0, :] = (d[0, :]-a[0]*r[0, :])/bt

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from matplotlib.pyplot import figure
-from numpy import asarray, cumsum, float64, sqrt, square, zeros
+from numpy import asarray, cumsum, sqrt, square, zeros
 from numpy.linalg import solve
 
 from ..tools import cubic_roots
@@ -609,7 +609,7 @@ class CubicSpline2D():
         ax.quiver(x, y, dx, dy)
         return ax
 
-    def arc_length_approximation(self, num: int) -> 'NDArray[float64]':
+    def arc_length_approximation(self, num: int) -> 'NDArray':
         x, y = self.spline_points(num)
         x = asarray(x)
         y = asarray(y)

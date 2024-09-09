@@ -1,21 +1,21 @@
 from typing import TYPE_CHECKING, List
 
-from numpy import asarray, divide, float64, fromiter, zeros
+from numpy import asarray, divide, fromiter, zeros
 from numpy.linalg import inv
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 class LinearInterpSolver():
-    x: 'NDArray[float64]' = None
+    x: 'NDArray' = None
     _num: int = None
-    _dx: 'NDArray[float64]' = None
-    _xc: 'NDArray[float64]' = None
-    _m: 'NDArray[float64]' = None
-    _kmat: 'NDArray[float64]' = None
-    _hmat: 'NDArray[float64]' = None
+    _dx: 'NDArray' = None
+    _xc: 'NDArray' = None
+    _m: 'NDArray' = None
+    _kmat: 'NDArray' = None
+    _hmat: 'NDArray' = None
 
-    def __init__(self, x: 'NDArray[float64]') -> None:
+    def __init__(self, x: 'NDArray') -> None:
         self.x = asarray(x)
 
     @property
@@ -25,19 +25,19 @@ class LinearInterpSolver():
         return self._num
 
     @property
-    def dx(self) -> 'NDArray[float64]':
+    def dx(self) -> 'NDArray':
         if self._dx is None:
             self._dx = self.x[1:] - self.x[:-1]
         return self._dx
 
     @property
-    def xc(self) -> 'NDArray[float64]':
+    def xc(self) -> 'NDArray':
         if self._xc is None:
             self._xc = (self.x[:-1] + self.x[1:])/2
         return self._xc
 
     @property
-    def hmat(self) -> 'NDArray[float64]':
+    def hmat(self) -> 'NDArray':
         # dydx = H*y
         if self._hmat is None:
             self._hmat = zeros((self.num-1, self.num))
@@ -47,7 +47,7 @@ class LinearInterpSolver():
         return self._hmat
 
     @property
-    def kmat(self) -> 'NDArray[float64]':
+    def kmat(self) -> 'NDArray':
         # y = K*dydx
         if self._kmat is None:
             kmat = zeros((self.num, self.num-1))
@@ -65,7 +65,7 @@ class LinearInterpSolver():
             xf[i] = self.x[i] + fac*self.dx[i]
         return xf
 
-    def interpolation_matrix(self, xi: 'NDArray[float64]') -> 'NDArray[float64]':
+    def interpolation_matrix(self, xi: 'NDArray') -> 'NDArray':
         numi = len(xi)
         imat = zeros((numi, self.num))
         for i in range(numi):
@@ -76,7 +76,7 @@ class LinearInterpSolver():
                     break
         return imat
 
-    def opposite_end_gradient_matrix(self, xi: 'NDArray[float64]') -> 'NDArray[float64]':
+    def opposite_end_gradient_matrix(self, xi: 'NDArray') -> 'NDArray':
         imat = self.interpolation_matrix(xi)
         amat = zeros((self.num, self.num))
         amat[:-1, :] = imat
@@ -94,19 +94,19 @@ class LinearInterpSolver():
         hmat[-1, :] = -gmat*ainv
         return hmat
 
-    def ymat_from_list(self, y: List[float]) -> 'NDArray[float64]':
-        ymat: 'NDArray[float64]' = asarray([y]).reshape((-1, 1))
+    def ymat_from_list(self, y: List[float]) -> 'NDArray':
+        ymat: 'NDArray' = asarray([y]).reshape((-1, 1))
         return ymat
 
 class LinearInterp(LinearInterpSolver):
-    y: 'NDArray[float64]' = None
-    _ymat: 'NDArray[float64]' = None
-    _dy: 'NDArray[float64]' = None
-    _m: 'NDArray[float64]' = None
-    _iymat: 'NDArray[float64]' = None
-    _iydx: 'NDArray[float64]' = None
+    y: 'NDArray' = None
+    _ymat: 'NDArray' = None
+    _dy: 'NDArray' = None
+    _m: 'NDArray' = None
+    _iymat: 'NDArray' = None
+    _iydx: 'NDArray' = None
 
-    def __init__(self, x: 'NDArray[float64]', y: 'NDArray[float64]') -> None:
+    def __init__(self, x: 'NDArray', y: 'NDArray') -> None:
         super().__init__(x)
         self.y = asarray(y)
 
@@ -117,27 +117,27 @@ class LinearInterp(LinearInterpSolver):
         return self._dy
 
     @property
-    def m(self) -> 'NDArray[float64]':
+    def m(self) -> 'NDArray':
         if self._m is None:
             self._m = divide(self.dy, self.dx)
         return self._m
 
     @property
-    def ymat(self) -> 'NDArray[float64]':
+    def ymat(self) -> 'NDArray':
         if self._ymat is None:
             self._ymat = self.ymat_from_list(self.y)
         return self._ymat
 
     @property
-    def iymat(self) -> 'NDArray[float64]':
+    def iymat(self) -> 'NDArray':
         if self._iymat is None:
             self._iymat = self.kmat*self.ymat
         return self._iymat
 
     @property
-    def iydx(self) -> 'NDArray[float64]':
+    def iydx(self) -> 'NDArray':
         if self._iydx is None:
-            self._iydx = asarray(self.iymat).flatten()
+            self._iydx = asarray(self.iymat).ravel()
         return self._iydx
 
     def linear_interpolation(self, xv: 'float') -> 'float':
@@ -153,7 +153,7 @@ class LinearInterp(LinearInterpSolver):
             raise ValueError(f'The x = {xv} value provided is not within the x range.')
         return yv
 
-    def linear_interpolation_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def linear_interpolation_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.linear_interpolation(xi) for xi in xv], float)
 
     def linear_interpolation_integral(self, xv: 'float') -> 'float':
@@ -175,5 +175,5 @@ class LinearInterp(LinearInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return iyv
 
-    def linear_interpolation_integral_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def linear_interpolation_integral_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.linear_interpolation_integral(xi) for xi in xv], float)

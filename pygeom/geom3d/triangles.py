@@ -1,16 +1,14 @@
 from typing import TYPE_CHECKING, Tuple, Union
 
-from numpy import float64
-
 from ..geom3d import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .arrayvector import ArrayVector
+    from .vector import Vector
     TriangleLike = Union['Triangle', 'Triangles']
     from numpy.typing import DTypeLike
-    ArrayLike = Union['NDArray[float64]', 'ArrayVector']
+    ArrayLike = Union['NDArray', 'Vector']
 
 
 class Triangle():
@@ -85,47 +83,47 @@ class Triangle():
 class Triangles():
     """Triangles Class"""
 
-    pnta: 'ArrayVector' = None
-    pntb: 'ArrayVector' = None
-    pntc: 'ArrayVector' = None
-    _pnto: 'NDArray[float64]' = None
-    _vecab: 'NDArray[float64]' = None
-    _vecbc: 'NDArray[float64]' = None
-    _nrm: 'NDArray[float64]' = None
-    _jac: 'NDArray[float64]' = None
+    pnta: 'Vector' = None
+    pntb: 'Vector' = None
+    pntc: 'Vector' = None
+    _pnto: 'NDArray' = None
+    _vecab: 'NDArray' = None
+    _vecbc: 'NDArray' = None
+    _nrm: 'NDArray' = None
+    _jac: 'NDArray' = None
 
-    def __init__(self, pnta: 'ArrayVector', pntb: 'ArrayVector', pntc: 'ArrayVector') -> None:
+    def __init__(self, pnta: 'Vector', pntb: 'Vector', pntc: 'Vector') -> None:
         self.pnta = pnta
         self.pntb = pntb
         self.pntc = pntc
 
     @property
-    def pnto(self) -> 'ArrayVector':
+    def pnto(self) -> 'Vector':
         if self._pnto is None:
             self._pnto = (self.pnta + self.pntb + self.pntc)/3
         return self._pnto
 
     @property
-    def vecab(self) -> 'ArrayVector':
+    def vecab(self) -> 'Vector':
         if self._vecab is None:
             self._vecab = self.pntb - self.pnta
         return self._vecab
 
     @property
-    def vecbc(self) -> 'ArrayVector':
+    def vecbc(self) -> 'Vector':
         if self._vecbc is None:
             self._vecbc = self.pntc - self.pntb
         return self._vecbc
 
     @property
-    def nrm(self) -> 'ArrayVector':
+    def nrm(self) -> 'Vector':
         if self._nrm is None:
             nrmvec = self.vecab.cross(self.vecbc)
             self._nrm, self._jac = nrmvec.to_unit(return_magnitude=True)
         return self._nrm
 
     @property
-    def jac(self) -> 'NDArray[float64]':
+    def jac(self) -> 'NDArray':
         if self._jac is None:
             self.nrm
         return self._jac
@@ -190,7 +188,7 @@ class Triangles():
         else:
             raise ValueError('Triangle pnts should have the same size.')
 
-    def transpose(self) -> 'ArrayVector':
+    def transpose(self) -> 'Vector':
         pnta = self.pnta.transpose()
         pntb = self.pntb.transpose()
         pntc = self.pntc.transpose()

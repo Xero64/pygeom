@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Iterable
 
-from numpy import (all, argsort, asarray, concatenate, float64, fromiter,
-                   unique, zeros)
+from numpy import all, argsort, asarray, concatenate, fromiter, unique, zeros
 from numpy.linalg import solve
 
 from ..tools.tridiag_solver import tridiag_solver
@@ -10,27 +9,27 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 class QuadraticCentreInterpSolver():
-    x: 'NDArray[float64]' = None
+    x: 'NDArray' = None
     _num: int = None
-    _dx: 'NDArray[float64]' = None
-    _xc: 'NDArray[float64]' = None
-    _gmat: 'NDArray[float64]' = None
-    _emat: 'NDArray[float64]' = None
-    _fmat: 'NDArray[float64]' = None
-    _hmat: 'NDArray[float64]' = None
-    _smat: 'NDArray[float64]' = None
-    _tmat: 'NDArray[float64]' = None
-    _qmat: 'NDArray[float64]' = None
-    _kmat: 'NDArray[float64]' = None
-    _kmatc: 'NDArray[float64]' = None
-    _zmatop: 'NDArray[float64]' = None
-    _gmatop: 'NDArray[float64]' = None
-    _hmatop: 'NDArray[float64]' = None
-    _zmateq: 'NDArray[float64]' = None
-    _gmateq: 'NDArray[float64]' = None
-    _hmateq: 'NDArray[float64]' = None
-    _gmat00: 'NDArray[float64]' = None
-    _hmat00: 'NDArray[float64]' = None
+    _dx: 'NDArray' = None
+    _xc: 'NDArray' = None
+    _gmat: 'NDArray' = None
+    _emat: 'NDArray' = None
+    _fmat: 'NDArray' = None
+    _hmat: 'NDArray' = None
+    _smat: 'NDArray' = None
+    _tmat: 'NDArray' = None
+    _qmat: 'NDArray' = None
+    _kmat: 'NDArray' = None
+    _kmatc: 'NDArray' = None
+    _zmatop: 'NDArray' = None
+    _gmatop: 'NDArray' = None
+    _hmatop: 'NDArray' = None
+    _zmateq: 'NDArray' = None
+    _gmateq: 'NDArray' = None
+    _hmateq: 'NDArray' = None
+    _gmat00: 'NDArray' = None
+    _hmat00: 'NDArray' = None
 
     def __init__(self, x: Iterable[float]) -> None:
         for i in range(len(x)-1):
@@ -45,19 +44,19 @@ class QuadraticCentreInterpSolver():
         return self._num
 
     @property
-    def dx(self) -> 'NDArray[float64]':
+    def dx(self) -> 'NDArray':
         if self._dx is None:
             self._dx = self.x[1:] - self.x[:-1]
         return self._dx
 
     @property
-    def xc(self) -> 'NDArray[float64]':
+    def xc(self) -> 'NDArray':
         if self._xc is None:
             self._xc = (self.x[1:] + self.x[:-1])/2
         return self._xc
 
     @property
-    def emat(self) -> 'NDArray[float64]':
+    def emat(self) -> 'NDArray':
         if self._emat is None:
             self._emat = zeros((self.num, self.num))
             for i, dxi in enumerate(self.dx):
@@ -68,7 +67,7 @@ class QuadraticCentreInterpSolver():
         return self._emat
 
     @property
-    def fmat(self) -> 'NDArray[float64]':
+    def fmat(self) -> 'NDArray':
         if self._fmat is None:
             self._fmat = zeros((self.num, self.num-1))
             for i, dxi in enumerate(self.dx):
@@ -77,7 +76,7 @@ class QuadraticCentreInterpSolver():
         return self._fmat
 
     @property
-    def smat(self) -> 'NDArray[float64]':
+    def smat(self) -> 'NDArray':
         if self._smat is None:
             self._smat = zeros((self.num-1, self.num))
             for i, dxi in enumerate(self.dx):
@@ -87,7 +86,7 @@ class QuadraticCentreInterpSolver():
         return self._smat
 
     @property
-    def tmat(self) -> 'NDArray[float64]':
+    def tmat(self) -> 'NDArray':
         if self._tmat is None:
             self._tmat = zeros((self.num-1, self.num-1))
             for i, dxi in enumerate(self.dx):
@@ -96,7 +95,7 @@ class QuadraticCentreInterpSolver():
         return self._tmat
 
     @property
-    def gmat(self) -> 'NDArray[float64]':
+    def gmat(self) -> 'NDArray':
         # y = G*<yc, dya, dyb>
         if self._gmat is None:
             a = zeros(self.num-1)
@@ -117,7 +116,7 @@ class QuadraticCentreInterpSolver():
         return self._gmat
 
     @property
-    def hmat(self) -> 'NDArray[float64]':
+    def hmat(self) -> 'NDArray':
         # dydx = H*yc = (E*G+F)*yc = E*y + F*yc
         if self._hmat is None:
             self._hmat = self.emat@self.gmat
@@ -125,7 +124,7 @@ class QuadraticCentreInterpSolver():
         return self._hmat
 
     @property
-    def qmat(self) -> 'NDArray[float64]':
+    def qmat(self) -> 'NDArray':
         # d2ydx2 = Q*yc = (S*G+T)*yc = S*y + T*yc
         if self._qmat is None:
             self._qmat = self.smat@self.gmat
@@ -133,7 +132,7 @@ class QuadraticCentreInterpSolver():
         return self._qmat
 
     @property
-    def zmatop(self) -> 'NDArray[float64]':
+    def zmatop(self) -> 'NDArray':
         # <dya, dyb>op = Zop*yc
         if self._zmatop is None:
             gaa = self.gmat[0, -2]
@@ -158,21 +157,21 @@ class QuadraticCentreInterpSolver():
         return self._zmatop
 
     @property
-    def gmatop(self) -> 'NDArray[float64]':
+    def gmatop(self) -> 'NDArray':
         # y = Gop*yc
         if self._gmatop is None:
             self._gmatop = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatop
         return self._gmatop
 
     @property
-    def hmatop(self) -> 'NDArray[float64]':
+    def hmatop(self) -> 'NDArray':
         # dydx = Hop*yc
         if self._hmatop is None:
             self._hmatop = self.emat@self.gmatop + self.fmat
         return self._hmatop
 
     @property
-    def zmateq(self) -> 'NDArray[float64]':
+    def zmateq(self) -> 'NDArray':
         # <dya, dyb>op = Zeq*yc
         if self._zmateq is None:
             gaa = self.gmat[0, -2]
@@ -197,52 +196,52 @@ class QuadraticCentreInterpSolver():
         return self._zmateq
 
     @property
-    def gmateq(self) -> 'NDArray[float64]':
+    def gmateq(self) -> 'NDArray':
         # y = Geq*yc
         if self._gmateq is None:
             self._gmateq = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmateq
         return self._gmateq
 
     @property
-    def hmateq(self) -> 'NDArray[float64]':
+    def hmateq(self) -> 'NDArray':
         # dydx = Heq*yc
         if self._hmateq is None:
             self._hmateq = self.emat@self.gmateq + self.fmat
         return self._hmateq
 
     @property
-    def gmat00(self) -> 'NDArray[float64]':
+    def gmat00(self) -> 'NDArray':
         # y = G00*yc
         if self._gmat00 is None:
             self._gmat00 = self.gmat[:, :-2]
         return self._gmat00
 
     @property
-    def hmat00(self) -> 'NDArray[float64]':
+    def hmat00(self) -> 'NDArray':
         # dydx = H00*yc
         if self._hmat00 is None:
             self._hmat00 = self.emat@self.gmat00 + self.fmat
         return self._hmat00
 
     # @property
-    # def zmatle(self) -> 'NDArray[float64]':
+    # def zmatle(self) -> 'NDArray':
     #     if self._zmatle is None:
     #         amat = self.qmat[(0, -1), -2:]
     #         bmat = self.qmat[(0, -1), :-2]
     #         self._zmatle = -solve(amat, bmat)
     #     return self._zmatle
     # @property
-    # def gmatle(self) -> 'NDArray[float64]':
+    # def gmatle(self) -> 'NDArray':
     #     if self._gmatle is None:
     #         self._gmatle = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatle
     #     return self._gmatle
     # @property
-    # def hmatle(self) -> 'NDArray[float64]':
+    # def hmatle(self) -> 'NDArray':
     #     if self._hmatle is None:
     #         self._hmatle = self.emat@self.gmatle + self.fmat
     #     return self._hmatle
     # @property
-    # def zmatv2(self) -> 'NDArray[float64]':
+    # def zmatv2(self) -> 'NDArray':
     #     if self._zmatv2 is None:
     #         amat = zeros((2, 2))
     #         bmat = zeros((2, self.num-1))
@@ -253,17 +252,17 @@ class QuadraticCentreInterpSolver():
     #         self._zmatv2 = -solve(amat, bmat)
     #     return self._zmatv2
     # @property
-    # def gmatv2(self) -> 'NDArray[float64]':
+    # def gmatv2(self) -> 'NDArray':
     #     if self._gmatv2 is None:
     #         self._gmatv2 = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatv2
     #     return self._gmatv2
     # @property
-    # def hmatv2(self) -> 'NDArray[float64]':
+    # def hmatv2(self) -> 'NDArray':
     #     if self._hmatv2 is None:
     #         self._hmatv2 = self.emat*self.gmatv2 + self.fmat
     #     return self._hmatv2
     # @property
-    # def zmatv3(self) -> 'NDArray[float64]':
+    # def zmatv3(self) -> 'NDArray':
     #     if self._zmatv3 is None:
     #         amat = zeros((2, 2))
     #         bmat = zeros((2, self.num-1))
@@ -274,16 +273,16 @@ class QuadraticCentreInterpSolver():
     #         self._zmatv3 = -solve(amat, bmat)
     #     return self._zmatv3
     # @property
-    # def gmatv3(self) -> 'NDArray[float64]':
+    # def gmatv3(self) -> 'NDArray':
     #     if self._gmatv3 is None:
     #         self._gmatv3 = self.gmat[:, :-2] + self.gmat[:, -2:]@self.zmatv3
     #     return self._gmatv3
     # @property
-    # def hmatv3(self) -> 'NDArray[float64]':
+    # def hmatv3(self) -> 'NDArray':
     #     if self._hmatv3 is None:
     #         self._hmatv3 = self.emat@self.gmatv3 + self.fmat
     #     return self._hmatv3
-    # def imat(self) -> 'NDArray[float64]':
+    # def imat(self) -> 'NDArray':
     #     if self._imat is None:
     #         imat = zeros((self.num, self.num))
     #         for i, dxi in enumerate(self.dx):
@@ -296,7 +295,7 @@ class QuadraticCentreInterpSolver():
     #             self._imat[i, :] = imat[i, :] - iopp
     #     return self._imat
     # @property
-    # def jmat(self) -> 'NDArray[float64]':
+    # def jmat(self) -> 'NDArray':
     #     if self._jmat is None:
     #         jmat = zeros((self.num, self.num-1))
     #         for i, dxi in enumerate(self.dx):
@@ -308,24 +307,24 @@ class QuadraticCentreInterpSolver():
     #             self._jmat[i, :] = jmat[i, :] - jopp
     #     return self._jmat
     # @property
-    # def kmat(self) -> 'NDArray[float64]':
+    # def kmat(self) -> 'NDArray':
     #     if self._kmat is None:
     #         self._kmat = self.jmat@self.gmat
     #         self._kmat[:, :-1] += self.imat
     #     return self._kmat
     # @property
-    # def kmateq(self) -> 'NDArray[float64]':
+    # def kmateq(self) -> 'NDArray':
     #     if self._kmateq is None:
     #         self._kmateq = self.imat + self.jmat@self.gmateq
     #     return self._kmateq
     # @property
-    # def kmatop(self) -> 'NDArray[float64]':
+    # def kmatop(self) -> 'NDArray':
     #     if self._kmatop is None:
     #         self._kmatop = self.imat + self.jmat@self.gmatop
     #     return self._kmatop
 
     @property
-    def kmat(self) -> 'NDArray[float64]':
+    def kmat(self) -> 'NDArray':
         if self._kmat is None:
             kmat = zeros((self.num, self.num))
             for i, dxi in enumerate(self.dx):
@@ -338,7 +337,7 @@ class QuadraticCentreInterpSolver():
         return self._kmat
 
     @property
-    def kmatc(self) -> 'NDArray[float64]':
+    def kmatc(self) -> 'NDArray':
         if self._kmatc is None:
             self._kmatc = self.kmat[:-1, :].copy()
             for i, dxi in enumerate(self.dx):
@@ -347,16 +346,16 @@ class QuadraticCentreInterpSolver():
         return self._kmatc
 
 class QuadraticCentreInterp(QuadraticCentreInterpSolver):
-    yc: 'NDArray[float64]' = None
+    yc: 'NDArray' = None
     dya: float = None
     dya: float = None
-    _rmat: 'NDArray[float64]' = None
-    _ymat: 'NDArray[float64]' = None
-    _y: 'NDArray[float64]' = None
-    _dymat: 'NDArray[float64]' = None
-    _dydx: 'NDArray[float64]' = None
-    _iymat: 'NDArray[float64]' = None
-    _iydx: 'NDArray[float64]' = None
+    _rmat: 'NDArray' = None
+    _ymat: 'NDArray' = None
+    _y: 'NDArray' = None
+    _dymat: 'NDArray' = None
+    _dydx: 'NDArray' = None
+    _iymat: 'NDArray' = None
+    _iydx: 'NDArray' = None
 
     def __init__(self, x: Iterable[float], yc: Iterable[float],
                  dya: float, dyb: float) -> None:
@@ -375,11 +374,11 @@ class QuadraticCentreInterp(QuadraticCentreInterpSolver):
         self.dyb = dyb
 
     @property
-    def ycmat(self) -> 'NDArray[float64]':
+    def ycmat(self) -> 'NDArray':
         return self.yc.reshape((-1, 1))
 
     @property
-    def rmat(self) -> 'NDArray[float64]':
+    def rmat(self) -> 'NDArray':
         if self._rmat is None:
             dya = asarray(self.dya).reshape((1, ))
             dyb = asarray(self.dyb).reshape((1, ))
@@ -387,39 +386,39 @@ class QuadraticCentreInterp(QuadraticCentreInterpSolver):
         return self._rmat
 
     @property
-    def ymat(self) -> 'NDArray[float64]':
+    def ymat(self) -> 'NDArray':
         if self._ymat is None:
             self._ymat = self.gmat@self.rmat
         return self._ymat
 
     @property
-    def y(self) -> 'NDArray[float64]':
+    def y(self) -> 'NDArray':
         if self._y is None:
-            self._y = self.ymat.flatten()
+            self._y = self.ymat.ravel()
         return self._y
 
     @property
-    def dymat(self) -> 'NDArray[float64]':
+    def dymat(self) -> 'NDArray':
         if self._dymat is None:
             self._dymat = self.emat@self.ymat + self.fmat@self.ycmat
         return self._dymat
 
     @property
-    def dydx(self) -> 'NDArray[float64]':
+    def dydx(self) -> 'NDArray':
         if self._dydx is None:
-            self._dydx = self.dymat.flatten()
+            self._dydx = self.dymat.ravel()
         return self._dydx
 
     # @property
-    # def iymat(self) -> 'NDArray[float64]':
+    # def iymat(self) -> 'NDArray':
     #     if self._iymat is None:
     #         self._iymat = self.imat@self.ymat + self.jmat@self.ycmat
     #     return self._iymat
 
     # @property
-    # def iydx(self) -> 'NDArray[float64]':
+    # def iydx(self) -> 'NDArray':
     #     if self._iydx is None:
-    #         self._iydx = asarray(self.iymat).flatten()
+    #         self._iydx = asarray(self.iymat).ravel()
     #     return self._iydx
 
     def quadratic_interpolation(self, xv: float) -> float:
@@ -444,7 +443,7 @@ class QuadraticCentreInterp(QuadraticCentreInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return yv
 
-    def quadratic_interpolation_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def quadratic_interpolation_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.quadratic_interpolation(xi) for xi in xv], float)
 
     def quadratic_first_derivative(self, xv: float) -> float:
@@ -469,7 +468,7 @@ class QuadraticCentreInterp(QuadraticCentreInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return dyv
 
-    def quadratic_first_derivative_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def quadratic_first_derivative_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.quadratic_first_derivative(xi) for xi in xv], float)
 
     # def quadratic_integral(self, xv: float) -> float:
@@ -493,39 +492,39 @@ class QuadraticCentreInterp(QuadraticCentreInterpSolver):
     #         raise ValueError('The x value provided is not within the x range.')
     #     return iyv
 
-    # def quadratic_integral_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    # def quadratic_integral_array(self, xv: 'NDArray') -> 'NDArray':
     #     return fromiter([self.quadratic_integral(xi) for xi in xv])
 
 class QuadraticInterpSolver():
-    x: 'NDArray[float64]' = None
+    x: 'NDArray' = None
     _num: int = None
-    _dx: 'NDArray[float64]' = None
-    _xc: 'NDArray[float64]' = None
-    _gmat: 'NDArray[float64]' = None
-    _emat: 'NDArray[float64]' = None
-    _fmat: 'NDArray[float64]' = None
-    _hmat: 'NDArray[float64]' = None
-    _smat: 'NDArray[float64]' = None
-    _tmat: 'NDArray[float64]' = None
-    _qmat: 'NDArray[float64]' = None
-    _imat: 'NDArray[float64]' = None
-    _jmat: 'NDArray[float64]' = None
-    _kmat: 'NDArray[float64]' = None
-    _zmatop: 'NDArray[float64]' = None
-    _gmatop: 'NDArray[float64]' = None
-    _hmatop: 'NDArray[float64]' = None
-    _qmatop: 'NDArray[float64]' = None
-    _kmatop: 'NDArray[float64]' = None
-    _zmateq: 'NDArray[float64]' = None
-    _gmateq: 'NDArray[float64]' = None
-    _hmateq: 'NDArray[float64]' = None
-    _qmateq: 'NDArray[float64]' = None
-    _kmateq: 'NDArray[float64]' = None
-    _zmate0: 'NDArray[float64]' = None
-    _gmate0: 'NDArray[float64]' = None
-    _hmate0: 'NDArray[float64]' = None
-    _qmate0: 'NDArray[float64]' = None
-    _kmate0: 'NDArray[float64]' = None
+    _dx: 'NDArray' = None
+    _xc: 'NDArray' = None
+    _gmat: 'NDArray' = None
+    _emat: 'NDArray' = None
+    _fmat: 'NDArray' = None
+    _hmat: 'NDArray' = None
+    _smat: 'NDArray' = None
+    _tmat: 'NDArray' = None
+    _qmat: 'NDArray' = None
+    _imat: 'NDArray' = None
+    _jmat: 'NDArray' = None
+    _kmat: 'NDArray' = None
+    _zmatop: 'NDArray' = None
+    _gmatop: 'NDArray' = None
+    _hmatop: 'NDArray' = None
+    _qmatop: 'NDArray' = None
+    _kmatop: 'NDArray' = None
+    _zmateq: 'NDArray' = None
+    _gmateq: 'NDArray' = None
+    _hmateq: 'NDArray' = None
+    _qmateq: 'NDArray' = None
+    _kmateq: 'NDArray' = None
+    _zmate0: 'NDArray' = None
+    _gmate0: 'NDArray' = None
+    _hmate0: 'NDArray' = None
+    _qmate0: 'NDArray' = None
+    _kmate0: 'NDArray' = None
     def __init__(self, x: Iterable[float]) -> None:
         for i in range(len(x)-1):
             if x[i+1] <= x[i]:
@@ -539,23 +538,23 @@ class QuadraticInterpSolver():
         return self._num
 
     @property
-    def dx(self) -> 'NDArray[float64]':
+    def dx(self) -> 'NDArray':
         if self._dx is None:
             self._dx = self.x[1:]-self.x[:-1]
         return self._dx
 
     @property
-    def xc(self) -> 'NDArray[float64]':
+    def xc(self) -> 'NDArray':
         if self._xc is None:
             self._xc = (self.x[1:]+self.x[:-1])/2
         return self._xc
 
     @property
-    def gmat(self) -> 'NDArray[float64]':
+    def gmat(self) -> 'NDArray':
         if self._gmat is None:
-            a = asarray(zeros((self.num-2, 1))).flatten()
-            b = asarray(zeros((self.num-1, 1))).flatten()
-            c = asarray(zeros((self.num-2, 1))).flatten()
+            a = asarray(zeros((self.num-2, 1))).ravel()
+            b = asarray(zeros((self.num-1, 1))).ravel()
+            c = asarray(zeros((self.num-2, 1))).ravel()
             d = zeros((self.num-1, self.num+1))
             dxi = self.dx[0]
             b[0] = -4/dxi
@@ -575,7 +574,7 @@ class QuadraticInterpSolver():
         return self._gmat
 
     @property
-    def emat(self) -> 'NDArray[float64]':
+    def emat(self) -> 'NDArray':
         if self._emat is None:
             self._emat = zeros((self.num, self.num))
             for i, dxi in enumerate(self.dx):
@@ -586,7 +585,7 @@ class QuadraticInterpSolver():
         return self._emat
 
     @property
-    def fmat(self) -> 'NDArray[float64]':
+    def fmat(self) -> 'NDArray':
         if self._fmat is None:
             self._fmat = zeros((self.num, self.num-1))
             for i, dxi in enumerate(self.dx):
@@ -595,7 +594,7 @@ class QuadraticInterpSolver():
         return self._fmat
 
     @property
-    def smat(self) -> 'NDArray[float64]':
+    def smat(self) -> 'NDArray':
         if self._smat is None:
             self._smat = zeros((self.num-1, self.num))
             for i, dxi in enumerate(self.dx):
@@ -605,7 +604,7 @@ class QuadraticInterpSolver():
         return self._smat
 
     @property
-    def tmat(self) -> 'NDArray[float64]':
+    def tmat(self) -> 'NDArray':
         if self._tmat is None:
             self._tmat = zeros((self.num-1, self.num-1))
             for i, dxi in enumerate(self.dx):
@@ -614,21 +613,21 @@ class QuadraticInterpSolver():
         return self._tmat
 
     @property
-    def hmat(self) -> 'NDArray[float64]':
+    def hmat(self) -> 'NDArray':
         if self._hmat is None:
             self._hmat = self.fmat@self.gmat
             self._hmat[:, :-1] += self.emat
         return self._hmat
 
     @property
-    def qmat(self) -> 'NDArray[float64]':
+    def qmat(self) -> 'NDArray':
         if self._qmat is None:
             self._qmat =  self.tmat@self.gmat
             self._qmat[:, :-1] += self.smat
         return self._qmat
 
     @property
-    def zmatop(self) -> 'NDArray[float64]':
+    def zmatop(self) -> 'NDArray':
         if self._zmatop is None:
             eb = self.emat[-1, :]
             fb = self.fmat[-1, :]
@@ -638,25 +637,25 @@ class QuadraticInterpSolver():
         return self._zmatop
 
     @property
-    def gmatop(self) -> 'NDArray[float64]':
+    def gmatop(self) -> 'NDArray':
         if self._gmatop is None:
             self._gmatop = self.gmat[:, -1]@self.zmatop + self.gmat[:, :-1]
         return self._gmatop
 
     @property
-    def hmatop(self) -> 'NDArray[float64]':
+    def hmatop(self) -> 'NDArray':
         if self._hmatop is None:
             self._hmatop = self.emat + self.fmat@self.gmatop
         return self._hmatop
 
     @property
-    def qmatop(self) -> 'NDArray[float64]':
+    def qmatop(self) -> 'NDArray':
         if self._qmatop is None:
             self._qmatop = self.smat + self.tmat@self.gmatop
         return self._qmatop
 
     @property
-    def zmateq(self) -> 'NDArray[float64]':
+    def zmateq(self) -> 'NDArray':
         if self._zmateq is None:
             eb = self.emat[-1, :].reshape((1, -1))
             fb = self.fmat[-1, :].reshape((1, -1))
@@ -666,26 +665,26 @@ class QuadraticInterpSolver():
         return self._zmateq
 
     @property
-    def gmateq(self) -> 'NDArray[float64]':
+    def gmateq(self) -> 'NDArray':
         if self._gmateq is None:
             gmatN = self.gmat[:, -1].reshape((-1, 1))
             self._gmateq = gmatN@self.zmateq + self.gmat[:, :-1]
         return self._gmateq
 
     @property
-    def hmateq(self) -> 'NDArray[float64]':
+    def hmateq(self) -> 'NDArray':
         if self._hmateq is None:
             self._hmateq = self.emat + self.fmat@self.gmateq
         return self._hmateq
 
     @property
-    def qmateq(self) -> 'NDArray[float64]':
+    def qmateq(self) -> 'NDArray':
         if self._qmateq is None:
             self._qmateq = self.smat + self.tmat@self.gmateq
         return self._qmateq
 
     @property
-    def zmate0(self) -> 'NDArray[float64]':
+    def zmate0(self) -> 'NDArray':
         if self._zmate0 is None:
             eb = self.emat[-1, :].reshape((1, -1))
             fb = self.fmat[-1, :].reshape((1, -1))
@@ -695,26 +694,26 @@ class QuadraticInterpSolver():
         return self._zmate0
 
     @property
-    def gmate0(self) -> 'NDArray[float64]':
+    def gmate0(self) -> 'NDArray':
         if self._gmate0 is None:
             gmatN = self.gmat[:, -1].reshape((-1, 1))
             self._gmate0 = gmatN@self.zmate0 + self.gmat[:, :-1]
         return self._gmate0
 
     @property
-    def hmate0(self) -> 'NDArray[float64]':
+    def hmate0(self) -> 'NDArray':
         if self._hmate0 is None:
             self._hmate0 = self.emat + self.fmat@self.gmate0
         return self._hmate0
 
     @property
-    def qmate0(self) -> 'NDArray[float64]':
+    def qmate0(self) -> 'NDArray':
         if self._qmate0 is None:
             self._qmate0 = self.smat + self.tmat@self.gmate0
         return self._qmate0
 
     @property
-    def imat(self) -> 'NDArray[float64]':
+    def imat(self) -> 'NDArray':
         if self._imat is None:
             imat = zeros((self.num, self.num))
             for i, dxi in enumerate(self.dx):
@@ -727,7 +726,7 @@ class QuadraticInterpSolver():
         return self._imat
 
     @property
-    def jmat(self) -> 'NDArray[float64]':
+    def jmat(self) -> 'NDArray':
         if self._jmat is None:
             jmat = zeros((self.num, self.num-1))
             for i, dxi in enumerate(self.dx):
@@ -739,34 +738,34 @@ class QuadraticInterpSolver():
         return self._jmat
 
     @property
-    def kmat(self) -> 'NDArray[float64]':
+    def kmat(self) -> 'NDArray':
         if self._kmat is None:
             self._kmat = self.jmat@self.gmat
             self._kmat[:, :-1] += self.imat
         return self._kmat
 
     @property
-    def kmateq(self) -> 'NDArray[float64]':
+    def kmateq(self) -> 'NDArray':
         if self._kmateq is None:
             self._kmateq = self.imat + self.jmat@self.gmateq
         return self._kmateq
 
     @property
-    def kmatop(self) -> 'NDArray[float64]':
+    def kmatop(self) -> 'NDArray':
         if self._kmatop is None:
             self._kmatop = self.imat + self.jmat@self.gmatop
         return self._kmatop
 
 class QuadraticInterp(QuadraticInterpSolver):
-    y: 'NDArray[float64]' = None
+    y: 'NDArray' = None
     dya: float = None
-    _rmat: 'NDArray[float64]' = None
-    _ycmat: 'NDArray[float64]' = None
-    _yc: 'NDArray[float64]' = None
-    _dymat: 'NDArray[float64]' = None
-    _dydx: 'NDArray[float64]' = None
-    _iymat: 'NDArray[float64]' = None
-    _iydx: 'NDArray[float64]' = None
+    _rmat: 'NDArray' = None
+    _ycmat: 'NDArray' = None
+    _yc: 'NDArray' = None
+    _dymat: 'NDArray' = None
+    _dydx: 'NDArray' = None
+    _iymat: 'NDArray' = None
+    _iydx: 'NDArray' = None
 
     def __init__(self, x: Iterable[float], y: Iterable[float],
                  dya: float) -> None:
@@ -786,11 +785,11 @@ class QuadraticInterp(QuadraticInterpSolver):
         self.dya = dya
 
     @property
-    def ymat(self) -> 'NDArray[float64]':
+    def ymat(self) -> 'NDArray':
         return self.y.reshape(-1, 1)
 
     @property
-    def rmat(self) -> 'NDArray[float64]':
+    def rmat(self) -> 'NDArray':
         if self._rmat is None:
             self._rmat = zeros((self.num+1, 1))
             self._rmat[:-1, 0] = self.ymat
@@ -798,39 +797,39 @@ class QuadraticInterp(QuadraticInterpSolver):
         return self._rmat
 
     @property
-    def ycmat(self) -> 'NDArray[float64]':
+    def ycmat(self) -> 'NDArray':
         if self._ycmat is None:
             self._ycmat = self.gmat@self.rmat
         return self._ycmat
 
     @property
-    def yc(self) -> 'NDArray[float64]':
+    def yc(self) -> 'NDArray':
         if self._yc is None:
-            self._yc = asarray(self.ycmat).flatten()
+            self._yc = asarray(self.ycmat).ravel()
         return self._yc
 
     @property
-    def dymat(self) -> 'NDArray[float64]':
+    def dymat(self) -> 'NDArray':
         if self._dymat is None:
             self._dymat = self.emat@self.ymat + self.fmat@self.ycmat
         return self._dymat
 
     @property
-    def dydx(self) -> 'NDArray[float64]':
+    def dydx(self) -> 'NDArray':
         if self._dydx is None:
-            self._dydx = asarray(self.dymat).flatten()
+            self._dydx = asarray(self.dymat).ravel()
         return self._dydx
 
     @property
-    def iymat(self) -> 'NDArray[float64]':
+    def iymat(self) -> 'NDArray':
         if self._iymat is None:
             self._iymat = self.imat@self.ymat+self.jmat@self.ycmat
         return self._iymat
 
     @property
-    def iydx(self) -> 'NDArray[float64]':
+    def iydx(self) -> 'NDArray':
         if self._iydx is None:
-            self._iydx = asarray(self.iymat).flatten()
+            self._iydx = asarray(self.iymat).ravel()
         return self._iydx
 
     def quadratic_interpolation(self, xv: float) -> float:
@@ -855,7 +854,7 @@ class QuadraticInterp(QuadraticInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return yv
 
-    def quadratic_interpolation_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def quadratic_interpolation_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.quadratic_interpolation(xi) for xi in xv], float)
 
     def quadratic_first_derivative(self, xv: float) -> float:
@@ -880,7 +879,7 @@ class QuadraticInterp(QuadraticInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return dyv
 
-    def quadratic_first_derivative_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def quadratic_first_derivative_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.quadratic_first_derivative(xi) for xi in xv], float)
 
     def quadratic_integral(self, xv: float) -> float:
@@ -904,5 +903,5 @@ class QuadraticInterp(QuadraticInterpSolver):
             raise ValueError('The x value provided is not within the x range.')
         return iyv
 
-    def quadratic_integral_array(self, xv: 'NDArray[float64]') -> 'NDArray[float64]':
+    def quadratic_integral_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.quadratic_integral(xi) for xi in xv], float)

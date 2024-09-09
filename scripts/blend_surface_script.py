@@ -1,8 +1,8 @@
 #%%
 # Import Dependencies
-from numpy import float64, full, zeros
+from numpy import full, zeros
 from numpy.typing import NDArray
-from pygeom.array3d import ArrayVector, ParamCurve, ParamSurface
+from pygeom.geom3d import ParamCurve, ParamSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_surface, k3d_surface_normals,
                               k3d_surface_tangents)
 
@@ -13,23 +13,23 @@ yle1 = 0.0
 zle1 = 0.0
 chrd1 = 1.0
 
-def ru1(u: NDArray[float64]) -> ArrayVector:
+def ru1(u: NDArray) -> Vector:
     x = xle1 + chrd1*u
     y = full(u.shape, yle1, dtype=u.dtype)
     z = full(u.shape, yle1, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def drdu1(u: NDArray[float64]) -> ArrayVector:
+def drdu1(u: NDArray) -> Vector:
     x = full(u.shape, chrd1, dtype=u.dtype)
     y = zeros(u.shape, dtype=u.dtype)
     z = zeros(u.shape, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def d2rdu2(u: NDArray[float64]) -> ArrayVector:
+def d2rdu2(u: NDArray) -> Vector:
     x = zeros(u.shape, dtype=u.dtype)
     y = zeros(u.shape, dtype=u.dtype)
     z = zeros(u.shape, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
 paramcurve1 = ParamCurve(ru1, drdu1, d2rdu2)
 
@@ -38,39 +38,39 @@ yle2 = 5.0
 zle2 = 0.1
 chrd2 = 0.6
 
-def ru2(u: NDArray[float64]) -> ArrayVector:
+def ru2(u: NDArray) -> Vector:
     x = xle2 + chrd2*u
     y = full(u.shape, yle2, dtype=u.dtype)
     z = full(u.shape, zle2, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def drdu2(u: NDArray[float64]) -> ArrayVector:
+def drdu2(u: NDArray) -> Vector:
     x = full(u.shape, chrd2, dtype=u.dtype)
     y = zeros(u.shape, dtype=u.dtype)
     z = zeros(u.shape, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def d2rdu2(u: NDArray[float64]) -> ArrayVector:
+def d2rdu2(u: NDArray) -> Vector:
     x = zeros(u.shape, dtype=u.dtype)
     y = zeros(u.shape, dtype=u.dtype)
     z = zeros(u.shape, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
 paramcurve2 = ParamCurve(ru2, drdu2, d2rdu2)
 
-def ruv(u: NDArray[float64], v: NDArray[float64]) -> ArrayVector:
+def ruv(u: NDArray, v: NDArray) -> Vector:
     ru1 = paramcurve1.evaluate_points_at_u(u)
     ru2 = paramcurve2.evaluate_points_at_u(u)
     ruv = ru1*(1 - v) + ru2*v
     return ruv
 
-def drdu(u: NDArray[float64], v: NDArray[float64]) -> ArrayVector:
+def drdu(u: NDArray, v: NDArray) -> Vector:
     drdu1 = paramcurve1.evaluate_first_derivatives_at_u(u)
     drdu2 = paramcurve2.evaluate_first_derivatives_at_u(u)
     drdu = drdu1*(1 - v) + drdu2*v
     return drdu
 
-def drdv(u: NDArray[float64], v: NDArray[float64]) -> ArrayVector:
+def drdv(u: NDArray, v: NDArray) -> Vector:
     ru1 = paramcurve1.evaluate_points_at_u(u)
     ru2 = paramcurve2.evaluate_points_at_u(u)
     drdv = ru2 - ru1

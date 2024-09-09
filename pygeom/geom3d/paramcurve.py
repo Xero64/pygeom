@@ -1,20 +1,15 @@
-from typing import TYPE_CHECKING, Callable, Union, Optional
+from typing import TYPE_CHECKING, Callable, Optional, Union
 
 from numpy import asarray, isscalar, linspace
-
-from .arrayvector2d import ArrayVector2D
 
 if TYPE_CHECKING:
     from numpy import float64
     from numpy.typing import NDArray
-    from pygeom.array2d import ArrayVector2D
-    from pygeom.geom2d import Vector2D
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector2D, ArrayVector2D]
-    ParamCallable = Callable[['Numeric'], 'VectorLike']
+    from pygeom.geom3d import Vector
+    ParamCallable = Callable[['NDArray'], 'Vector']
 
 
-class ParamCurve2D():
+class ParamCurve():
     ru: 'ParamCallable' = None
     drdu: 'ParamCallable' = None
     d2rdu2: 'ParamCallable' = None
@@ -26,7 +21,7 @@ class ParamCurve2D():
         self.drdu = drdu
         self.d2rdu2 = d2rdu2
 
-    def evaluate_points_at_u(self, u: 'Numeric') -> 'VectorLike':
+    def evaluate_points_at_u(self, u: 'NDArray') -> 'Vector':
         if isscalar(u):
             u = asarray([u])
         ru = self.ru(u)
@@ -34,7 +29,7 @@ class ParamCurve2D():
             ru = ru[0]
         return ru
 
-    def evaluate_first_derivatives_at_u(self, u: 'Numeric') -> 'VectorLike':
+    def evaluate_first_derivatives_at_u(self, u: 'NDArray') -> 'Vector':
         if isscalar(u):
             u = asarray([u])
         drdu = self.drdu(u)
@@ -42,7 +37,7 @@ class ParamCurve2D():
             drdu = drdu[0]
         return drdu
 
-    def evaluate_second_derivatives_at_u(self, u: 'Numeric') -> 'VectorLike':
+    def evaluate_second_derivatives_at_u(self, u: 'NDArray') -> 'Vector':
         if isscalar(u):
             u = asarray([u])
         d2rdu2 = self.d2rdu2(u)
@@ -50,18 +45,18 @@ class ParamCurve2D():
             d2rdu2 = d2rdu2[0]
         return d2rdu2
 
-    def evaluate_u(self, num: int) -> 'NDArray[float64]':
+    def evaluate_u(self, num: int) -> 'NDArray':
         return linspace(0.0, 1.0, num + 1)
 
-    def evaluate_points(self, num: int) -> 'ArrayVector2D':
+    def evaluate_points(self, num: int) -> 'Vector':
         u = self.evaluate_u(num)
         return self.evaluate_points_at_u(u)
 
-    def evaluate_first_derivatives(self, num: int) -> 'ArrayVector2D':
+    def evaluate_first_derivatives(self, num: int) -> 'Vector':
         u = self.evaluate_u(num)
         return self.evaluate_first_derivatives_at_u(u)
 
-    def evaluate_second_derivatives(self, num: int) -> 'ArrayVector2D':
+    def evaluate_second_derivatives(self, num: int) -> 'Vector':
         u = self.evaluate_u(num)
         return self.evaluate_second_derivatives_at_u(u)
 

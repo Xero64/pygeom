@@ -1,19 +1,18 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
-from numpy import asarray, concatenate, float64, full, linspace, gradient
+from numpy import asarray, concatenate, full, linspace, gradient
 from pygeom.tools.basis import basis_functions, basis_first_derivatives
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    Numeric = Union[float64, NDArray[float64]]
 
 #%%
 # Define Nurbs Basis Functions
-k = asarray([0.0, 1.0], dtype=float64)
-u = linspace(0.0, 1.0, 121, dtype=float64)
+k = asarray([0.0, 1.0])
+u = linspace(0.0, 1.0, 121)
 
 #%%
 # Plot the Nurbs Basis Functions Degree 0

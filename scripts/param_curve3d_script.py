@@ -1,9 +1,9 @@
 #%%
 # Import Dependencies
 from matplotlib.pyplot import figure
-from numpy import cos, float64, full, pi, sin, zeros
+from numpy import cos, full, pi, sin, zeros
 from numpy.typing import NDArray
-from pygeom.array3d import ArrayVector, ParamCurve
+from pygeom.geom3d import ParamCurve, Vector
 from pygeom.tools.k3d import Plot, k3d_curve
 
 #%%
@@ -16,23 +16,23 @@ TWOPI2 = TWOPI**2
 
 height = 4.0
 
-def ru(u: NDArray[float64]) -> ArrayVector:
+def ru(u: NDArray) -> Vector:
     x = radius*cos(TWOPI*u)
     y = radius*sin(TWOPI*u)
     z = height*u
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def drdu(u: NDArray[float64]) -> ArrayVector:
+def drdu(u: NDArray) -> Vector:
     x = -TWOPI*radius*sin(TWOPI*u)
     y = TWOPI*radius*cos(TWOPI*u)
     z = full(u.shape, height, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
-def d2rdu2(u: NDArray[float64]) -> ArrayVector:
+def d2rdu2(u: NDArray) -> Vector:
     x = -TWOPI2*radius*cos(TWOPI*u)
     y = -TWOPI2*radius*sin(TWOPI*u)
     z = zeros(u.shape, dtype=u.dtype)
-    return ArrayVector(x, y, z)
+    return Vector(x, y, z)
 
 paramcurve = ParamCurve(ru, drdu, d2rdu2)
 

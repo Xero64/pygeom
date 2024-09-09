@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from numpy import (arange, argsort, array, bool_, float64, hstack, int64,
+from numpy import (arange, argsort, array, bool_, hstack, int64,
                    logical_and, take_along_axis, unique, vstack, zeros, round)
 
 if TYPE_CHECKING:
@@ -74,14 +74,14 @@ class MeshVectors(MeshObject):
     ndim: int = 3
     name: str = None
     label: str = None
-    vecs: 'NDArray[float64]' = None
+    vecs: 'NDArray' = None
     vecs_cache: List[Tuple[float, float, float]] = None
 
     def __init__(self, label: str, name: str = 'MeshVectors') -> None:
         self.name = name
         self.label = label
         super().__init__()
-        self.vecs = zeros((0, self.ndim), dtype=float64)
+        self.vecs = zeros((0, self.ndim))
         self.vecs_cache = []
 
     def add(self, x: float, y: float, z: float, **kwargs: Dict[str, Any]) -> None:
@@ -96,13 +96,13 @@ class MeshVectors(MeshObject):
             value.clear()
 
     def resolve_cache(self) -> None:
-        self.vecs = array(self.vecs_cache, dtype=float64)
+        self.vecs = array(self.vecs_cache)
         for key, value in self.meta_cache.items():
             self.meta[key] = value.asarray()
         self.clear_cache()
 
     def append_cache(self) -> None:
-        vecs = array(self.vecs_cache, dtype=float64)
+        vecs = array(self.vecs_cache)
         meta = {}
         for key, value in self.meta_cache.items():
             meta[key] = value.asarray()
@@ -305,7 +305,7 @@ class MeshElems(MeshObject):
         grids2 = self.grids[:, ind2]
         checkedge: 'NDArray[bool_]' = grids1 == grids2
         countelem: 'NDArray[int64]' = checkedge.sum(axis=1)
-        count = countelem.flatten()
+        count = countelem.ravel()
         if self.numg == 4:
             check = count < 2
             ind1 = array([0, 1], dtype=int64)
@@ -314,7 +314,7 @@ class MeshElems(MeshObject):
             grids2 = self.grids[:, ind2]
             checkedge: 'NDArray[bool_]' = grids1 == grids2
             countelem: 'NDArray[int64]' = checkedge.sum(axis=1)
-            count = countelem.flatten()
+            count = countelem.ravel()
             checkdiag = count == 0
             check = logical_and(checkdiag, check)
         else:
@@ -498,7 +498,7 @@ class Mesh():
         grids2 = self.quads.grids[:, ind2]
         checkedge: 'NDArray[bool_]' = grids1 == grids2
         countelem: 'NDArray[int64]' = checkedge.sum(axis=1)
-        count = countelem.flatten()
+        count = countelem.ravel()
         triacheck = count == 1
         quadcheck = count != 1
         triagrids = self.quads.grids[triacheck, :]
@@ -538,18 +538,18 @@ class Mesh():
         if self.grids.size == 0:
             return None
         refind = []
-        refind.append(self.lines.grids.flatten())
-        refind.append(self.trias.grids.flatten())
-        refind.append(self.quads.grids.flatten())
+        refind.append(self.lines.grids.ravel())
+        refind.append(self.trias.grids.ravel())
+        refind.append(self.quads.grids.ravel())
         if 'grids' in self.lines.meta:
-            refind.append(self.lines.meta['grids'].flatten())
+            refind.append(self.lines.meta['grids'].ravel())
         if 'grids' in self.trias.meta:
-            refind.append(self.trias.meta['grids'].flatten())
+            refind.append(self.trias.meta['grids'].ravel())
         if 'grids' in self.quads.meta:
-            refind.append(self.quads.meta['grids'].flatten())
+            refind.append(self.quads.meta['grids'].ravel())
         for attr in self.attrs.values():
             if 'grids' in attr.meta:
-                refind.append(attr.meta['grids'].flatten())
+                refind.append(attr.meta['grids'].ravel())
         refind = hstack(tuple(refind))
         refind = unique(refind)
         invind = zeros(self.grids.size, dtype=int64)
@@ -567,13 +567,13 @@ class Mesh():
             return None
         refind = []
         if attr.label in self.grids.meta:
-            refind.append(self.grids.meta[attr.label].flatten())
+            refind.append(self.grids.meta[attr.label].ravel())
         if attr.label in self.lines.meta:
-            refind.append(self.lines.meta[attr.label].flatten())
+            refind.append(self.lines.meta[attr.label].ravel())
         if attr.label in self.trias.meta:
-            refind.append(self.trias.meta[attr.label].flatten())
+            refind.append(self.trias.meta[attr.label].ravel())
         if attr.label in self.quads.meta:
-            refind.append(self.quads.meta[attr.label].flatten())
+            refind.append(self.quads.meta[attr.label].ravel())
         refind = hstack(tuple(refind))
         refind = unique(refind)
         invind = zeros(attr.size, dtype=int64)

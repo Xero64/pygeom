@@ -1,15 +1,11 @@
-from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Optional, Tuple
 
 from numpy import asarray, isscalar, linspace, meshgrid
 
 if TYPE_CHECKING:
-    from numpy import float64
     from numpy.typing import NDArray
-    from pygeom.array3d import ArrayVector
     from pygeom.geom3d import Vector
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector, ArrayVector]
-    ParamCallable = Callable[['Numeric', 'Numeric'], 'VectorLike']
+    ParamCallable = Callable[['NDArray', 'NDArray'], 'Vector']
 
 
 class ParamSurface():
@@ -24,7 +20,7 @@ class ParamSurface():
         self.drdu = drdu
         self.drdv = drdv
 
-    def evaluate_points_at_uv(self, u: 'Numeric', v: 'Numeric') -> 'VectorLike':
+    def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
         if isscalar(u):
             u = asarray([u])
         if isscalar(v):
@@ -35,8 +31,8 @@ class ParamSurface():
             ruv = ruv[0]
         return ruv
 
-    def evaluate_tangents_at_uv(self, u: 'Numeric', v: 'Numeric') -> Tuple['VectorLike',
-                                                                           'VectorLike']:
+    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector',
+                                                                           'Vector']:
         if isscalar(u):
             u = asarray([u])
         if isscalar(v):
@@ -50,17 +46,17 @@ class ParamSurface():
             drdv = drdv[0]
         return drdu, drdv
 
-    def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray[float64]',
-                                                         'NDArray[float64]']:
+    def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray',
+                                                         'NDArray']:
         u = linspace(0.0, 1.0, numu)
         v = linspace(0.0, 1.0, numv)
         return u, v
 
-    def evaluate_points(self, numu: int, numv: int) -> 'ArrayVector':
+    def evaluate_points(self, numu: int, numv: int) -> 'Vector':
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_points_at_uv(u, v)
 
-    def evaluate_tangents(self, numu: int, numv: int) -> Tuple['ArrayVector',
-                                                               'ArrayVector']:
+    def evaluate_tangents(self, numu: int, numv: int) -> Tuple['Vector',
+                                                               'Vector']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)

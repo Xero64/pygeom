@@ -1,7 +1,9 @@
 from typing import List
 
 from matplotlib.pyplot import figure
+
 from .linearspline import LinearSpline
+
 
 class CubicSpline(LinearSpline):
     _grad: List[float] = None # Gradient

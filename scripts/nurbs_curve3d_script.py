@@ -1,20 +1,10 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
-
 from matplotlib.pyplot import figure
-from numpy import arctan2, cos, float64, full, hstack, pi, sin, zeros
-from pygeom.array2d import ArrayVector2D
-from pygeom.array3d import ArrayVector, NurbsCurve, zero_arrayvector
-from pygeom.geom3d import Vector
-from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points, k3d_curve,
-                              line)
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pygeom.array3d import ArrayVector
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector, ArrayVector]
+from numpy import arctan2, cos, full, hstack, pi, sin, zeros
+from pygeom.geom2d import Vector2D
+from pygeom.geom3d import NurbsCurve, Vector, zero_vector
+from pygeom.tools.k3d import Plot, k3d_curve, k3d_nurbs_control_points, line
 
 #%%
 # Full Helix
@@ -22,34 +12,7 @@ num = 20
 r = 2.0
 l = 8.0
 
-# ang = pi/2
-# K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
-
-# h = l/8
-# d = r
-
-# Kh = K*h
-# Kd = K*d
-
-# ctlpts = zero_arrayvector(13)
-# ctlpts[0] = Vector(r, 0.0, 0*l/12)
-# ctlpts[3] = Vector(0.0, r, 3*l/12)
-# ctlpts[6] = Vector(-r, 0.0, 6*l/12)
-# ctlpts[9] = Vector(0.0, -r, 9*l/12)
-# ctlpts[12] = Vector(r, 0.0, 12*l/12)
-# ctlpts[1] = ctlpts[0] + Vector(0.0, Kd, Kh)
-# ctlpts[2] = ctlpts[3] - Vector(-Kd, 0.0, Kh)
-# ctlpts[4] = ctlpts[3] + Vector(-Kd, 0.0, Kh)
-# ctlpts[5] = ctlpts[6] - Vector(0.0, -Kd, Kh)
-# ctlpts[7] = ctlpts[6] + Vector(0.0, -Kd, Kh)
-# ctlpts[8] = ctlpts[9] - Vector(Kd, 0.0, Kh)
-# ctlpts[10] = ctlpts[9] + Vector(Kd, 0.0, Kh)
-# ctlpts[11] = ctlpts[12] - Vector(0.0, Kd, Kh)
-
-# nurbscurve = NurbsCurve(ctlpts, degree=3)
-# print(nurbscurve)
-
-ctlpts = zero_arrayvector(9)
+ctlpts = zero_vector(9)
 ctlpts[0] = Vector(r, 0.0, 0*l/8)
 ctlpts[1] = Vector(r, r, 1*l/8)
 ctlpts[2] = Vector(0.0, r, 2*l/8)
@@ -102,9 +65,9 @@ wpNu = nurbscurve.wpoints@Nu
 wpdNu = nurbscurve.wpoints@dNu
 wpd2Nu = nurbscurve.wpoints@d2Nu
 
-wpNu = ArrayVector2D(wpNu.x, wpNu.y)
-wpdNu = ArrayVector2D(wpdNu.x, wpdNu.y)
-wpd2Nu = ArrayVector2D(wpd2Nu.x, wpd2Nu.y)
+wpNu = Vector2D(wpNu.x, wpNu.y)
+wpdNu = Vector2D(wpdNu.x, wpdNu.y)
+wpd2Nu = Vector2D(wpd2Nu.x, wpd2Nu.y)
 
 magwpNu2 = wpNu.return_magnitude()**2
 
@@ -124,9 +87,9 @@ d2xdth2 = -r*cos(th)
 d2ydth2 = -r*sin(th)
 d2zdu2 = zeros(th.shape)
 
-hpnts = ArrayVector(x, y, z)
-hvecs = ArrayVector(dxdth*dthdu, dydth*dthdu, dzdu)
-hcurs = ArrayVector(d2xdth2*dthdu**2, d2ydth2*dthdu**2, d2zdu2) + ArrayVector(dxdth*d2thdu2, dydth*d2thdu2, dzdu)
+hpnts = Vector(x, y, z)
+hvecs = Vector(dxdth*dthdu, dydth*dthdu, dzdu)
+hcurs = Vector(d2xdth2*dthdu**2, d2ydth2*dthdu**2, d2zdu2) + Vector(dxdth*d2thdu2, dydth*d2thdu2, dzdu)
 
 hkappa = hvecs.cross(hcurs)/hvecs.return_magnitude()**3
 

@@ -10,8 +10,8 @@ except ImportError:
     raise ImportError("k3d is not installed. Please install it using 'pip install k3d'")
 
 if TYPE_CHECKING:
-    from ..array2d import NurbsCurve2D, ParamCurve2D
-    from ..array3d import NurbsCurve, NurbsSurface, ParamCurve, ParamSurface
+    from ..geom2d import NurbsCurve2D, ParamCurve2D
+    from ..geom3d import NurbsCurve, NurbsSurface, ParamCurve, ParamSurface
     CurveLike = Union[NurbsCurve2D, NurbsCurve, ParamCurve2D, ParamCurve]
     SurfaceLike = Union[NurbsSurface, ParamSurface]
     NurbsLike = Union[NurbsCurve2D, NurbsCurve, NurbsSurface]
@@ -177,8 +177,8 @@ def k3d_nurbs_control_points(curve: 'NurbsLike', **kwargs: Dict[str, Any]) -> Po
     scale = kwargs.get('scale', 1.0)
     kwargs.pop('scale', None)
 
-    ctlpnts = curve.ctlpnts.flatten()
-    weights = curve.weights.flatten()
+    ctlpnts = curve.ctlpnts.ravel()
+    weights = curve.weights.ravel()
 
     if hasattr(ctlpnts, 'z'):
         k3dpnts = ctlpnts.stack_xyz().astype('float32')
@@ -201,13 +201,13 @@ def k3d_nurbs_control_polygon(surface: 'NurbsSurface', **kwargs: Dict[str, Any])
     uindsa = inds[:-1, :].reshape((-1, 1))
     uindsb = inds[1:, :].reshape((-1, 1))
     ulinesind = hstack((uindsa, uindsb)).astype('float32')
-    uctlpnts = surface.ctlpnts.reshape((-1, 1)).flatten()
+    uctlpnts = surface.ctlpnts.reshape((-1, 1)).ravel()
     uctlpntsxyz = uctlpnts.stack_xyz().astype('float32')
 
     vindsa = inds[:, :-1].reshape((-1, 1)) + inds.size
     vindsb = inds[:, 1:].reshape((-1, 1)) + inds.size
     vlinesind = hstack((vindsa, vindsb)).astype('float32')
-    vctlpnts = surface.ctlpnts.reshape((-1, 1)).flatten()
+    vctlpnts = surface.ctlpnts.reshape((-1, 1)).ravel()
     vctlpntsxyz = vctlpnts.stack_xyz().astype('float32')
 
     ucolors = [kwargs['ucolor']] * inds.size

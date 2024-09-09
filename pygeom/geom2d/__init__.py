@@ -1,16 +1,24 @@
 from typing import Iterable, List
 
-from math import cos, sin
+from numpy import cos, sin
 
-from .vector2d import Vector2D, vector2d_from_points
-from .tensor2d import Tensor2D
-from .transform2d import Transform2D as Transform2D
-from .point2d import Point2D
-from .coordinate2d import Coordinate2D
+from .beziercurve2d import BezierCurve2D as BezierCurve2D
+from .beziercurve2d import RationalBezierCurve2D as RationalBezierCurve2D
+from .circle2d import Circle2D as Circle2D
+from .coordinate2d import Coordinate2D as Coordinate2D
 from .cubicspline2d import CubicSpline2D as CubicSpline2D
 from .infiniteline2d import InfiniteLine2D as InfiniteLine2D
 from .line2d import Line2D as Line2D
-from .circle2d import Circle2D as Circle2D
+from .nurbscurve2d import BSplineCurve2D as BSplineCurve2D
+from .nurbscurve2d import NurbsCurve2D as NurbsCurve2D
+from .paramcurve2d import ParamCurve2D as ParamCurve2D
+from .point2d import Point2D as Point2D
+from .tensor2d import Tensor2D as Tensor2D
+from .tensor2d import zero_tensor2d as zero_tensor2d
+from .transform2d import Transform2D as Transform2D
+from .vector2d import Vector2D as Vector2D
+from .vector2d import zero_vector2d as zero_vector2d
+from .vector2d import solve_vector2d as solve_vector2d
 
 I2D = Vector2D(1.0, 0.0)
 J2D = Vector2D(0.0, 1.0)
@@ -55,13 +63,11 @@ def point2d_from_complex(z: complex) -> 'Point2D':
 
 def coordinate2d_from_points(pnta: 'Point2D', pntb: 'Point2D') -> 'Coordinate2D':
     """Create a Coordinate2D from two Point2Ds."""
-    pnt = pnta
-    dirx = vector2d_from_points(pnta, pntb)
-    return Coordinate2D(pnt, dirx)
+    dirx = pntb - pnta
+    return Coordinate2D(pnta, dirx)
 
 def coordinate2d_from_angle(pnt: 'Point2D', angle: float) -> 'Coordinate2D':
     """Create a Coordinate2D from a Point2D and an Angle."""
-    from math import cos, sin
     dirx = Vector2D(cos(angle), sin(angle))
     return Coordinate2D(pnt, dirx)
 

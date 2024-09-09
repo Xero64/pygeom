@@ -1,16 +1,14 @@
 from typing import TYPE_CHECKING, Tuple, Union
 
-from numpy import float64
-
 from ..geom3d import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .arrayvector import ArrayVector
+    from .vector import Vector
     LineLike = Union['Line', 'Lines']
     from numpy.typing import DTypeLike
-    ArrayLike = Union['NDArray[float64]', 'ArrayVector']
+    ArrayLike = Union['NDArray', 'Vector']
 
 class Line():
     """Line Class"""
@@ -18,7 +16,7 @@ class Line():
     pnta: 'Vector' = None
     pntb: 'Vector' = None
     _lvec: 'Vector' = None
-    _lmag: 'NDArray[float64]' = None
+    _lmag: 'NDArray' = None
     _ldir: 'Vector' = None
 
     def __init__(self, pnta: 'Vector', pntb: 'Vector') -> None:
@@ -32,7 +30,7 @@ class Line():
         return self._lvec
 
     @property
-    def lmag(self) -> 'NDArray[float64]':
+    def lmag(self) -> 'NDArray':
         if self._lmag is None:
             self._lmag = self.lvec.return_magnitude()
         return self._lmag
@@ -49,30 +47,30 @@ class Line():
 class Lines():
     """Lines Class"""
 
-    pnta: 'ArrayVector' = None
-    pntb: 'ArrayVector' = None
-    _lvec: 'ArrayVector' = None
-    _lmag: 'NDArray[float64]' = None
-    _ldir: 'ArrayVector' = None
+    pnta: 'Vector' = None
+    pntb: 'Vector' = None
+    _lvec: 'Vector' = None
+    _lmag: 'NDArray' = None
+    _ldir: 'Vector' = None
 
-    def __init__(self, pnta: 'ArrayVector', pntb: 'ArrayVector') -> None:
+    def __init__(self, pnta: 'Vector', pntb: 'Vector') -> None:
         self.pnta = pnta
         self.pntb = pntb
 
     @property
-    def lvec(self) -> 'ArrayVector':
+    def lvec(self) -> 'Vector':
         if self._lvec is None:
             self._lvec = self.pntb - self.pnta
         return self._lvec
 
     @property
-    def lmag(self) -> 'NDArray[float64]':
+    def lmag(self) -> 'NDArray':
         if self._lmag is None:
             self._lmag = self.lvec.return_magnitude()
         return self._lmag
 
     @property
-    def ldir(self) -> 'ArrayVector':
+    def ldir(self) -> 'Vector':
         if self._ldir is None:
             if self._lmag is None:
                 self._ldir, self._lmag = self.lvec.to_unit(return_magnitude=True)
@@ -138,7 +136,7 @@ class Lines():
         else:
             raise ValueError('Line pnts should have the same size.')
 
-    def transpose(self) -> 'ArrayVector':
+    def transpose(self) -> 'Vector':
         pnta = self.pnta.transpose()
         pntb = self.pntb.transpose()
         return Lines(pnta, pntb)

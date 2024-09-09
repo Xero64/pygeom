@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Union
 
-from numpy import asarray, float64, linspace
-from pygeom.geom2d import Vector2D
+from numpy import linspace
 from pygeom.symbol2d import SymbolicVector2D
 from pygeom.tools.bernstein import (bernstein_derivatives,
                                     bernstein_polynomials,
@@ -10,16 +9,14 @@ from pygeom.tools.bernstein import (bernstein_derivatives,
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    from pygeom.array2d import ArrayVector2D
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector2D, ArrayVector2D]
+    from pygeom.geom2d import Vector2D
 
 
 class BezierCurve2D():
-    ctlpnts: 'ArrayVector2D' = None
+    ctlpnts: 'Vector2D' = None
     _degree: int = None
 
-    def __init__(self, ctlpnts: 'ArrayVector2D') -> None:
+    def __init__(self, ctlpnts: 'Vector2D') -> None:
         self.ctlpnts = ctlpnts
 
     def reset(self) -> None:
@@ -33,20 +30,20 @@ class BezierCurve2D():
             self._degree = self.ctlpnts.size - 1
         return self._degree
 
-    def bernstein_polynomials(self, t: 'Numeric') -> 'NDArray[float64]':
+    def bernstein_polynomials(self, t: 'NDArray') -> 'NDArray':
         return bernstein_polynomials(self.degree, t)
 
-    def bernstein_derivatives(self, t: 'Numeric') -> 'NDArray[float64]':
+    def bernstein_derivatives(self, t: 'NDArray') -> 'NDArray':
         return bernstein_derivatives(self.degree, t)
 
-    def evaluate_points_at_t(self, t: 'Numeric') -> 'VectorLike':
+    def evaluate_points_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = bernstein_polynomials(self.degree, t)
         points = self.ctlpnts@polys
         if points.size == 1:
             points = points[0]
         return points
 
-    def evaluate_tangents_at_t(self, t: 'Numeric') -> 'VectorLike':
+    def evaluate_tangents_at_t(self, t: 'NDArray') -> 'Vector2D':
         dpolys = bernstein_derivatives(self.degree, t)
         tangents = self.ctlpnts@dpolys
         if tangents.size == 1:
@@ -71,23 +68,23 @@ class BezierCurve2D():
             dexpr += ctlpnt*dpoly
         return dexpr
 
-    def evaluate_points(self, num: int) -> 'ArrayVector2D':
-        t = linspace(0.0, 1.0, num, dtype=float64)
+    def evaluate_points(self, num: int) -> 'Vector2D':
+        t = linspace(0.0, 1.0, num)
         return self.evaluate_points_at_t(t)
 
-    def evaluate_tangents(self, num: int) -> 'ArrayVector2D':
-        t = linspace(0.0, 1.0, num, dtype=float64)
+    def evaluate_tangents(self, num: int) -> 'Vector2D':
+        t = linspace(0.0, 1.0, num)
         return self.evaluate_tangents_at_t(t)
 
 
 class RationalBezierCurve2D():
-    ctlpnts: 'ArrayVector2D' = None
-    weights: 'NDArray[float64]' = None
+    ctlpnts: 'Vector2D' = None
+    weights: 'NDArray' = None
     _degree: int = None
-    _wpoints: 'ArrayVector2D' = None
+    _wpoints: 'Vector2D' = None
 
-    def __init__(self, ctlpnts: 'ArrayVector2D',
-                 weights: 'NDArray[float64]') -> None:
+    def __init__(self, ctlpnts: 'Vector2D',
+                 weights: 'NDArray') -> None:
         if ctlpnts.shape != weights.shape:
             raise ValueError('Control points and weights must have the same shape')
         self.ctlpnts = ctlpnts
@@ -105,18 +102,18 @@ class RationalBezierCurve2D():
         return self._degree
 
     @property
-    def wpoints(self) -> 'ArrayVector2D':
+    def wpoints(self) -> 'Vector2D':
         if self._wpoints is None:
             self._wpoints = self.ctlpnts*self.weights
         return self._wpoints
 
-    def bernstein_polynomials(self, t: 'Numeric') -> 'NDArray[float64]':
+    def bernstein_polynomials(self, t: 'NDArray') -> 'NDArray':
         return bernstein_polynomials(self.degree, t)
 
-    def bernstein_derivatives(self, t: 'Numeric') -> 'NDArray[float64]':
+    def bernstein_derivatives(self, t: 'NDArray') -> 'NDArray':
         return bernstein_derivatives(self.degree, t)
 
-    def evaluate_points_at_t(self, t: 'Numeric') -> 'VectorLike':
+    def evaluate_points_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = self.bernstein_polynomials(t)
         numer = self.wpoints@polys
         denom = self.weights@polys
@@ -125,7 +122,7 @@ class RationalBezierCurve2D():
             points = points[0]
         return points
 
-    def evaluate_tangents_at_t(self, t: 'Numeric') -> 'VectorLike':
+    def evaluate_tangents_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = self.bernstein_polynomials(t)
         dpolys = self.bernstein_derivatives(t)
         numer = self.wpoints@polys
@@ -169,10 +166,10 @@ class RationalBezierCurve2D():
         dexpr = (dnumer*denom - numer*ddenom)/denom**2
         return dexpr
 
-    def evaluate_points(self, num: int) -> 'ArrayVector2D':
-        t = linspace(0.0, 1.0, num, dtype=float64)
+    def evaluate_points(self, num: int) -> 'Vector2D':
+        t = linspace(0.0, 1.0, num)
         return self.evaluate_points_at_t(t)
 
-    def evaluate_tangents(self, num: int) -> 'ArrayVector2D':
-        t = linspace(0.0, 1.0, num, dtype=float64)
+    def evaluate_tangents(self, num: int) -> 'Vector2D':
+        t = linspace(0.0, 1.0, num)
         return self.evaluate_tangents_at_t(t)

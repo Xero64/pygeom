@@ -5,7 +5,6 @@ from pygeom.geom2d.spline2d import Spline2D
 
 #%%
 # Create Spline and Plot
-
 pnts = [Point2D(1.0, 0.0),
         Point2D(-1.0, 0.0),
         Point2D(0.0, 1.0),

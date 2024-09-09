@@ -1,19 +1,10 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
-
 from matplotlib.pyplot import figure
-from numpy import cos, float64, linspace, pi, sin, asarray
-from pygeom.array2d import (BezierCurve2D, RationalBezierCurve2D,
-                            zero_arrayvector2d)
-from pygeom.geom2d import Vector2D
+from numpy import asarray, cos, linspace, pi, sin
+from pygeom.geom2d import (BezierCurve2D, RationalBezierCurve2D, Vector2D,
+                           zero_vector2d)
 from sympy import Symbol, sqrt
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pygeom.array2d import ArrayVector2D
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector2D, ArrayVector2D]
 
 #%%
 # Create Symbols
@@ -24,7 +15,7 @@ t = Symbol('t', real=True, positive=True)
 # Create Bezier Curve
 num = 21
 
-ctlpts = zero_arrayvector2d(3)
+ctlpts = zero_vector2d(3)
 ctlpts[0] = Vector2D(0.0, 0.0)
 ctlpts[1] = Vector2D(0.0, 0.05)
 ctlpts[2] = Vector2D(1.0, 0.0)
@@ -60,7 +51,7 @@ num = 21
 a = 2
 b = 1
 
-ctlpts = zero_arrayvector2d(3, dtype=int)
+ctlpts = zero_vector2d(3, dtype=int)
 ctlpts[0] = Vector2D(a, 0)
 ctlpts[1] = Vector2D(a, b)
 ctlpts[2] = Vector2D(0, b)
@@ -111,7 +102,7 @@ print(f'r = {rc.simplify().factor()}\n')
 num = 21
 r = 2
 
-ctlpts = zero_arrayvector2d(3, dtype=int)
+ctlpts = zero_vector2d(3, dtype=int)
 ctlpts[0] = Vector2D(r, 0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0, r)
@@ -166,7 +157,7 @@ K = 4/3*(sqrt(2) - 1)
 ang = pi/2
 K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
 
-ctlpts = zero_arrayvector2d(4, dtype=int)
+ctlpts = zero_vector2d(4, dtype=int)
 ctlpts[0] = Vector2D(r, 0)
 ctlpts[1] = Vector2D(r, K*r)
 ctlpts[2] = Vector2D(K*r, r)

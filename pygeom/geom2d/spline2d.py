@@ -2,10 +2,9 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
-from numpy import array, concatenate, float64, linspace, zeros
+from numpy import array, concatenate, linspace, zeros
 
-from ..array2d import ArrayVector2D, solve_arrayvector2d, zero_arrayvector2d
-from .vector2d import Vector2D
+from ..geom2d import Vector2D, solve_vector2d, zero_vector2d
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -19,8 +18,8 @@ class SplinePoint2D(Vector2D):
     _endpntb: bool = None
     _c1: bool = None
     _c2: bool = None
-    _lhs: List['NDArray[float64]'] = None
-    _rhs: List['NDArray[float64]'] = None
+    _lhs: List['NDArray'] = None
+    _rhs: List['NDArray'] = None
     _ind: List[Tuple[int, ...]] = None
     c2a0: bool = None
     c2b0: bool = None
@@ -77,9 +76,9 @@ class SplinePoint2D(Vector2D):
                     self._c2 = True
         return self._c2
 
-    def get_ind_lhs_rhs(self) -> Tuple[List['NDArray[float64]'],
-                                       List['NDArray[float64]'],
-                                       List[ArrayVector2D]]:
+    def get_ind_lhs_rhs(self) -> Tuple[List['NDArray'],
+                                       List['NDArray'],
+                                       List[Vector2D]]:
         ind = []
         lhs = []
         rhs = []
@@ -145,19 +144,19 @@ class SplinePoint2D(Vector2D):
         return ind, lhs, rhs
 
     @property
-    def lhs(self) -> List['NDArray[float64]']:
+    def lhs(self) -> List['NDArray']:
         if self._lhs is None:
             self.get_ind_lhs_rhs()
         return self._lhs
 
     @property
-    def rhs(self) -> List['NDArray[float64]']:
+    def rhs(self) -> List['NDArray']:
         if self._rhs is None:
             self.get_ind_lhs_rhs()
         return self._rhs
 
     @property
-    def ind(self) -> List['NDArray[float64]']:
+    def ind(self) -> List['NDArray']:
         if self._ind is None:
             self.get_ind_lhs_rhs()
         return self._ind
@@ -171,11 +170,11 @@ class SplinePanel2D():
     _vector: Vector2D = None
     _length: float = None
     _direc: Vector2D = None
-    _lhs_dra: 'NDArray[float64]' = None
-    _lhs_drb: 'NDArray[float64]' = None
-    _lhs_d2ra: 'NDArray[float64]' = None
-    _lhs_d2rb: 'NDArray[float64]' = None
-    ind: 'NDArray[float64]' = None
+    _lhs_dra: 'NDArray' = None
+    _lhs_drb: 'NDArray' = None
+    _lhs_d2ra: 'NDArray' = None
+    _lhs_d2rb: 'NDArray' = None
+    ind: 'NDArray' = None
     spline: 'Spline2D' = None
     _straight: bool = False
     _sa: float = None
@@ -230,7 +229,7 @@ class SplinePanel2D():
         return self._direc
 
     @property
-    def lhs_dra(self) -> 'NDArray[float64]':
+    def lhs_dra(self) -> 'NDArray':
         if self._lhs_dra is None:
             self._lhs_dra = zeros(2)
             self._lhs_dra[0] = -self.length/3
@@ -238,7 +237,7 @@ class SplinePanel2D():
         return self._lhs_dra
 
     @property
-    def lhs_drb(self) -> 'NDArray[float64]':
+    def lhs_drb(self) -> 'NDArray':
         if self._lhs_drb is None:
             self._lhs_drb = zeros(2)
             self._lhs_drb[0] = self.length/6
@@ -246,14 +245,14 @@ class SplinePanel2D():
         return self._lhs_drb
 
     @property
-    def lhs_d2ra(self) -> 'NDArray[float64]':
+    def lhs_d2ra(self) -> 'NDArray':
         if self._lhs_d2ra is None:
             self._lhs_d2ra = zeros(2)
             self._lhs_d2ra[0] = 1.0
         return self._lhs_d2ra
 
     @property
-    def lhs_d2rb(self) -> 'NDArray[float64]':
+    def lhs_d2rb(self) -> 'NDArray':
         if self._lhs_d2rb is None:
             self._lhs_d2rb = zeros(2)
             self._lhs_d2rb[1] = 1.0
@@ -333,37 +332,37 @@ class SplinePanel2D():
             self._kb = self.drb.cross(self.d2rb)/mdrb3
         return self._kb
 
-    def ratio_length_interpolate(self, ratio: 'NDArray[float64]') -> 'NDArray[float64]':
+    def ratio_length_interpolate(self, ratio: 'NDArray') -> 'NDArray':
         A = 1.0 - ratio
         B = ratio
         return self.sa*A + self.sb*B
 
-    def ratio_point_interpolate(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def ratio_point_interpolate(self, ratio: 'NDArray') -> Vector2D:
         A = 1.0 - ratio
         B = ratio
         C = (A**3 - A)*self.length**2/6
         D = (B**3 - B)*self.length**2/6
         x = A*self.pnta.x + B*self.pntb.x + C*self.d2ra.x + D*self.d2rb.x
         y = A*self.pnta.y + B*self.pntb.y + C*self.d2ra.y + D*self.d2rb.y
-        return ArrayVector2D(x, y)
+        return Vector2D(x, y)
 
-    def ratio_gradient_interpolate(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def ratio_gradient_interpolate(self, ratio: 'NDArray') -> Vector2D:
         A = 1.0 - ratio
         B = ratio
         E = (1 - 3*A**2)*self.length/6
         F = (3*B**2 - 1)*self.length/6
         x = self.direc.x + E*self.d2ra.x + F*self.d2rb.x
         y = self.direc.y + E*self.d2ra.y + F*self.d2rb.y
-        return ArrayVector2D(x, y)
+        return Vector2D(x, y)
 
-    def ratio_curvature_interpolate(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def ratio_curvature_interpolate(self, ratio: 'NDArray') -> Vector2D:
         A = 1.0 - ratio
         B = ratio
         x = A*self.d2ra.x + B*self.d2rb.x
         y = A*self.d2ra.y + B*self.d2rb.y
-        return ArrayVector2D(x, y)
+        return Vector2D(x, y)
 
-    def ratio_inverse_radius_interpolate(self, ratio: 'NDArray[float64]') -> 'NDArray[float64]':
+    def ratio_inverse_radius_interpolate(self, ratio: 'NDArray') -> 'NDArray':
         dr = self.ratio_gradient_interpolate(ratio)
         d2r = self.ratio_curvature_interpolate(ratio)
         mdr3 = dr.return_magnitude()**3
@@ -387,11 +386,11 @@ class Spline2D():
     _numpnt: int = None
     _pnls: List[SplinePanel2D] = None
     _numpnl: int = None
-    _d2r: ArrayVector2D = None
-    _dr: ArrayVector2D = None
-    _r: ArrayVector2D = None
-    _s: 'NDArray[float64]' = None
-    _k: ArrayVector2D = None
+    _d2r: Vector2D = None
+    _dr: Vector2D = None
+    _r: Vector2D = None
+    _s: 'NDArray' = None
+    _k: Vector2D = None
     _length: float = None
 
     def __init__(self, pnts: List[Vector2D], closed: bool=False,
@@ -448,10 +447,10 @@ class Spline2D():
             self._numpnl = len(self.pnls)
         return self._numpnl
 
-    def calc_d2r(self) -> ArrayVector2D:
+    def calc_d2r(self) -> Vector2D:
         numres = 2*self.numpnl
         Amat = zeros((numres, numres))
-        Bmat = zero_arrayvector2d((numres, 1))
+        Bmat = zero_vector2d((numres, 1))
         j = 0
         for pnt in self.pnts:
             tup = pnt.get_ind_lhs_rhs()
@@ -459,19 +458,19 @@ class Spline2D():
                 Amat[j, ind] = lhs
                 Bmat[j, 0] = rhs
                 j += 1
-        d2r = solve_arrayvector2d(Amat, Bmat)
-        self._d2r = ArrayVector2D(d2r.x.flatten(), d2r.y.flatten())
+        d2r = solve_vector2d(Amat, Bmat)
+        self._d2r = Vector2D(d2r.x.ravel(), d2r.y.ravel())
 
     @property
-    def d2r(self) -> ArrayVector2D:
+    def d2r(self) -> Vector2D:
         if self._d2r is None:
             self.calc_d2r()
         return self._d2r
 
     @property
-    def dr(self) -> ArrayVector2D:
+    def dr(self) -> Vector2D:
         if self._dr is None:
-            self._dr = zero_arrayvector2d(2*self.numpnl)
+            self._dr = zero_vector2d(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._dr[inda] = pnl.dra
@@ -480,9 +479,9 @@ class Spline2D():
         return self._dr
 
     @property
-    def r(self) -> ArrayVector2D:
+    def r(self) -> Vector2D:
         if self._r is None:
-            self._r = zero_arrayvector2d(2*self.numpnl)
+            self._r = zero_vector2d(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._r[inda] = pnl.pnta
@@ -491,7 +490,7 @@ class Spline2D():
         return self._r
 
     @property
-    def s(self) -> 'NDArray[float64]':
+    def s(self) -> 'NDArray':
         if self._s is None:
             self._s = zeros(2*self.numpnl)
             scur = 0.0
@@ -502,7 +501,7 @@ class Spline2D():
         return self._s
 
     @property
-    def k(self) -> 'NDArray[float64]':
+    def k(self) -> 'NDArray':
         if self._k is None:
             self._k = zeros(2*self.numpnl)
             for pnl in self.pnls:
@@ -518,7 +517,7 @@ class Spline2D():
             self._length = self.s[-1]
         return self._length
 
-    def spline_length(self, num: int=5) -> 'NDArray[float64]':
+    def spline_length(self, num: int=5) -> 'NDArray':
         u"""This function interpolates the spline length with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
@@ -536,11 +535,11 @@ class Spline2D():
 
         return s
 
-    def spline_points(self, num: int=5) -> ArrayVector2D:
+    def spline_points(self, num: int=5) -> Vector2D:
         u"""This function interpolates the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        r = zero_arrayvector2d(numpnt)
+        r = zero_vector2d(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -554,11 +553,11 @@ class Spline2D():
 
         return r
 
-    def spline_gradient(self, num: int=5) -> ArrayVector2D:
+    def spline_gradient(self, num: int=5) -> Vector2D:
         u"""This function interpolates the gradient of the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        dr = zero_arrayvector2d(numpnt)
+        dr = zero_vector2d(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -572,11 +571,11 @@ class Spline2D():
 
         return dr
 
-    def spline_curvature(self, num: int=1) -> ArrayVector2D:
+    def spline_curvature(self, num: int=1) -> Vector2D:
         u"""This function interpolates the curvature of the spline."""
 
         numpnt = self.numpnl*num + 1
-        d2r = zero_arrayvector2d(numpnt)
+        d2r = zero_vector2d(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -590,7 +589,7 @@ class Spline2D():
 
         return d2r
 
-    def spline_inverse_radius(self, num: int=1) -> ArrayVector2D:
+    def spline_inverse_radius(self, num: int=1) -> Vector2D:
         u"""This function interpolates the inverse radius of the spline."""
 
         numpnt = self.numpnl*num + 1
@@ -691,10 +690,10 @@ class Spline2D():
         ax.quiver(x, y, d2x, d2y, **kwargs)
         return ax
 
-    def spline_points_ratio(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def spline_points_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        pnts = zero_arrayvector2d(s.shape)
+        pnts = zero_vector2d(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -706,10 +705,10 @@ class Spline2D():
                     break
         return pnts
 
-    def spline_gradient_ratio(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def spline_gradient_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        grds = zero_arrayvector2d(s.shape)
+        grds = zero_vector2d(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -721,10 +720,10 @@ class Spline2D():
                     break
         return grds
 
-    def spline_curvature_ratio(self, ratio: 'NDArray[float64]') -> ArrayVector2D:
+    def spline_curvature_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        crvs = zero_arrayvector2d(s.shape)
+        crvs = zero_vector2d(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -736,7 +735,7 @@ class Spline2D():
                     break
         return crvs
 
-    def spline_inverse_radius_ratio(self, ratio: 'NDArray[float64]') -> 'NDArray[float64]':
+    def spline_inverse_radius_ratio(self, ratio: 'NDArray') -> 'NDArray':
         s = ratio*self.length
         num = s.size
         ks = zeros(s.shape)

@@ -1,4 +1,4 @@
-from math import sqrt
+from numpy import sqrt
 
 from .vector2d import Vector2D
 

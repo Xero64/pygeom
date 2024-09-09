@@ -1,29 +1,28 @@
 from math import comb
 from typing import TYPE_CHECKING, List, Union
 
-from numpy import asarray, float64, zeros
+from numpy import asarray, zeros
 
 if TYPE_CHECKING:
     from sympy import Symbol, Add
     from numpy.typing import NDArray
-    Numeric = Union[float64, NDArray[float64]]
 
-def bernstein_polynomial(n: int, i: int, t: 'Numeric') -> 'Numeric':
+def bernstein_polynomial(n: int, i: int, t: 'NDArray') -> 'NDArray':
     cmb = comb(n, i)
     omt = 1 - t
     nmi = n - i
     return cmb*t**i*omt**nmi
 
-def bernstein_polynomials(n: int, t: 'Numeric') -> 'NDArray[float64]':
-    t = asarray(t, dtype=float64)
-    polys = zeros((n + 1, t.size), dtype=float64)
+def bernstein_polynomials(n: int, t: 'NDArray') -> 'NDArray':
+    t = asarray(t)
+    polys = zeros((n + 1, t.size))
     for i in range(n + 1):
         polys[i, :] = bernstein_polynomial(n, i, t)
     if t.size == 1:
-        polys = polys.flatten()
+        polys = polys.ravel()
     return polys
 
-def bernstein_derivative(n: int, i: int, t: 'Numeric') -> 'Numeric':
+def bernstein_derivative(n: int, i: int, t: 'NDArray') -> 'NDArray':
     cmb = comb(n, i)
     omt = 1 - t
     nmi = n - i
@@ -37,13 +36,13 @@ def bernstein_derivative(n: int, i: int, t: 'Numeric') -> 'Numeric':
         term2 = t**i*nmi*omt**nmim1
     return cmb*(term1 - term2)
 
-def bernstein_derivatives(n: int, t: 'Numeric') -> 'NDArray[float64]':
-    t = asarray(t, dtype=float64)
-    polyders = zeros((n + 1, t.size), dtype=float64)
+def bernstein_derivatives(n: int, t: 'NDArray') -> 'NDArray':
+    t = asarray(t)
+    polyders = zeros((n + 1, t.size))
     for i in range(n + 1):
         polyders[i, :] = bernstein_derivative(n, i, t)
     if t.size == 1:
-        polyders = polyders.flatten()
+        polyders = polyders.ravel()
     return polyders
 
 def symbolic_bernstein_polynomials(n: int, t: 'Symbol') -> List['Add']:

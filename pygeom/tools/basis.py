@@ -1,13 +1,12 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from numpy import float64, linspace, logical_and, where, zeros, unique, isscalar
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    Numeric = Union[float64, NDArray[float64]]
 
-def basis_functions(p: int, k: 'NDArray[float64]',
-                    u: 'NDArray[float64]') -> 'NDArray[float64]':
+def basis_functions(p: int, k: 'NDArray',
+                    u: 'NDArray') -> 'NDArray':
     m = k.size - 1
     if isscalar(u):
         Nu = zeros(m, dtype=float64)
@@ -37,8 +36,8 @@ def basis_functions(p: int, k: 'NDArray[float64]',
                 Nu[i] = slope1*prevNu[i] + slope2*prevNu[i + 1]
     return Nu
 
-def basis_first_derivatives(p: int, k: 'NDArray[float64]',
-                            u: 'NDArray[float64]') -> 'NDArray[float64]':
+def basis_first_derivatives(p: int, k: 'NDArray',
+                            u: 'NDArray') -> 'NDArray':
     m = k.size - 1
     if isscalar(u):
         dNu = zeros(m - p, dtype=float64)
@@ -58,8 +57,8 @@ def basis_first_derivatives(p: int, k: 'NDArray[float64]',
             dNu[i] -= pNu[i + 1]/Dk2
     return dNu
 
-def basis_second_derivatives(p: int, k: 'NDArray[float64]',
-                             u: 'NDArray[float64]') -> 'NDArray[float64]':
+def basis_second_derivatives(p: int, k: 'NDArray',
+                             u: 'NDArray') -> 'NDArray':
     m = k.size - 1
     if isscalar(u):
         d2Nu = zeros(m - p, dtype=float64)
@@ -79,7 +78,7 @@ def basis_second_derivatives(p: int, k: 'NDArray[float64]',
             d2Nu[i] -= pdNu[i + 1]/Dk2
     return d2Nu
 
-def default_knots(numpnt: int, degree: int) -> 'NDArray[float64]':
+def default_knots(numpnt: int, degree: int) -> 'NDArray':
     if degree < 1:
         raise ValueError('default_knots degree may not be less than 1.')
     numk = (numpnt - 1) // degree
@@ -89,7 +88,7 @@ def default_knots(numpnt: int, degree: int) -> 'NDArray[float64]':
         fullknots = fullknots[degree-1:-degree+1]
     return fullknots
 
-def knot_linspace(num: int, knots: 'NDArray[float64]') -> 'NDArray[float64]':
+def knot_linspace(num: int, knots: 'NDArray') -> 'NDArray':
     unknots = unique(knots)
     m = unknots.size - 1
     u = zeros(num*m + 1, dtype=float64)

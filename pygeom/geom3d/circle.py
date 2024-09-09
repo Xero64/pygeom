@@ -1,7 +1,6 @@
-from .vector import Vector
-
 from ..geom2d.circle2d import circle2d_from_3_points
 from .coordinate import coordinate_from_3_points_xy
+from .vector import Vector
 
 
 class Circle():

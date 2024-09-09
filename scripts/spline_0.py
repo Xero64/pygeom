@@ -54,24 +54,3 @@ axg = spline.plot_gradient(num=100)
 axc = spline.plot_curvature()
 
 axk = spline.plot_inverse_radius(num=100)
-
-#%%
-# Straight Edge Spline
-from numpy import zeros
-from vedo import settings
-from vedo.shapes import Spline, Points
-
-settings.default_backend = 'k3d'
-
-numpnt = len(pnts)
-newpnts = zeros((numpnt, 3))
-for i in range(numpnt):
-    newpnts[i, 0] = pnts[i].x
-    newpnts[i, 1] = pnts[i].y
-    newpnts[i, 2] = pnts[i].z
-
-newpnts = Points(newpnts)
-
-spln = Spline(newpnts, closed=True)
-
-spln.show(interactive=True)

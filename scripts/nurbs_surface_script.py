@@ -1,19 +1,10 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
-
 from numpy import float64, sqrt, zeros
-from pygeom.array3d import NurbsSurface, zero_arrayvector
-from pygeom.geom3d import Vector
+from pygeom.geom3d import NurbsSurface, Vector, zero_vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
                               k3d_surface_normals, k3d_surface_tangents)
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pygeom.array3d import ArrayVector
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector, ArrayVector]
 
 #%%
 # Create a Nurbs Cylinder Surface
@@ -23,7 +14,7 @@ numv = 20
 radius = 4.0
 height = 8.0
 
-ctlpnts = zero_arrayvector((9, 2))
+ctlpnts = zero_vector((9, 2))
 
 ctlpnts[0, 0] = Vector(radius, 0.0, -height/2)
 ctlpnts[1, 0] = Vector(radius, radius, -height/2)
@@ -95,7 +86,7 @@ ri = 2.0
 rm = (ro + ri)/2
 ra = (ro - ri)/2
 
-ctlpnts = zero_arrayvector((9, 9))
+ctlpnts = zero_vector((9, 9))
 ctlpnts[0, 0] = Vector(ro, 0.0, 0.0)
 ctlpnts[1, 0] = Vector(ro, ro, 0.0)
 ctlpnts[2, 0] = Vector(0.0, ro, 0.0)
@@ -293,7 +284,7 @@ plot.display()
 # Create a Nurbs Sphere Surface
 radius = 4.0
 
-ctlpnts = zero_arrayvector((9, 5))
+ctlpnts = zero_vector((9, 5))
 
 ctlpnts[0, 0] = Vector(0.0, 0.0, -radius)
 ctlpnts[1, 0] = Vector(0.0, 0.0, -radius)

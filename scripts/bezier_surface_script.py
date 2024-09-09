@@ -1,18 +1,10 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
-
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import float64, zeros, sqrt
-from pygeom.array3d import zero_arrayvector, RationalBezierSurface
+from pygeom.geom3d import zero_vector, RationalBezierSurface
 from pygeom.geom3d import Vector
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pygeom.array3d import ArrayVector
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector, ArrayVector]
 
 #%%
 # Define the control points and weights
@@ -22,7 +14,7 @@ numv = 19
 ro = 3.0
 ri = 2.0
 
-ctlpts = zero_arrayvector((3, 3))
+ctlpts = zero_vector((3, 3))
 ctlpts[0, 0] = Vector(ro, 0.0, 0.0)
 ctlpts[1, 0] = Vector(ro, ro, 0.0)
 ctlpts[2, 0] = Vector(0.0, ro, 0.0)

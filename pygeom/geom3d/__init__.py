@@ -1,14 +1,26 @@
 from typing import Iterable, List
 
 from numpy import arctan2
-from .vector import Vector
-from .point import Point
-from .transform import Transform as Transform
-from .coordinate import Coordinate
+
+from .beziercurve import BezierCurve as BezierCurve
+from .beziercurve import RationalBezierCurve as RationalBezierCurve
+from .beziersurface import RationalBezierSurface as RationalBezierSurface
+from .coordinate import Coordinate as Coordinate
 from .cubicspline import CubicSpline as CubicSpline
-from .line import Line as Line
 from .infiniteline3d import InfiniteLine3D as InfiniteLine3D
-from .plane import Plane
+from .line import Line as Line
+from .nurbscurve import BSplineCurve as BSplineCurve
+from .nurbscurve import NurbsCurve as NurbsCurve
+from .nurbssurface import BSplineSurface as BSplineSurface
+from .nurbssurface import NurbsSurface as NurbsSurface
+from .paramcurve import ParamCurve as ParamCurve
+from .paramsurface import ParamSurface as ParamSurface
+from .plane import Plane as Plane
+from .point import Point as Point
+from .transform import Transform as Transform
+from .vector import Vector as Vector
+from .vector import zero_vector as zero_vector
+from .vector import solve_vector as solve_vector
 
 IHAT = Vector(1.0, 0.0, 0.0)
 JHAT = Vector(0.0, 1.0, 0.0)

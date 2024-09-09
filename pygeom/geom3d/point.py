@@ -1,5 +1,6 @@
 from .vector import Vector
 
+
 class Point(Vector):
     def __init__(self, x: float, y: float, z: float) -> None:
         super().__init__(x, y, z)

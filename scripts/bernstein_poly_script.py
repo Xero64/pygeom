@@ -1,18 +1,17 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
-from numpy import float64, gradient, linspace
+from numpy import gradient, linspace
 from pygeom.tools.bernstein import bernstein_derivatives, bernstein_polynomials
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    Numeric = Union[float64, NDArray[float64]]
 
 #%%
 # Define Parameter
-t = linspace(0.0, 1.0, 121, dtype=float64)
+t = linspace(0.0, 1.0, 121)
 
 #%%
 # Plot the Bernstein Polynomials Degree 0

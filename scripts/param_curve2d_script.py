@@ -2,7 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import cos, pi, sin
-from pygeom.array2d import ParamCurve2D, ArrayVector2D
+from pygeom.geom2d import ParamCurve2D, Vector2D
 from pygeom.tools.k3d import Plot, k3d_curve
 
 #%%
@@ -13,9 +13,9 @@ radius = 2.0
 twopi = 2*pi
 twopi2 = twopi**2
 
-ru = lambda u: radius*ArrayVector2D(cos(twopi*u), sin(twopi*u))
-drdu = lambda u: twopi*radius*ArrayVector2D(-sin(twopi*u), cos(twopi*u))
-d2rdu2 = lambda u: -twopi2*radius*ArrayVector2D(cos(twopi*u), sin(twopi*u))
+ru = lambda u: radius*Vector2D(cos(twopi*u), sin(twopi*u))
+drdu = lambda u: twopi*radius*Vector2D(-sin(twopi*u), cos(twopi*u))
+d2rdu2 = lambda u: -twopi2*radius*Vector2D(cos(twopi*u), sin(twopi*u))
 
 paramcurve = ParamCurve2D(ru, drdu, d2rdu2)
 

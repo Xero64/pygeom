@@ -1,18 +1,9 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING, Union
-
 from matplotlib.pyplot import figure
 from numpy import asarray, cos, float64, pi, sin, sqrt
-from pygeom.array2d import ArrayVector2D, NurbsCurve2D, zero_arrayvector2d
-from pygeom.geom2d import Vector2D
-from pygeom.tools.k3d import Plot, k3d_nurbs_control_points, k3d_curve
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pygeom.array2d import ArrayVector2D
-    Numeric = Union[float64, NDArray[float64]]
-    VectorLike = Union[Vector2D, ArrayVector2D]
+from pygeom.geom2d import NurbsCurve2D, Vector2D, zero_vector2d
+from pygeom.tools.k3d import Plot, k3d_curve, k3d_nurbs_control_points
 
 #%%
 # Quarter Ellipse
@@ -20,7 +11,7 @@ num = 20
 a = 2.0
 b = 1.0
 
-ctlpts = zero_arrayvector2d(3, dtype=float64)
+ctlpts = zero_vector2d(3, dtype=float64)
 ctlpts[0] = Vector2D(a, 0.0)
 ctlpts[1] = Vector2D(a, b)
 ctlpts[2] = Vector2D(0.0, b)
@@ -64,9 +55,9 @@ d2rdth2 = a*b*(b**2 - a**2)*(3*(b**2 - a**2)*sin(th)**2*cos(th)**2 - (a**2*sin(t
 d2xdth2 = d2rdth2*cos(th) - 2*drdth*sin(th) - r*cos(th)
 d2ydth2 = d2rdth2*sin(th) + 2*drdth*cos(th) - r*sin(th)
 
-epnts = ArrayVector2D(x, y)
-evecs = ArrayVector2D(dxdth, dydth)*dthdu
-ecurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+epnts = Vector2D(x, y)
+evecs = Vector2D(dxdth, dydth)*dthdu
+ecurs = Vector2D(d2xdth2, d2ydth2)*dthdu**2 + Vector2D(dxdth, dydth)*d2thdu2
 
 ekappa = evecs.cross(ecurs)/evecs.return_magnitude()**3
 
@@ -128,7 +119,7 @@ _ = ax.legend()
 num = 20
 r = 1.0
 
-ctlpts = zero_arrayvector2d(3, dtype=float64)
+ctlpts = zero_vector2d(3, dtype=float64)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0.0, r)
@@ -169,9 +160,9 @@ dydth = r*cos(th)
 d2xdth2 = -r*cos(th)
 d2ydth2 = -r*sin(th)
 
-cpnts = ArrayVector2D(x, y)
-cvecs = ArrayVector2D(dxdth, dydth)*dthdu
-ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+cpnts = Vector2D(x, y)
+cvecs = Vector2D(dxdth, dydth)*dthdu
+ccurs = Vector2D(d2xdth2, d2ydth2)*dthdu**2 + Vector2D(dxdth, dydth)*d2thdu2
 
 ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 
@@ -233,7 +224,7 @@ _ = ax.legend()
 num = 20
 r = 2.0
 
-ctlpts = zero_arrayvector2d(9, dtype=float64)
+ctlpts = zero_vector2d(9, dtype=float64)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0.0, r)
@@ -301,9 +292,9 @@ dydth = r*cos(th)
 d2xdth2 = -r*cos(th)
 d2ydth2 = -r*sin(th)
 
-cpnts = ArrayVector2D(x, y)
-cvecs = ArrayVector2D(dxdth, dydth)*dthdu
-ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+cpnts = Vector2D(x, y)
+cvecs = Vector2D(dxdth, dydth)*dthdu
+ccurs = Vector2D(d2xdth2, d2ydth2)*dthdu**2 + Vector2D(dxdth, dydth)*d2thdu2
 
 ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 
@@ -365,7 +356,7 @@ _ = ax.legend()
 num = 20
 r = 2.0
 
-ctlpts = zero_arrayvector2d(7, dtype=float64)
+ctlpts = zero_vector2d(7, dtype=float64)
 ctlpts[0] = Vector2D(0.0, -r)
 ctlpts[1] = Vector2D(2*r*cos(pi/6), -r)
 ctlpts[2] = Vector2D(r*cos(pi/6), r*sin(pi/6))
@@ -432,9 +423,9 @@ dydth = r*cos(th)
 d2xdth2 = -r*cos(th)
 d2ydth2 = -r*sin(th)
 
-cpnts = ArrayVector2D(x, y)
-cvecs = ArrayVector2D(dxdth, dydth)*dthdu
-ccurs = ArrayVector2D(d2xdth2, d2ydth2)*dthdu**2 + ArrayVector2D(dxdth, dydth)*d2thdu2
+cpnts = Vector2D(x, y)
+cvecs = Vector2D(dxdth, dydth)*dthdu
+ccurs = Vector2D(d2xdth2, d2ydth2)*dthdu**2 + Vector2D(dxdth, dydth)*d2thdu2
 
 ckappa = cvecs.cross(ccurs)/cvecs.return_magnitude()**3
 

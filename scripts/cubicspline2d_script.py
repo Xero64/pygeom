@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
 from numpy import float64, linspace
-from pygeom.array2d import ArrayVector2D
+from pygeom.geom2d import Vector2D
 from pygeom.geom2d import Vector2D
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ class CubicPiece2D():
         self._sb = value
         self._sa = value - self.length
 
-    def spline_points(self, s: 'NDArray[float64]') -> ArrayVector2D:
+    def spline_points(self, s: 'NDArray') -> Vector2D:
         Axl = (self.sb - s)
         Bxl = (s - self.sa)
         A = Axl/self.length
@@ -80,7 +80,7 @@ class CubicPiece2D():
         D = J*(A + 2*B)
         x = A*self.ra.x + B*self.rb.x + C*self.d2ra.x + D*self.d2rb.x
         y = A*self.ra.y + B*self.rb.y + C*self.d2ra.y + D*self.d2rb.y
-        return ArrayVector2D(x, y)
+        return Vector2D(x, y)
 
 #%%
 # Create Spline
