@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Iterable
 from numpy import all, argsort, asarray, concatenate, fromiter, unique, zeros
 from numpy.linalg import solve
 
-from ..tools.tridiag_solver import tridiag_solver
+from ..tools.solvers import tridiag_solver
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

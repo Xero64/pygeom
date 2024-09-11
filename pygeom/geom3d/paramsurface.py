@@ -60,3 +60,6 @@ class ParamSurface():
                                                                'Vector']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
+
+    def __repr__(self) -> str:
+        return f'<ParamSurface>'

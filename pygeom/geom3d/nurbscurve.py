@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, float64, full, ones
+from numpy import concatenate, full, ones
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
@@ -17,19 +17,16 @@ class NurbsCurve():
     degree: int = None
     knots: 'NDArray' = None
     endpoint: bool = None
-    rational: bool = None
     _wpoints: 'Vector' = None
     _cknots: 'NDArray' = None
 
     def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts.ravel()
-        self.weights = kwargs.get('weights',
-                                  ones(ctlpnts.size, dtype=float64)).ravel()
+        self.weights = kwargs.get('weights', ones(ctlpnts.size)).ravel()
         self.degree = kwargs.get('degree', self.ctlpnts.size - 1)
         self.knots = kwargs.get('knots', default_knots(self.ctlpnts.size,
                                                        self.degree))
         self.endpoint = kwargs.get('endpoint', True)
-        self.rational = kwargs.get('rational', True)
 
     @property
     def wpoints(self) -> 'Vector':
@@ -47,6 +44,11 @@ class NurbsCurve():
             else:
                 self._cknots = self.knots
         return self._cknots
+
+    @property
+    def rational(self) -> bool:
+        check: 'NDArray' = self.weights == 1.0
+        return not check.all()
 
     def basis_functions(self, u: 'NDArray') -> 'NDArray':
         return basis_functions(self.degree, self.cknots, u)
@@ -122,9 +124,9 @@ class NurbsCurve():
 
     def __str__(self) -> str:
         outstr = f'NurbsCurve\n'
-        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
         outstr += f'  weights: {self.weights}\n'
+        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  knots: {self.knots}\n'
         outstr += f'  cknots: {self.cknots}\n'
         outstr += f'  endpoint: {self.endpoint}\n'
@@ -134,7 +136,7 @@ class NurbsCurve():
 class BSplineCurve(NurbsCurve):
 
     def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
-        kwargs['weights'] = ones(ctlpnts.size, dtype=float64)
+        kwargs['weights'] = ones(ctlpnts.shape)
         kwargs['rational'] = False
         super().__init__(ctlpnts, **kwargs)
 
@@ -143,8 +145,8 @@ class BSplineCurve(NurbsCurve):
 
     def __str__(self) -> str:
         outstr = f'BSplineCurve\n'
-        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
+        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  knots: {self.knots}\n'
         outstr += f'  endpoint: {self.endpoint}\n'
         return outstr

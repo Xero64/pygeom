@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, float64, full, ones
+from numpy import concatenate, float64, full, ones, zeros
+from numpy.linalg import solve
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
@@ -125,9 +126,9 @@ class NurbsCurve2D():
 
     def __str__(self) -> str:
         outstr = f'NurbsCurve2D\n'
-        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
         outstr += f'  weights: {self.weights}\n'
+        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  knots: {self.knots}\n'
         outstr += f'  endpoint: {self.endpoint}\n'
         return outstr
@@ -144,8 +145,8 @@ class BSplineCurve2D(NurbsCurve2D):
 
     def __str__(self) -> str:
         outstr = f'BSplineCurve2D\n'
-        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
+        outstr += f'  degree: {self.degree:d}\n'
         outstr += f'  knots: {self.knots}\n'
         outstr += f'  endpoint: {self.endpoint}\n'
         return outstr

@@ -57,10 +57,7 @@ weights[8, 1] = 1.0
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=1)
 
-print(f'Control Points:\n{nurbssurface.ctlpnts}\n')
-print(f'Weights:\n{nurbssurface.weights}\n')
-print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
-print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
+print(nurbssurface)
 
 #%%
 # Plot the NURBS Surface using K3D
@@ -254,10 +251,7 @@ weights[8, 8] = 1.0
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
-print(f'Control Points:\n{nurbssurface.ctlpnts}\n')
-print(f'Weights:\n{nurbssurface.weights}\n')
-print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
-print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
+print(nurbssurface)
 
 pnts = nurbssurface.evaluate_points(numu, numv)
 tgtsu, tgtsv = nurbssurface.evaluate_tangents(numu, numv)
@@ -390,10 +384,7 @@ weights[8, 4] = 1.0
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
-print(f'Control Points:\n{nurbssurface.ctlpnts}\n')
-print(f'Weights:\n{nurbssurface.weights}\n')
-print(f'Knots:\n{nurbssurface.uknots}\n{nurbssurface.vknots}\n')
-print(f'Degree:\n{nurbssurface.udegree}\n{nurbssurface.vdegree}\n')
+print(nurbssurface)
 
 #%%
 # Plot the NURBS Surface using K3D

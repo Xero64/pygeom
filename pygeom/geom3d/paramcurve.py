@@ -61,4 +61,4 @@ class ParamCurve():
         return self.evaluate_second_derivatives_at_u(u)
 
     def __repr__(self) -> str:
-        return f'<ParamCurve2D>'
+        return f'<ParamCurve>'
