@@ -11,14 +11,16 @@ from .infiniteline2d import InfiniteLine2D as InfiniteLine2D
 from .line2d import Line2D as Line2D
 from .nurbscurve2d import BSplineCurve2D as BSplineCurve2D
 from .nurbscurve2d import NurbsCurve2D as NurbsCurve2D
+from .nurbssurface2d import NurbsSurface2D as NurbsSurface2D
 from .paramcurve2d import ParamCurve2D as ParamCurve2D
+from .paramsurface2d import ParamSurface as ParamSurface2D
 from .point2d import Point2D as Point2D
 from .tensor2d import Tensor2D as Tensor2D
 from .tensor2d import zero_tensor2d as zero_tensor2d
 from .transform2d import Transform2D as Transform2D
 from .vector2d import Vector2D as Vector2D
-from .vector2d import zero_vector2d as zero_vector2d
 from .vector2d import solve_vector2d as solve_vector2d
+from .vector2d import zero_vector2d as zero_vector2d
 
 I2D = Vector2D(1.0, 0.0)
 J2D = Vector2D(0.0, 1.0)

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Callable, Optional, Tuple
 
-from numpy import asarray, isscalar, linspace, meshgrid
+from numpy import linspace, meshgrid, shape
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -21,29 +21,28 @@ class ParamSurface():
         self.drdv = drdv
 
     def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
-        if isscalar(u):
-            u = asarray([u])
-        if isscalar(v):
-            v = asarray([v])
-        vm, um = meshgrid(v, u)
-        ruv = self.ruv(um, vm)
-        if ruv.size == 1:
-            ruv = ruv[0]
-        return ruv
+        um, vm = meshgrid(u, v, indexing='ij')
+        return self.ruv(um, vm)
+
+    def evaluate_points_at_uv_mesh(self, um: 'NDArray',
+                                   vm: 'NDArray') -> Tuple['Vector', 'Vector']:
+        if shape(um) != shape(vm):
+            raise ValueError('The shapes of um and vm must be the same.')
+        return self.ruv(um, vm)
 
     def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector',
                                                                            'Vector']:
-        if isscalar(u):
-            u = asarray([u])
-        if isscalar(v):
-            v = asarray([v])
-        vm, um = meshgrid(v, u)
+        um, vm = meshgrid(u, v, indexing='ij')
         drdu = self.drdu(um, vm)
         drdv = self.drdv(um, vm)
-        if drdu.size == 1:
-            drdu = drdu[0]
-        if drdv.size == 1:
-            drdv = drdv[0]
+        return drdu, drdv
+
+    def evaluate_tangents_at_uv_mesh(self, um: 'NDArray',
+                                     vm: 'NDArray') -> Tuple['Vector', 'Vector']:
+        if shape(um) != shape(vm):
+            raise ValueError('The shapes of um and vm must be the same.')
+        drdu = self.drdu(um, vm)
+        drdv = self.drdv(um, vm)
         return drdu, drdv
 
     def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray',
@@ -51,6 +50,11 @@ class ParamSurface():
         u = linspace(0.0, 1.0, numu)
         v = linspace(0.0, 1.0, numv)
         return u, v
+
+    def evaluate_uv_mesh(self, numu: int, numv: int) -> Tuple['NDArray',
+                                                              'NDArray']:
+        u, v = self.evaluate_uv(numu, numv)
+        return meshgrid(u, v, indexing='ij')
 
     def evaluate_points(self, numu: int, numv: int) -> 'Vector':
         u, v = self.evaluate_uv(numu, numv)

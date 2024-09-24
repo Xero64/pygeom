@@ -19,7 +19,7 @@ d2rdu2 = lambda u: -twopi2*radius*Vector2D(cos(twopi*u), sin(twopi*u))
 
 paramcurve = ParamCurve2D(ru, drdu, d2rdu2)
 
-u = paramcurve.evaluate_u(num)
+u = paramcurve.evaluate_t(num)
 cpnts = paramcurve.evaluate_points(num)
 cvecs = paramcurve.evaluate_first_derivatives(num)
 ccurs = paramcurve.evaluate_second_derivatives(num)

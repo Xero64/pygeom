@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from sympy import Function, Symbol, Derivative, atan2
+from sympy import Function, Symbol, Derivative, Expr
 
 #%%
 # Define the Symbols and Functions
@@ -17,13 +17,13 @@ d2denom_val = Symbol('d2denom', real=True)
 
 #%%
 # Basis Functions
-Nu = numer/denom
+Nu: Expr = numer/denom
 print(f'Nu = {Nu}\n')
 
-dNu = Nu.diff(u)
+dNu: Expr = Nu.diff(u)
 print(f'dNu = {dNu}\n')
 
-d2Nu = dNu.diff(u)
+d2Nu: Expr = dNu.diff(u)
 print(f'd2Nu = {d2Nu}\n')
 
 #%%
@@ -37,11 +37,11 @@ sbs = {
     Derivative(denom, (u, 2)): d2denom_val
 }
 
-Nu = Nu.subs(sbs).together()
+Nu: Expr = Nu.subs(sbs).together()
 print(f'Nu = {Nu}\n')
 
-dNu = dNu.subs(sbs).together()
+dNu: Expr = dNu.subs(sbs).together()
 print(f'dNu = {dNu}\n')
 
-d2Nu = d2Nu.subs(sbs).together()
+d2Nu: Expr = d2Nu.subs(sbs).together()
 print(f'd2Nu = {d2Nu}\n')

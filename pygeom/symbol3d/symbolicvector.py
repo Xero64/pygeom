@@ -1,8 +1,9 @@
-from typing import Any, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
+from numpy import empty
 from pygeom.geom3d.vector import Vector
-from sympy import (Symbol, diff, expand, expand_trig, integrate, simplify,
-                   sqrt, trigsimp, collect)
+from sympy import (Symbol, collect, diff, expand, expand_trig, integrate,
+                   simplify, sqrt, trigsimp)
 
 
 class SymbolicVector(Vector):
@@ -194,8 +195,16 @@ class SymbolicVector(Vector):
         except AttributeError:
             return False
 
-def zero_symbolicvector() -> SymbolicVector:
-    return SymbolicVector(0, 0, 0)
+def empty_symbolicvector(shape: Optional[Tuple[int, ...]] = None,
+                        **kwargs: Dict[str, Any]) -> SymbolicVector:
+    kwargs['dtype'] = object
+    if shape is None:
+        x, y, z = 0, 0, 0
+    else:
+        x = empty(shape, **kwargs)
+        y = empty(shape, **kwargs)
+        z = empty(shape, **kwargs)
+    return SymbolicVector(x, y, z)
 
 def symple_vector(label, **kwargs) -> 'SymbolicVector':
     x = Symbol(f'{label:s}.x', **kwargs)

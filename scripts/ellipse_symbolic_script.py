@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from sympy import Derivative, Function, Symbol, atan2, cos, sin, sqrt
+from sympy import Derivative, Function, Symbol, atan2, cos, sin
 from sympy.solvers import solve
 
 #%%

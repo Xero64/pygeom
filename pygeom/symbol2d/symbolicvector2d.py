@@ -1,6 +1,7 @@
 
-from typing import Any, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
+from numpy import empty
 from pygeom.geom2d.vector2d import Vector2D
 from sympy import (Symbol, atan, cos, diff, expand, expand_trig, integrate,
                    simplify, sin, sqrt, trigsimp)
@@ -176,10 +177,17 @@ class SymbolicVector2D(Vector2D):
         """Returns the x, y values of this symbolic vector"""
         return self.x, self.y
 
-def zero_symbolicvector2d() -> SymbolicVector2D:
-    return SymbolicVector2D(0, 0)
+def empty_symbolicvector2d(shape: Optional[Tuple[int, ...]] = None,
+                          **kwargs: Dict[str, Any]) -> SymbolicVector2D:
+    kwargs['dtype'] = object
+    if shape is None:
+        x, y = 0, 0
+    else:
+        x = empty(shape, **kwargs)
+        y = empty(shape, **kwargs)
+    return SymbolicVector2D(x, y)
 
-def symple_vector2d(label, **kwargs) -> 'SymbolicVector2D':
+def symple_vector2d(label, **kwargs) -> SymbolicVector2D:
     x = Symbol(f'{label:s}.x', **kwargs)
     y = Symbol(f'{label:s}.y', **kwargs)
     return SymbolicVector2D(x, y)

@@ -1,15 +1,14 @@
 #%%
 # Import Dependencies
-from numpy import cos, pi, sin
+from numpy import asarray, cos, pi, sin
 from pygeom.geom3d import point_from_lists
 from pygeom.geom3d.spline import Spline, Vector
 
 #%%
 # Create Spline
-num = 4
-x = [1.0, 0.0, -1.0]
-y = [0.0, 1.0, 0.0]
-z = [0.0, 0.0, 0.0]
+x = asarray([1.0, 0.0, -1.0])
+y = asarray([0.0, 1.0, 0.0])
+z = asarray([0.0, 0.0, 0.0])
 
 pnts = point_from_lists(x, y, z)
 

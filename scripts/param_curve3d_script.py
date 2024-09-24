@@ -36,7 +36,7 @@ def d2rdu2(u: NDArray) -> Vector:
 
 paramcurve = ParamCurve(ru, drdu, d2rdu2)
 
-u = paramcurve.evaluate_u(num)
+u = paramcurve.evaluate_t(num)
 hpnts = paramcurve.evaluate_points(num)
 hvecs = paramcurve.evaluate_first_derivatives(num)
 hcurs = paramcurve.evaluate_second_derivatives(num)

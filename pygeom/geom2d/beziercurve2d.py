@@ -1,11 +1,7 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from numpy import linspace
-from pygeom.symbol2d import SymbolicVector2D
-from pygeom.tools.bernstein import (bernstein_derivatives,
-                                    bernstein_polynomials,
-                                    symbolic_bernstein_derivatives,
-                                    symbolic_bernstein_polynomials)
+from pygeom.tools.bernstein import bernstein_first_derivatives, bernstein_polynomials
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -33,40 +29,18 @@ class BezierCurve2D():
     def bernstein_polynomials(self, t: 'NDArray') -> 'NDArray':
         return bernstein_polynomials(self.degree, t)
 
-    def bernstein_derivatives(self, t: 'NDArray') -> 'NDArray':
-        return bernstein_derivatives(self.degree, t)
+    def bernstein_first_derivatives(self, t: 'NDArray') -> 'NDArray':
+        return bernstein_first_derivatives(self.degree, t)
 
     def evaluate_points_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = bernstein_polynomials(self.degree, t)
         points = self.ctlpnts@polys
-        if points.size == 1:
-            points = points[0]
         return points
 
     def evaluate_tangents_at_t(self, t: 'NDArray') -> 'Vector2D':
-        dpolys = bernstein_derivatives(self.degree, t)
+        dpolys = bernstein_first_derivatives(self.degree, t)
         tangents = self.ctlpnts@dpolys
-        if tangents.size == 1:
-            tangents = tangents[0]
         return tangents
-
-    def symbolic_expression(self) -> SymbolicVector2D:
-        from sympy import Symbol
-        t = Symbol('t', real=True)
-        polys = symbolic_bernstein_polynomials(self.degree, t)
-        expr = SymbolicVector2D(0, 0)
-        for ctlpnt, poly in zip(self.ctlpnts, polys):
-            expr += ctlpnt*poly
-        return expr
-
-    def symbolic_derivative(self) -> SymbolicVector2D:
-        from sympy import Symbol
-        t = Symbol('t', real=True)
-        dpolys = symbolic_bernstein_derivatives(self.degree, t)
-        dexpr = SymbolicVector2D(0, 0)
-        for ctlpnt, dpoly in zip(self.ctlpnts, dpolys):
-            dexpr += ctlpnt*dpoly
-        return dexpr
 
     def evaluate_points(self, num: int) -> 'Vector2D':
         t = linspace(0.0, 1.0, num)
@@ -110,61 +84,25 @@ class RationalBezierCurve2D():
     def bernstein_polynomials(self, t: 'NDArray') -> 'NDArray':
         return bernstein_polynomials(self.degree, t)
 
-    def bernstein_derivatives(self, t: 'NDArray') -> 'NDArray':
-        return bernstein_derivatives(self.degree, t)
+    def bernstein_first_derivatives(self, t: 'NDArray') -> 'NDArray':
+        return bernstein_first_derivatives(self.degree, t)
 
     def evaluate_points_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = self.bernstein_polynomials(t)
         numer = self.wpoints@polys
         denom = self.weights@polys
         points = numer/denom
-        if points.size == 1:
-            points = points[0]
         return points
 
     def evaluate_tangents_at_t(self, t: 'NDArray') -> 'Vector2D':
         polys = self.bernstein_polynomials(t)
-        dpolys = self.bernstein_derivatives(t)
+        dpolys = self.bernstein_first_derivatives(t)
         numer = self.wpoints@polys
         dnumer = self.wpoints@dpolys
         denom = self.weights@polys
         ddenom = self.weights@dpolys
         tangents = (dnumer*denom - numer*ddenom)/denom**2
-        if tangents.size == 1:
-            tangents = tangents[0]
         return tangents
-
-    def symbolic_expression(self) -> SymbolicVector2D:
-        from sympy import Symbol
-        t = Symbol('t', real=True, positive=True)
-        polys = symbolic_bernstein_polynomials(self.degree, t)
-        numer = SymbolicVector2D(0, 0)
-        denom = 0
-        for ctlpnt, weight, poly in zip(self.ctlpnts, self.weights, polys):
-            wp = weight*poly
-            numer += ctlpnt*wp
-            denom += wp
-        expr = numer/denom
-        return expr
-
-    def symbolic_derivative(self) -> SymbolicVector2D:
-        from sympy import Symbol
-        t = Symbol('t', real=True, positive=True)
-        polys = symbolic_bernstein_polynomials(self.degree, t)
-        dpolys = symbolic_bernstein_derivatives(self.degree, t)
-        numer = SymbolicVector2D(0, 0)
-        dnumer = SymbolicVector2D(0, 0)
-        denom = 0
-        ddenom = 0
-        for ctlpnt, weight, poly, dpoly in zip(self.ctlpnts, self.weights, polys, dpolys):
-            wp = weight*poly
-            dwp = weight*dpoly
-            numer += ctlpnt*wp
-            dnumer += ctlpnt*dwp
-            denom += wp
-            ddenom += dwp
-        dexpr = (dnumer*denom - numer*ddenom)/denom**2
-        return dexpr
 
     def evaluate_points(self, num: int) -> 'Vector2D':
         t = linspace(0.0, 1.0, num)

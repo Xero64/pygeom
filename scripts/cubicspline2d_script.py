@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
-from numpy import float64, linspace
+from numpy import linspace
 from pygeom.geom2d import Vector2D
 from pygeom.geom2d import Vector2D
 

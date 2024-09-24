@@ -32,20 +32,6 @@ ax.set_aspect('equal')
 _ = ax.legend()
 
 #%%
-# Symbolic
-expr = beziercurve.symbolic_expression()
-
-print(f'expr = {expr.expand()}\n')
-
-dexpr = beziercurve.symbolic_derivative()
-
-print(f'dexpr = {dexpr.expand()}\n')
-
-dexpr_check = expr.diff(t)
-
-print(f'dexpr_check = {dexpr_check.expand()}\n')
-
-#%%
 # Define the control points
 num = 21
 a = 2
@@ -76,28 +62,6 @@ ax.set_aspect('equal')
 _ = ax.legend()
 
 #%%
-# Symbolic
-expr = beziercurve.symbolic_expression()
-
-print(f'expr = {expr.expand()}\n')
-
-dexpr = beziercurve.symbolic_derivative()
-
-print(f'dexpr = {dexpr.expand()}\n')
-
-dexpr_check = expr.diff(t)
-
-print(f'dexpr_check = {dexpr_check.expand()}\n')
-
-d2expr = dexpr.diff(t)
-
-print(f'd2expr = {d2expr.simplify()}\n')
-
-rc = dexpr.return_magnitude()**3/dexpr_check.cross(d2expr)
-
-print(f'r = {rc.simplify().factor()}\n')
-
-#%%
 # Define the control points
 num = 21
 r = 2
@@ -125,28 +89,6 @@ ax.scatter(pnts.x, pnts.y, label='Points')
 ax.plot(x, y, label='Circle')
 ax.set_aspect('equal')
 _ = ax.legend()
-
-#%%
-# Symbolic
-expr = beziercurve.symbolic_expression()
-
-print(f'expr = {expr.simplify()}\n')
-
-dexpr = beziercurve.symbolic_derivative()
-
-print(f'dexpr = {dexpr.simplify()}\n')
-
-dexpr_check = expr.diff(t)
-
-print(f'dexpr_check = {dexpr_check.simplify()}\n')
-
-d2expr = dexpr.diff(t)
-
-print(f'd2expr = {d2expr.simplify()}\n')
-
-rc = dexpr.return_magnitude()**3/dexpr_check.cross(d2expr)
-
-print(f'r = {rc.simplify().factor()}\n')
 
 #%%
 # Define the control points
@@ -179,25 +121,3 @@ ax.scatter(pnts.x, pnts.y, label='Points')
 ax.plot(x, y, label='Circle')
 ax.set_aspect('equal')
 _ = ax.legend()
-
-#%%
-# Symbolic
-expr = beziercurve.symbolic_expression()
-
-print(f'expr = {expr.simplify()}\n')
-
-dexpr = beziercurve.symbolic_derivative()
-
-print(f'dexpr = {dexpr.simplify()}\n')
-
-dexpr_check = expr.diff(t)
-
-print(f'dexpr_check = {dexpr_check.simplify()}\n')
-
-d2expr = dexpr.diff(t)
-
-print(f'd2expr = {d2expr.simplify()}\n')
-
-rc = dexpr.return_magnitude()**3/dexpr_check.cross(d2expr)
-
-print(f'r = {rc.simplify().factor()}\n')

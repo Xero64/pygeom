@@ -1,19 +1,17 @@
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
-from numpy import concatenate, float64, full, ones, zeros, shape
-
-from .vector import zero_vector
+from numpy import concatenate, float64, full, ones
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            default_knots, knot_linspace)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    from pygeom.geom3d import Vector
+    from pygeom.geom2d import Vector2D
 
 
-class NurbsSurface():
-    ctlpnts: 'Vector' = None
+class NurbsSurface2D():
+    ctlpnts: 'Vector2D' = None
     weights: 'NDArray' = None
     udegree: int = None
     vdegree: int = None
@@ -22,11 +20,11 @@ class NurbsSurface():
     uendpoint: bool = None
     vendpoint: bool = None
     rational: bool = None
-    _wpoints: 'Vector' = None
+    _wpoints: 'Vector2D' = None
     _ucknots: 'NDArray' = None
     _vcknots: 'NDArray' = None
 
-    def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts
 
         self.weights = kwargs.get('weights', ones(ctlpnts.shape, dtype=float64))
@@ -44,7 +42,7 @@ class NurbsSurface():
         self.vendpoint = kwargs.get('vendpoint', True)
 
     @property
-    def wpoints(self) -> 'Vector':
+    def wpoints(self) -> 'Vector2D':
         if self._wpoints is None:
             self._wpoints = self.ctlpnts*self.weights
         return self._wpoints
@@ -88,7 +86,7 @@ class NurbsSurface():
         dNv = basis_first_derivatives(self.vdegree, self.vcknots, v)
         return dNu, dNv
 
-    def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
+    def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector2D':
         Nu, Nv = self.basis_functions(u, v)
         numer = self.wpoints.rmatmul(Nu.transpose())@Nv
         if self.rational:
@@ -98,29 +96,8 @@ class NurbsSurface():
             points = numer
         return points
 
-    def evaluate_points_at_uv_mesh(self, um: 'NDArray', vm: 'NDArray') -> 'Vector':
-        shp = shape(um)
-        if shp != shape(vm):
-            raise ValueError('The shapes of um and vm must be the same.')
-        Nu, Nv = self.basis_functions(um, vm)
-        numu = Nu.shape[0]
-        numv = Nv.shape[0]
-        numer = zero_vector(shp)
-        for i in range(numu):
-            for j in range(numv):
-                numer += self.wpoints[i, j]*Nu[i]*Nv[j]
-        if self.rational:
-            denom = zeros(shp)
-            for i in range(numu):
-                for j in range(numv):
-                    denom += self.weights[i, j]*Nu[i]*Nv[j]
-            points = numer/denom
-        else:
-            points = numer
-        return points
-
-    def evaluate_tangents_at_uv(self, u: 'NDArray',
-                                v: 'NDArray') -> Tuple['Vector', 'Vector']:
+    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector2D',
+                                                                           'Vector2D']:
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_first_derivatives(u, v)
         dnumer_u = self.wpoints.rmatmul(dNu.transpose())@Nv
@@ -137,59 +114,26 @@ class NurbsSurface():
             tangent_v = dnumer_v
         return tangent_u, tangent_v
 
-    def evaluate_tangents_at_uv_mesh(self, um: 'NDArray',
-                                     vm: 'NDArray') -> Tuple['Vector', 'Vector']:
-        shp = shape(um)
-        if shp != shape(vm):
-            raise ValueError('The shapes of um and vm must be the same.')
-        Nu, Nv = self.basis_functions(um, vm)
-        dNu, dNv = self.basis_first_derivatives(um, vm)
-        numu = Nu.shape[0]
-        numv = Nv.shape[0]
-        dnumer_u = zero_vector(shp)
-        dnumer_v = zero_vector(shp)
-        for i in range(numu):
-            for j in range(numv):
-                dnumer_u += self.wpoints[i, j]*dNu[i]*Nv[j]
-                dnumer_v += self.wpoints[i, j]*Nu[i]*dNv[j]
-        if self.rational:
-            numer = zero_vector(shp)
-            denom = zeros(shp)
-            ddenom_u = zeros(shp)
-            ddenom_v = zeros(shp)
-            for i in range(numu):
-                for j in range(numv):
-                    numer += self.wpoints[i, j]*Nu[i]*Nv[j]
-                    denom += self.weights[i, j]*Nu[i]*Nv[j]
-                    ddenom_u += self.weights[i, j]*dNu[i]*Nv[j]
-                    ddenom_v += self.weights[i, j]*Nu[i]*dNv[j]
-            tangent_u = (dnumer_u*denom - numer*ddenom_u)/denom**2
-            tangent_v = (dnumer_v*denom - numer*ddenom_v)/denom**2
-        else:
-            tangent_u = dnumer_u
-            tangent_v = dnumer_v
-        return tangent_u, tangent_v
-
     def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray',
                                                          'NDArray']:
         u = knot_linspace(numu, self.uknots)
         v = knot_linspace(numv, self.vknots)
         return u, v
 
-    def evaluate_points(self, numu: int, numv: int) -> 'Vector':
+    def evaluate_points(self, numu: int, numv: int) -> 'Vector2D':
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_points_at_uv(u, v)
 
-    def evaluate_tangents(self, numu: int, numv: int) -> Tuple['Vector',
-                                                               'Vector']:
+    def evaluate_tangents(self, numu: int, numv: int) -> Tuple['Vector2D',
+                                                               'Vector2D']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
 
     def __repr__(self) -> str:
-        return f'<NurbsSurface: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'
+        return f'<NurbsSurface2D: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'
 
     def __str__(self) -> str:
-        outstr = f'NurbsSurface\n'
+        outstr = f'NurbsSurface2D\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
         outstr += f'  weights: {self.weights}\n'
         outstr += f'  udegree: {self.udegree:d}\n'
@@ -203,18 +147,18 @@ class NurbsSurface():
         return outstr
 
 
-class BSplineSurface(NurbsSurface):
+class BSplineSurface2D(NurbsSurface2D):
 
-    def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
         kwargs['weights'] = ones(ctlpnts.shape)
         kwargs['rational'] = False
         super().__init__(ctlpnts, **kwargs)
 
     def __repr__(self) -> str:
-        return f'<BSplineSurface: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'
+        return f'<BSplineSurface2D: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'
 
     def __str__(self) -> str:
-        outstr = f'BSplineSurface\n'
+        outstr = f'BSplineSurface2D\n'
         outstr += f'  control points: \n{self.ctlpnts}\n'
         outstr += f'  udegree: {self.udegree:d}\n'
         outstr += f'  vdegree: {self.vdegree:d}\n'

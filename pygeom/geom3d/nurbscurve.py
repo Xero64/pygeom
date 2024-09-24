@@ -59,7 +59,7 @@ class NurbsCurve():
     def basis_second_derivatives(self, u: 'NDArray') -> 'NDArray':
         return basis_second_derivatives(self.degree, self.cknots, u)
 
-    def evaluate_points_at_u(self, u: 'NDArray') -> 'Vector':
+    def evaluate_points_at_t(self, u: 'NDArray') -> 'Vector':
         Nu = self.basis_functions(u)
         numer = self.wpoints@Nu
         if self.rational:
@@ -71,7 +71,7 @@ class NurbsCurve():
             points = points[0]
         return points
 
-    def evaluate_first_derivatives_at_u(self, u: 'NDArray') -> 'Vector':
+    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> 'Vector':
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
@@ -86,7 +86,7 @@ class NurbsCurve():
             deriv1 = deriv1[0]
         return deriv1
 
-    def evaluate_second_derivatives_at_u(self, u: 'NDArray') -> 'Vector':
+    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> 'Vector':
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         d2Nu = self.basis_second_derivatives(u)
@@ -103,21 +103,57 @@ class NurbsCurve():
         if deriv2.size == 1:
             deriv2 = deriv2[0]
         return deriv2
+    
+    def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'Vector':
+        deriv1 = self.evaluate_first_derivatives_at_t(u)
+        deriv2 = self.evaluate_second_derivatives_at_t(u)
+        curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
+        return curvature
+    
+    def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector':
+        deriv1 = self.evaluate_first_derivatives_at_t(u)
+        return deriv1.to_unit()
+    
+    def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector':
+        deriv2 = self.evaluate_second_derivatives_at_t(u)
+        return deriv2.to_unit()
+    
+    def evaluate_binormals_at_t(self, u: 'NDArray') -> 'Vector':
+        deriv1 = self.evaluate_first_derivatives_at_t(u)
+        deriv2 = self.evaluate_second_derivatives_at_t(u)
+        binormal = deriv1.cross(deriv2).to_unit()
+        return binormal
 
-    def evaluate_u(self, num: int) -> 'NDArray':
+    def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.knots)
 
     def evaluate_points(self, num: int) -> 'Vector':
-        u = self.evaluate_u(num)
-        return self.evaluate_points_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_points_at_t(u)
 
     def evaluate_first_derivatives(self, num: int) -> 'Vector':
-        u = self.evaluate_u(num)
-        return self.evaluate_first_derivatives_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_first_derivatives_at_t(u)
 
     def evaluate_second_derivatives(self, num: int) -> 'Vector':
-        u = self.evaluate_u(num)
-        return self.evaluate_second_derivatives_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_second_derivatives_at_t(u)
+    
+    def evaluate_curvatures(self, num: int) -> 'Vector':
+        u = self.evaluate_t(num)
+        return self.evaluate_curvatures_at_t(u)
+    
+    def evaluate_tangents(self, num: int) -> 'Vector':
+        u = self.evaluate_t(num)
+        return self.evaluate_tangents_at_t(u)
+    
+    def evaluate_normals(self, num: int) -> 'Vector':
+        u = self.evaluate_t(num)
+        return self.evaluate_normals_at_t(u)
+    
+    def evaluate_binormals(self, num: int) -> 'Vector':
+        u = self.evaluate_t(num)
+        return self.evaluate_binormals_at_t(u)
 
     def __repr__(self) -> str:
         return f'<NurbsCurve: degree={self.degree:d}>'

@@ -27,34 +27,30 @@ weights[:] = 1.0
 weights[1::2] = 1.0/sqrt(2.0)
 
 radius1 = 2.0
-zpos1 = 0.0
+rpos1 = Vector(-0.25, 0.0, 0.0)
 
-ctlpnts1 = ctlpnts*radius1
-ctlpnts1.z += zpos1
+ctlpnts1 = ctlpnts*radius1 + rpos1
 
 nurbscircle1 = NurbsCurve(ctlpnts1, weights=weights)
 
 radius2 = 4.0
-zpos2 = 2.0
+rpos2 = Vector(0.0, 0.25, 2.0)
 
-ctlpnts2 = ctlpnts*radius2
-ctlpnts2.z += zpos2
+ctlpnts2 = ctlpnts*radius2 + rpos2
 
 nurbscircle2 = NurbsCurve(ctlpnts2, weights=weights)
 
 radius3 = 3.0
-zpos3 = 4.0
+rpos3 = Vector(0.25, 0.0, 4.0)
 
-ctlpnts3 = ctlpnts*radius3
-ctlpnts3.z += zpos3
+ctlpnts3 = ctlpnts*radius3 + rpos3
 
 nurbscircle3 = NurbsCurve(ctlpnts3, weights=weights)
 
-radius4 = 1.0
-zpos4 = 6.0
+radius4 = 4.0
+rpos4 = Vector(0.0, -0.25, 6.0)
 
-ctlpnts4 = ctlpnts*radius4
-ctlpnts4.z += zpos4
+ctlpnts4 = ctlpnts*radius4 + rpos4
 
 nurbscircle4 = NurbsCurve(ctlpnts4, weights=weights)
 
@@ -69,7 +65,7 @@ pntsS[:, 3] = ctlpnts4
 
 print(f'pntsS.shape = {pntsS.shape}')
 
-rmat = cubic_bspline_fit_solver(4, bc_type='not-a-knot')
+rmat = cubic_bspline_fit_solver(4, bc_type='quadratic')
 
 print(f'rmat.shape = {rmat.shape}')
 

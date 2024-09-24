@@ -1,11 +1,17 @@
 #%%
 # Import Dependencies
-from matplotlib.pyplot import figure
-from numpy import cos, float64, pi, sqrt, linspace, set_printoptions
-from pygeom.geom2d import NurbsCurve2D, Vector2D, zero_vector2d
-from pygeom.tools.solvers import cubic_bspline_fit_solver
-
-from scipy.interpolate import splprep, splev
+from numpy import (acos, cos, float64, linspace, ones, pi, set_printoptions,
+                   sqrt)
+from numpy.typing import NDArray
+from pygeom.tools.basis import knots_from_spacing
+from pygeom.geom2d import (BSplineCurve2D, CubicSpline2D, NurbsCurve2D,
+                           Vector2D, zero_vector2d)
+from pygeom.tools.mpl import (plot_curvature, plot_curve,
+                              plot_first_derivatives, plot_points,
+                              plot_second_derivatives)
+from pygeom.tools.solvers import (cubic_bspline_correction,
+                                  cubic_bspline_fit_solver)
+from scipy.interpolate import splev, splprep
 
 set_printoptions(suppress=True)
 
@@ -14,13 +20,11 @@ set_printoptions(suppress=True)
 num = 90
 r = 2.0
 
-K = 4.0/3.0*(sqrt(2.0) - 1.0)
+# K = 4.0/3.0*(sqrt(2.0) - 1.0)
 ang = pi/2
-Kchk = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
+K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
 print(f'K = {K}')
-print(f'Kchk = {Kchk}')
-
-K = 0.5
+# print(f'Kchk = {Kchk}')
 
 ctlpts = zero_vector2d(13, dtype=float64)
 ctlpts[0] = Vector2D(r, 0.0)
@@ -37,148 +41,172 @@ ctlpts[10] = Vector2D(K*r, -r)
 ctlpts[11] = Vector2D(r, -K*r)
 ctlpts[12] = Vector2D(r, 0.0)
 
-nurbscurve = NurbsCurve2D(ctlpts, degree=3)
+bsplinecurve = BSplineCurve2D(ctlpts, degree=3)
 
-print(nurbscurve)
-
-u = nurbscurve.evaluate_u(num)
-npnts = nurbscurve.evaluate_points_at_u(u)
-nvecs = nurbscurve.evaluate_first_derivatives_at_u(u)
-ncurs = nurbscurve.evaluate_second_derivatives_at_u(u)
-nkappa = nvecs.cross(ncurs)/nvecs.return_magnitude()**3
+print(bsplinecurve)
 
 splpnts = ctlpts[::3].stack_xy()
 
 print('\n')
 print(f'splpnts = \n{splpnts}\n')
 
-tck, splu = splprep(splpnts.T, s=0, per=1)
+tck, splt = splprep(splpnts.T, s=0, per=1)
 
-print(f'tck = \n{tck}\n')
-print(f'splu = {splu}\n')
+splt: NDArray = splt
 
-tck1 = tck[0]
-tck2a = tck[1][0]
-tck2b = tck[1][1]
-tck3 = tck[2]
+t_spl = linspace(splt.min(), splt.max(), 4*num)
+x_spl, y_spl = splev(t_spl, tck, der=0)
+dx_spl, dy_spl = splev(t_spl, tck, der=1)
+d2x_spl, d2y_spl = splev(t_spl, tck, der=2)
+k_spl = (dx_spl*d2y_spl - dy_spl*d2x_spl)/(dx_spl**2 + dy_spl**2)**1.5
 
-print(f'tck1 = {tck1}\n')
-print(f'tck2a = {tck2a}\n')
-print(f'tck2b = {tck2b}\n')
-print(f'tck3 = {tck3}\n')
-
-u_spl = linspace(splu.min(), splu.max(), 4*num)
-x_spl, y_spl = splev(u_spl, tck, der=0)
-dx_spl, dy_spl = splev(u_spl, tck, der=1)
-d2x_spl, d2y_spl = splev(u_spl, tck, der=2)
-
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
+ax = None
+ax = plot_curve(bsplinecurve, ax=ax, label='BSpline', ls='-.')
 ax.plot(x_spl, y_spl, label='Scipy Curve')
-ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
-ax.set_aspect('equal')
-ax.scatter(ctlpts.x, ctlpts.y, color='r', label='Control Points')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, x_spl, label='Scipy X')
-ax.plot(u_spl, y_spl, label='Scipy Y')
-ax.plot(u, npnts.x, '-.', label='NURBS X')
-ax.plot(u, npnts.y, '-.', label='NURBS Y')
+ax = None
+ax = plot_points(bsplinecurve, ax=ax, label='BSpline', ls='-.')
+ax.plot(t_spl, x_spl, label='Scipy X')
+ax.plot(t_spl, y_spl, label='Scipy Y')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, dx_spl, label='Scipy dXdu')
-ax.plot(u_spl, dy_spl, label='Scipy dYdu')
-ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
-ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
+ax = None
+ax = plot_first_derivatives(bsplinecurve, ax=ax, label='BSpline', ls='-.')
+ax.plot(t_spl, dx_spl, label='Scipy dXdt')
+ax.plot(t_spl, dy_spl, label='Scipy dYdt')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, d2x_spl, label='Scipy d2Xdu2')
-ax.plot(u_spl, d2y_spl, label='Scipy d2Ydu2')
-ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
-ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
+ax = None
+ax = plot_second_derivatives(bsplinecurve, ax=ax, label='BSpline', ls='-.')
+ax.plot(t_spl, d2x_spl, label='Scipy d2Xdt2')
+ax.plot(t_spl, d2y_spl, label='Scipy d2Ydt2')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, nkappa, '-.', label='NURBS Curvative')
+ax = None
+ax = plot_curvature(bsplinecurve, ax=ax, label='BSpline Curvature', ls='-.')
+ax.plot(t_spl, k_spl, label='Scipy Curvature')
 _ = ax.legend()
 
 #%%
 # BSpline Cubic Fit
-rmat = cubic_bspline_fit_solver(5, bc_type='periodic')
+bctype = 'periodic'
 
 pnts = ctlpts[::3]
 
-newpts = pnts.rmatmul(rmat)
+print(f'pnts = \n{pnts}\n')
 
-bsplinecurve = NurbsCurve2D(newpts, degree=3)
+cubicspline = CubicSpline2D(pnts, bctype=bctype)
+
+S = cubicspline.s[-1]
+
+bknots = knots_from_spacing(cubicspline.s, degree=3)
+nknots = knots_from_spacing(cubicspline.s, degree=2)
+
+numpnt = pnts.size
+
+vecs = zero_vector2d(2)
+vecs[0] = Vector2D(0.0, pi)
+vecs[1] = Vector2D(-2*pi, 0.0)
+
+bc_type = 'periodic'
+# bc_type = ((1, 1.0), (2, 1.0))
+
+rmat = cubic_bspline_fit_solver(numpnt, bctype=bctype)
+
+newpts = pnts.rmatmul(rmat[:, :numpnt])
+if isinstance(bc_type, tuple):
+    newpts += vecs.rmatmul(rmat[:, numpnt:])
+
+corptsx = cubic_bspline_correction(newpts.x)
+corptsy = cubic_bspline_correction(newpts.y)
+
+corpts = Vector2D(corptsx, corptsy)
+
+print(f'corpts = {corpts}\n')
+
+corptsad = corpts[0::2]
+corptsa = corptsad[:-1]
+corptse = corpts[1::2]
+corptsd = corptsad[1:]
+
+dera = corptse - corptsa
+derd = corptsd - corptse
+
+unita = dera.to_unit()
+unitd = derd.to_unit()
+
+ang = acos(unita.dot(unitd))
+Kval = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
+
+corptsf = corptsa + dera*Kval
+corptsg = corptsd - derd*Kval
+
+finpts = zero_vector2d(newpts.shape)
+finpts[::3] = corptsad
+finpts[1::3] = corptsf
+finpts[2::3] = corptsg
+
+bsplinecurve = BSplineCurve2D(finpts, knots=bknots, degree=3)
+
+# bsplinecurve = BSplineCurve2D(newpts, degree=3)
 
 print(bsplinecurve)
 
-ub = bsplinecurve.evaluate_u(num)
-bpnts = bsplinecurve.evaluate_points_at_u(ub)
-bvecs = bsplinecurve.evaluate_first_derivatives_at_u(ub)
-bcurs = bsplinecurve.evaluate_second_derivatives_at_u(ub)
-bkappa = bvecs.cross(bcurs)/bvecs.return_magnitude()**3
+ctlpnts = zero_vector2d(9)
+ctlpnts[0] = Vector2D(r, 0.0)
+ctlpnts[1] = Vector2D(r, r)
+ctlpnts[2] = Vector2D(0.0, r)
+ctlpnts[3] = Vector2D(-r, r)
+ctlpnts[4] = Vector2D(-r, 0.0)
+ctlpnts[5] = Vector2D(-r, -r)
+ctlpnts[6] = Vector2D(0.0, -r)
+ctlpnts[7] = Vector2D(r, -r)
+ctlpnts[8] = Vector2D(r, 0.0)
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
+weights = ones(9)
+weights[1::2] = 1/sqrt(2)
+
+nurbscurve = NurbsCurve2D(ctlpnts, weights=weights, knots=nknots, degree=2)
+
+print(nurbscurve)
+
+ax = None
+ax = plot_curve(bsplinecurve, ax=ax, label='BSpline Curve', ls='-.')
 ax.plot(x_spl, y_spl, label='Scipy Curve')
-ax.plot(npnts.x, npnts.y, '-.', label='NURBS Curve')
-ax.plot(bpnts.x, bpnts.y, '-.', label='BSpline Curve')
-ax.set_aspect('equal')
-ax.scatter(ctlpts.x, ctlpts.y, color='r', label='NURBS Control Points')
-ax.scatter(newpts.x, newpts.y, color='g', label='BSpline Control Points')
+ax = plot_curve(nurbscurve, ax=ax, label='NURBS Curve', ls='-.')
+ax = plot_curve(cubicspline, ax=ax, label='Cubic Spline Curve', ls='-.')
+ax.scatter(bsplinecurve.ctlpnts.x, bsplinecurve.ctlpnts.y, color='r', label='BSpline Control Points')
+ax.scatter(nurbscurve.ctlpnts.x, nurbscurve.ctlpnts.y, color='g', label='NURBS Control Points')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, x_spl, label='Scipy X')
-ax.plot(u_spl, y_spl, label='Scipy Y')
-ax.plot(u, npnts.x, '-.', label='NURBS X')
-ax.plot(u, npnts.y, '-.', label='NURBS Y')
-ax.plot(ub, bpnts.x, '-.', label='BSpline X')
-ax.plot(ub, bpnts.y, '-.', label='BSpline Y')
+ax = None
+ax = plot_points(bsplinecurve, ax=ax, label='BSpline Curve', ls='-.')
+ax.plot(t_spl*S, x_spl, label='Scipy X')
+ax.plot(t_spl*S, y_spl, label='Scipy Y')
+ax = plot_points(nurbscurve, ax=ax, label='NURBS Curve', ls='-.')
+ax = plot_points(cubicspline, ax=ax, label='Cubic Spline Curve', ls='-.')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, dx_spl, label='Scipy dXdu')
-ax.plot(u_spl, dy_spl, label='Scipy dYdu')
-ax.plot(u, nvecs.x, '-.', label='NURBS dXdu')
-ax.plot(u, nvecs.y, '-.', label='NURBS dYdu')
-ax.plot(ub, bvecs.x, '-.', label='BSpline dXdu')
-ax.plot(ub, bvecs.y, '-.', label='BSpline dYdu')
+ax = None
+ax = plot_first_derivatives(bsplinecurve, ax=ax, label='BSpline Curve', ls='-.')
+ax.plot(t_spl*S, dx_spl/S, label='Scipy dXdt')
+ax.plot(t_spl*S, dy_spl/S, label='Scipy dYdt')
+ax = plot_first_derivatives(nurbscurve, ax=ax, label='NURBS Curve', ls='-.')
+ax = plot_first_derivatives(cubicspline, ax=ax, label='Cubic Spline Curve', ls='-.')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u_spl, d2x_spl, label='Scipy d2Xdu2')
-ax.plot(u_spl, d2y_spl, label='Scipy d2Ydu2')
-ax.plot(u, ncurs.x, '-.', label='NURBS d2Xdu2')
-ax.plot(u, ncurs.y, '-.', label='NURBS d2Ydu2')
-ax.plot(ub, bcurs.x, '-.', label='BSpline d2Xdu2')
-ax.plot(ub, bcurs.y, '-.', label='BSpline d2Ydu2')
+ax = None
+ax = plot_second_derivatives(bsplinecurve, ax=ax, label='BSpline Curve', ls='-.')
+ax.plot(t_spl*S, d2x_spl/S**2, label='Scipy d2Xdt2')
+ax.plot(t_spl*S, d2y_spl/S**2, label='Scipy d2Ydt2')
+ax = plot_second_derivatives(nurbscurve, ax=ax, label='NURBS Curve', ls='-.')
+ax = plot_second_derivatives(cubicspline, ax=ax, label='Cubic Spline Curve', ls='-.')
 _ = ax.legend()
 
-fig = figure(figsize=(12, 8))
-ax = fig.gca()
-ax.grid(True)
-ax.plot(u, nkappa, '-.', label='NURBS Curvative')
-ax.plot(ub, bkappa, '-.', label='BSpline Curvative')
+ax = None
+ax = plot_curvature(bsplinecurve, ax=ax, label='BSpline Curve', ls='-.')
+ax.plot(t_spl*S, k_spl, label='Scipy Curvature')
+ax = plot_curvature(nurbscurve, ax=ax, label='NURBS Curve', ls='-.')
+ax = plot_curvature(cubicspline, ax=ax, label='Cubic Spline Curve', ls='-.')
 _ = ax.legend()

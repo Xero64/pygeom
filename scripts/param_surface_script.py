@@ -37,6 +37,10 @@ k3dmesh = k3d_surface(paramsurface, unum=36, vnum=36)
 k3dnrms = k3d_surface_normals(paramsurface, unum=36, vnum=36, scale=0.2)
 k3dtgtsu, k3dtgtsv = k3d_surface_tangents(paramsurface, unum=36, vnum=36, scale=0.2)
 
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
+
 plot = Plot()
 plot += k3dmesh
 plot += k3dnrms
@@ -86,6 +90,10 @@ k3dmesh = k3d_surface(paramsurface, unum=36, vnum=36)
 k3dnrms = k3d_surface_normals(paramsurface, unum=36, vnum=36, scale=0.2)
 k3dtgtsu, k3dtgtsv = k3d_surface_tangents(paramsurface, unum=36, vnum=36, scale=0.2)
 
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
+
 plot = Plot()
 plot += k3dmesh
 plot += k3dnrms
@@ -125,6 +133,10 @@ paramsurface = ParamSurface(ruv, drdu, drdv)
 k3dmesh = k3d_surface(paramsurface, unum=36, vnum=36)
 k3dnrms = k3d_surface_normals(paramsurface, unum=36, vnum=36, scale=0.2)
 k3dtgtsu, k3dtgtsv = k3d_surface_tangents(paramsurface, unum=36, vnum=36, scale=0.2)
+
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
 
 plot = Plot()
 plot += k3dmesh
@@ -181,6 +193,10 @@ paramsurface = ParamSurface(ruv, drdu, drdv)
 k3dmesh = k3d_surface(paramsurface, unum=36, vnum=36)
 k3dnrms = k3d_surface_normals(paramsurface, unum=36, vnum=36, scale=0.2)
 k3dtgtsu, k3dtgtsv = k3d_surface_tangents(paramsurface, unum=36, vnum=36, scale=0.2)
+
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
 
 plot = Plot()
 plot += k3dmesh

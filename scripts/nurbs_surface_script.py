@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from numpy import float64, sqrt, zeros
+from numpy import sqrt, ones
 from pygeom.geom3d import NurbsSurface, Vector, zero_vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
@@ -35,25 +35,8 @@ ctlpnts[6, 1] = Vector(0.0, -radius, height/2)
 ctlpnts[7, 1] = Vector(radius, -radius, height/2)
 ctlpnts[8, 1] = Vector(radius, 0.0, height/2)
 
-weights = zeros((9, 2), dtype=float64)
-weights[0, 0] = 1.0
-weights[1, 0] = 1.0/sqrt(2.0)
-weights[2, 0] = 1.0
-weights[3, 0] = 1.0/sqrt(2.0)
-weights[4, 0] = 1.0
-weights[5, 0] = 1.0/sqrt(2.0)
-weights[6, 0] = 1.0
-weights[7, 0] = 1.0/sqrt(2.0)
-weights[8, 0] = 1.0
-weights[0, 1] = 1.0
-weights[1, 1] = 1.0/sqrt(2.0)
-weights[2, 1] = 1.0
-weights[3, 1] = 1.0/sqrt(2.0)
-weights[4, 1] = 1.0
-weights[5, 1] = 1.0/sqrt(2.0)
-weights[6, 1] = 1.0
-weights[7, 1] = 1.0/sqrt(2.0)
-weights[8, 1] = 1.0
+weights = ones((9, 2))
+weights[1::2, :] = 1.0/sqrt(2.0)
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=1)
 
@@ -61,19 +44,85 @@ print(nurbssurface)
 
 #%%
 # Plot the NURBS Surface using K3D
-k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
-k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
-k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dnrms = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtsu, k3dtgtsv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+
+k3dpnts.visible = False
+k3dpoly.visible = False
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
-plot += k3dnrml
-plot += k3dtgtu
-plot += k3dtgtv
+plot += k3dnrms
+plot += k3dtgtsu
+plot += k3dtgtsv
+plot.display()
+
+#%%
+# Create a Nurbs Cone Surface
+numu = 20
+numv = 20
+
+ro = 4.0
+ri = 0.0
+height = 8.0
+
+ctlpnts = zero_vector((9, 2))
+
+ctlpnts[0, 0] = Vector(ro, 0.0, 0.0)
+ctlpnts[1, 0] = Vector(ro, ro, 0.0)
+ctlpnts[2, 0] = Vector(0.0, ro, 0.0)
+ctlpnts[3, 0] = Vector(-ro, ro, 0.0)
+ctlpnts[4, 0] = Vector(-ro, 0.0, 0.0)
+ctlpnts[5, 0] = Vector(-ro, -ro, 0.0)
+ctlpnts[6, 0] = Vector(0.0, -ro, 0.0)
+ctlpnts[7, 0] = Vector(ro, -ro, 0.0)
+ctlpnts[8, 0] = Vector(ro, 0.0, 0.0)
+ctlpnts[0, 1] = Vector(ri, 0.0, height)
+ctlpnts[1, 1] = Vector(ri, ri, height)
+ctlpnts[2, 1] = Vector(0.0, ri, height)
+ctlpnts[3, 1] = Vector(-ri, ri, height)
+ctlpnts[4, 1] = Vector(-ri, 0.0, height)
+ctlpnts[5, 1] = Vector(-ri, -ri, height)
+ctlpnts[6, 1] = Vector(0.0, -ri, height)
+ctlpnts[7, 1] = Vector(ri, -ri, height)
+ctlpnts[8, 1] = Vector(ri, 0.0, height)
+
+weights = ones((9, 2))
+weights[1::2, :] = 1.0/sqrt(2.0)
+
+nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=1)
+
+print(nurbssurface)
+
+#%%
+# Plot the NURBS Surface using K3D
+k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
+k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
+k3dnrms = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtsu, k3dtgtsv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+
+k3dpnts.visible = False
+k3dpoly.visible = False
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
+
+plot = Plot()
+plot += k3dpnts
+plot += k3dmesh
+plot += k3dpoly
+plot += k3dnrms
+plot += k3dtgtsu
+plot += k3dtgtsv
 plot.display()
 
 #%%
@@ -166,88 +215,13 @@ ctlpnts[6, 8] = Vector(0.0, -ro, 0.0)
 ctlpnts[7, 8] = Vector(ro, -ro, 0.0)
 ctlpnts[8, 8] = Vector(ro, 0.0, 0.0)
 
-weights = zeros((9, 9), dtype=float64)
-weights[0, 0] = 1.0
-weights[1, 0] = 1.0/sqrt(2.0)
-weights[2, 0] = 1.0
-weights[3, 0] = 1.0/sqrt(2.0)
-weights[4, 0] = 1.0
-weights[5, 0] = 1.0/sqrt(2.0)
-weights[6, 0] = 1.0
-weights[7, 0] = 1.0/sqrt(2.0)
-weights[8, 0] = 1.0
-weights[0, 1] = 1.0/sqrt(2.0)
-weights[1, 1] = 0.5
-weights[2, 1] = 1.0/sqrt(2.0)
-weights[3, 1] = 0.5
-weights[4, 1] = 1.0/sqrt(2.0)
-weights[5, 1] = 0.5
-weights[6, 1] = 1.0/sqrt(2.0)
-weights[7, 1] = 0.5
-weights[8, 1] = 1.0/sqrt(2.0)
-weights[0, 2] = 1.0
-weights[1, 2] = 1.0/sqrt(2.0)
-weights[2, 2] = 1.0
-weights[3, 2] = 1.0/sqrt(2.0)
-weights[4, 2] = 1.0
-weights[5, 2] = 1.0/sqrt(2.0)
-weights[6, 2] = 1.0
-weights[7, 2] = 1.0/sqrt(2.0)
-weights[8, 2] = 1.0
-weights[0, 3] = 1.0/sqrt(2.0)
-weights[1, 3] = 0.5
-weights[2, 3] = 1.0/sqrt(2.0)
-weights[3, 3] = 0.5
-weights[4, 3] = 1.0/sqrt(2.0)
-weights[5, 3] = 0.5
-weights[6, 3] = 1.0/sqrt(2.0)
-weights[7, 3] = 0.5
-weights[8, 3] = 1.0/sqrt(2.0)
-weights[0, 4] = 1.0
-weights[1, 4] = 1.0/sqrt(2.0)
-weights[2, 4] = 1.0
-weights[3, 4] = 1.0/sqrt(2.0)
-weights[4, 4] = 1.0
-weights[5, 4] = 1.0/sqrt(2.0)
-weights[6, 4] = 1.0
-weights[7, 4] = 1.0/sqrt(2.0)
-weights[8, 4] = 1.0
-weights[0, 5] = 1.0/sqrt(2.0)
-weights[1, 5] = 0.5
-weights[2, 5] = 1.0/sqrt(2.0)
-weights[3, 5] = 0.5
-weights[4, 5] = 1.0/sqrt(2.0)
-weights[5, 5] = 0.5
-weights[6, 5] = 1.0/sqrt(2.0)
-weights[7, 5] = 0.5
-weights[8, 5] = 1.0/sqrt(2.0)
-weights[0, 6] = 1.0
-weights[1, 6] = 1.0/sqrt(2.0)
-weights[2, 6] = 1.0
-weights[3, 6] = 1.0/sqrt(2.0)
-weights[4, 6] = 1.0
-weights[5, 6] = 1.0/sqrt(2.0)
-weights[6, 6] = 1.0
-weights[7, 6] = 1.0/sqrt(2.0)
-weights[8, 6] = 1.0
-weights[0, 7] = 1.0/sqrt(2.0)
-weights[1, 7] = 0.5
-weights[2, 7] = 1.0/sqrt(2.0)
-weights[3, 7] = 0.5
-weights[4, 7] = 1.0/sqrt(2.0)
-weights[5, 7] = 0.5
-weights[6, 7] = 1.0/sqrt(2.0)
-weights[7, 7] = 0.5
-weights[8, 7] = 1.0/sqrt(2.0)
-weights[0, 8] = 1.0
-weights[1, 8] = 1.0/sqrt(2.0)
-weights[2, 8] = 1.0
-weights[3, 8] = 1.0/sqrt(2.0)
-weights[4, 8] = 1.0
-weights[5, 8] = 1.0/sqrt(2.0)
-weights[6, 8] = 1.0
-weights[7, 8] = 1.0/sqrt(2.0)
-weights[8, 8] = 1.0
+w = 1.0/sqrt(2.0)
+
+wu = ones((9, 1))
+wu[1::2, 0] = w
+wv = ones((1, 9))
+wv[0, 1::2] = w
+weights = wu@wv
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
@@ -259,24 +233,30 @@ nrms = tgtsu.cross(tgtsv)
 
 #%%
 # Plot the NURBS Surface using K3D
-k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
-k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
-k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dnrms = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtsu, k3dtgtsv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+
+k3dpnts.visible = False
+k3dpoly.visible = False
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
-plot += k3dnrml
-plot += k3dtgtu
-plot += k3dtgtv
+plot += k3dnrms
+plot += k3dtgtsu
+plot += k3dtgtsv
 plot.display()
 
 #%%
 # Create a Nurbs Sphere Surface
-radius = 4.0
+ri = 4.0
 
 ctlpnts = zero_vector((9, 5))
 
@@ -330,57 +310,13 @@ ctlpnts[6, 4] = Vector(0.0, 0.0, radius)
 ctlpnts[7, 4] = Vector(0.0, 0.0, radius)
 ctlpnts[8, 4] = Vector(0.0, 0.0, radius)
 
-weights = zeros((9, 5), dtype=float64)
+w = 1.0/sqrt(2.0)
 
-weights[0, 0] = 1.0
-weights[1, 0] = 1.0/sqrt(2.0)
-weights[2, 0] = 1.0
-weights[3, 0] = 1.0/sqrt(2.0)
-weights[4, 0] = 1.0
-weights[5, 0] = 1.0/sqrt(2.0)
-weights[6, 0] = 1.0
-weights[7, 0] = 1.0/sqrt(2.0)
-weights[8, 0] = 1.0
-
-weights[0, 1] = 1.0/sqrt(2.0)
-weights[1, 1] = 0.5
-weights[2, 1] = 1.0/sqrt(2.0)
-weights[3, 1] = 0.5
-weights[4, 1] = 1.0/sqrt(2.0)
-weights[5, 1] = 0.5
-weights[6, 1] = 1.0/sqrt(2.0)
-weights[7, 1] = 0.5
-weights[8, 1] = 1.0/sqrt(2.0)
-
-weights[0, 2] = 1.0
-weights[1, 2] = 1.0/sqrt(2.0)
-weights[2, 2] = 1.0
-weights[3, 2] = 1.0/sqrt(2.0)
-weights[4, 2] = 1.0
-weights[5, 2] = 1.0/sqrt(2.0)
-weights[6, 2] = 1.0
-weights[7, 2] = 1.0/sqrt(2.0)
-weights[8, 2] = 1.0
-
-weights[0, 3] = 1.0/sqrt(2.0)
-weights[1, 3] = 0.5
-weights[2, 3] = 1.0/sqrt(2.0)
-weights[3, 3] = 0.5
-weights[4, 3] = 1.0/sqrt(2.0)
-weights[5, 3] = 0.5
-weights[6, 3] = 1.0/sqrt(2.0)
-weights[7, 3] = 0.5
-weights[8, 3] = 1.0/sqrt(2.0)
-
-weights[0, 4] = 1.0
-weights[1, 4] = 1.0/sqrt(2.0)
-weights[2, 4] = 1.0
-weights[3, 4] = 1.0/sqrt(2.0)
-weights[4, 4] = 1.0
-weights[5, 4] = 1.0/sqrt(2.0)
-weights[6, 4] = 1.0
-weights[7, 4] = 1.0/sqrt(2.0)
-weights[8, 4] = 1.0
+wu = ones((9, 1))
+wu[1::2, 0] = w
+wv = ones((1, 5))
+wv[0, 1::2] = w
+weights = wu@wv
 
 nurbssurface = NurbsSurface(ctlpnts, weights=weights, udegree=2, vdegree=2)
 
@@ -388,17 +324,23 @@ print(nurbssurface)
 
 #%%
 # Plot the NURBS Surface using K3D
-k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dmesh = k3d_surface(nurbssurface, unum=36, vnum=36)
+k3dpnts = k3d_nurbs_control_points(nurbssurface, scale=0.2)
 k3dpoly = k3d_nurbs_control_polygon(nurbssurface)
-k3dnrml = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
-k3dtgtu, k3dtgtv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dnrms = k3d_surface_normals(nurbssurface, unum=12, vnum=12, scale=0.2)
+k3dtgtsu, k3dtgtsv = k3d_surface_tangents(nurbssurface, unum=12, vnum=12, scale=0.2)
+
+k3dpnts.visible = False
+k3dpoly.visible = False
+k3dnrms.visible = False
+k3dtgtsu.visible = False
+k3dtgtsv.visible = False
 
 plot = Plot()
 plot += k3dpnts
 plot += k3dmesh
 plot += k3dpoly
-plot += k3dnrml
-plot += k3dtgtu
-plot += k3dtgtv
+plot += k3dnrms
+plot += k3dtgtsu
+plot += k3dtgtsv
 plot.display()

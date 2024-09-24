@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
 from numpy import gradient, linspace
-from pygeom.tools.bernstein import bernstein_derivatives, bernstein_polynomials
+from pygeom.tools.bernstein import bernstein_first_derivatives, bernstein_polynomials
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -42,7 +42,7 @@ _ = ax.legend()
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 1
-dBt = bernstein_derivatives(p, t)
+dBt = bernstein_first_derivatives(p, t)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -75,7 +75,7 @@ _ = ax.legend()
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 2
-dBt = bernstein_derivatives(p, t)
+dBt = bernstein_first_derivatives(p, t)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -108,7 +108,7 @@ _ = ax.legend()
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 3
-dBt = bernstein_derivatives(p, t)
+dBt = bernstein_first_derivatives(p, t)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()
@@ -141,7 +141,7 @@ _ = ax.legend()
 dNu_check: 'NDArray' = gradient(Bt, t, axis=1)
 
 p = 4
-dBt = bernstein_derivatives(p, t)
+dBt = bernstein_first_derivatives(p, t)
 
 fig = figure(figsize=(12, 8))
 ax = fig.gca()

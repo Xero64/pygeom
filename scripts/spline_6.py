@@ -1,17 +1,17 @@
 #%%
 # Import Dependencies
-from numpy import cos, pi, sin
-from pygeom.geom3d import point_from_lists
+from numpy import cos, pi, sin, asarray
+from pygeom.geom3d import Vector
 from pygeom.geom3d.spline import Spline, Vector
 
 #%%
 # Create Spline
 num = 4
-x = [1.0, 0.0, -1.0, 0.0]
-y = [0.0, 1.0, 0.0, -1.0]
-z = [0.0, 0.0, 0.0, 0.0]
+x = asarray([1.0, 0.0, -1.0, 0.0])
+y = asarray([0.0, 1.0, 0.0, -1.0])
+z = asarray([0.0, 0.0, 0.0, 0.0])
 
-pnts = point_from_lists(x, y, z)
+pnts = Vector(x, y, z)
 
 thA = pi/2
 tanA = Vector(cos(thA), sin(thA), 0.0)*2.0
@@ -30,13 +30,6 @@ axk = spline1.plot_inverse_radius(num=100)
 
 #%%
 # Create Spline
-num = 4
-x = [1.0, 0.0, -1.0, 0.0]
-y = [0.0, 1.0, 0.0, -1.0]
-z = [0.0, 0.0, 0.0, 0.0]
-
-pnts = point_from_lists(x, y, z)
-
 thA = pi/2
 tanA = Vector(cos(thA), sin(thA), 0.0)*2.0
 thB = pi/2 - 2*pi/num

@@ -29,7 +29,7 @@ weights[1::2] = 1.0/2.0**0.5
 nurbscurve = NurbsCurve(ctlpts, degree=2, weights=weights)
 print(nurbscurve)
 
-u = nurbscurve.evaluate_u(num)
+u = nurbscurve.evaluate_t(num)
 
 Nu = nurbscurve.basis_functions(u)
 dNu = nurbscurve.basis_first_derivatives(u)

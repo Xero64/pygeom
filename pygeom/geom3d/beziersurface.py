@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Tuple
 
 from numpy import linspace
-from pygeom.tools.bernstein import bernstein_polynomials, bernstein_derivatives
+from pygeom.tools.bernstein import bernstein_polynomials, bernstein_first_derivatives
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -39,10 +39,10 @@ class BezierSurface():
         Bv = bernstein_polynomials(self.vdegree, v)
         return Bu, Bv
 
-    def bernstein_derivatives(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
+    def bernstein_first_derivatives(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
                                                                          'NDArray']:
-        dBu = bernstein_derivatives(self.udegree, u)
-        dBv = bernstein_derivatives(self.vdegree, v)
+        dBu = bernstein_first_derivatives(self.udegree, u)
+        dBv = bernstein_first_derivatives(self.vdegree, v)
         return dBu, dBv
 
     def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
@@ -55,7 +55,7 @@ class BezierSurface():
     def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector',
                                                                            'Vector']:
         Bu, Bv = self.bernstein_polynomials(u, v)
-        dBu, dBv = self.bernstein_derivatives(u, v)
+        dBu, dBv = self.bernstein_first_derivatives(u, v)
         tangents_u = (self.ctlpnts.transpose()@dBu).transpose()@Bv
         tangents_v = (self.ctlpnts.transpose()@Bu).transpose()@dBv
         if tangents_u.size == 1:
@@ -118,10 +118,10 @@ class RationalBezierSurface():
         Bv = bernstein_polynomials(self.vdegree, v)
         return Bu, Bv
 
-    def bernstein_derivatives(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
+    def bernstein_first_derivatives(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
                                                                          'NDArray']:
-        dBu = bernstein_derivatives(self.udegree, u)
-        dBv = bernstein_derivatives(self.vdegree, v)
+        dBu = bernstein_first_derivatives(self.udegree, u)
+        dBv = bernstein_first_derivatives(self.vdegree, v)
         return dBu, dBv
 
     def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
@@ -136,7 +136,7 @@ class RationalBezierSurface():
     def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector',
                                                                            'Vector']:
         Bu, Bv = self.bernstein_polynomials(u, v)
-        dBu, dBv = self.bernstein_derivatives(u, v)
+        dBu, dBv = self.bernstein_first_derivatives(u, v)
         numer = (self.wpoints.transpose()@Bu).transpose()@Bv
         dnumer_u = (self.wpoints.transpose()@dBu).transpose()@Bv
         dnumer_v = (self.wpoints.transpose()@Bu).transpose()@dBv

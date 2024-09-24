@@ -59,20 +59,20 @@ def d2rdu2(u: NDArray) -> Vector:
 paramcurve2 = ParamCurve(ru2, drdu2, d2rdu2)
 
 def ruv(u: NDArray, v: NDArray) -> Vector:
-    ru1 = paramcurve1.evaluate_points_at_u(u)
-    ru2 = paramcurve2.evaluate_points_at_u(u)
+    ru1 = paramcurve1.evaluate_points_at_t(u)
+    ru2 = paramcurve2.evaluate_points_at_t(u)
     ruv = ru1*(1 - v) + ru2*v
     return ruv
 
 def drdu(u: NDArray, v: NDArray) -> Vector:
-    drdu1 = paramcurve1.evaluate_first_derivatives_at_u(u)
-    drdu2 = paramcurve2.evaluate_first_derivatives_at_u(u)
+    drdu1 = paramcurve1.evaluate_first_derivatives_at_t(u)
+    drdu2 = paramcurve2.evaluate_first_derivatives_at_t(u)
     drdu = drdu1*(1 - v) + drdu2*v
     return drdu
 
 def drdv(u: NDArray, v: NDArray) -> Vector:
-    ru1 = paramcurve1.evaluate_points_at_u(u)
-    ru2 = paramcurve2.evaluate_points_at_u(u)
+    ru1 = paramcurve1.evaluate_points_at_t(u)
+    ru2 = paramcurve2.evaluate_points_at_t(u)
     drdv = ru2 - ru1
     return drdv
 

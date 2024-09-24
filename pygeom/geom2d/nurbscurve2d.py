@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, float64, full, ones, zeros
-from numpy.linalg import solve
+from numpy import concatenate, float64, full, ones
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
@@ -61,7 +60,7 @@ class NurbsCurve2D():
     def basis_second_derivatives(self, u: 'NDArray') -> 'NDArray':
         return basis_second_derivatives(self.degree, self.cknots, u)
 
-    def evaluate_points_at_u(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_points_at_t(self, u: 'NDArray') -> 'Vector2D':
         Nu = self.basis_functions(u)
         numer = self.wpoints@Nu
         if self.rational:
@@ -69,11 +68,9 @@ class NurbsCurve2D():
             points = numer/denom
         else:
             points = numer
-        if points.size == 1:
-            points = points[0]
         return points
 
-    def evaluate_first_derivatives_at_u(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
@@ -84,11 +81,9 @@ class NurbsCurve2D():
             deriv1 = (dnumer*denom - numer*ddenom)/denom**2
         else:
             deriv1 = dnumer
-        if deriv1.size == 1:
-            deriv1 = deriv1[0]
         return deriv1
 
-    def evaluate_second_derivatives_at_u(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         d2Nu = self.basis_second_derivatives(u)
@@ -102,24 +97,50 @@ class NurbsCurve2D():
             deriv2 = (d2numer*denom**2 - dnumer*2*ddenom*denom + numer*2*ddenom**2 - numer*d2denom*denom)/denom**3
         else:
             deriv2 = d2numer
-        if deriv2.size == 1:
-            deriv2 = deriv2[0]
         return deriv2
+    
+    def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'NDArray':
+        deriv1 = self.evaluate_first_derivatives_at_t(u)
+        deriv2 = self.evaluate_second_derivatives_at_t(u)
+        curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
+        return curvature
+    
+    def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector2D':
+        deriv1 = self.evaluate_first_derivatives_at_t(u)
+        tangent = deriv1.to_unit()
+        return tangent
+    
+    def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector2D':
+        deriv2 = self.evaluate_second_derivatives_at_t(u)
+        normal = deriv2.to_unit()
+        return normal
 
-    def evaluate_u(self, num: int) -> 'NDArray':
+    def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.knots)
 
     def evaluate_points(self, num: int) -> 'Vector2D':
-        u = self.evaluate_u(num)
-        return self.evaluate_points_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_points_at_t(u)
 
     def evaluate_first_derivatives(self, num: int) -> 'Vector2D':
-        u = self.evaluate_u(num)
-        return self.evaluate_first_derivatives_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_first_derivatives_at_t(u)
 
     def evaluate_second_derivatives(self, num: int) -> 'Vector2D':
-        u = self.evaluate_u(num)
-        return self.evaluate_second_derivatives_at_u(u)
+        u = self.evaluate_t(num)
+        return self.evaluate_second_derivatives_at_t(u)
+    
+    def evaluate_curvatures(self, num: int) -> 'NDArray':
+        u = self.evaluate_t(num)
+        return self.evaluate_curvatures_at_t(u)
+    
+    def evaluate_tangents(self, num: int) -> 'Vector2D':
+        u = self.evaluate_t(num)
+        return self.evaluate_tangents_at_t(u)
+    
+    def evaluate_normals(self, num: int) -> 'Vector2D':
+        u = self.evaluate_t(num)
+        return self.evaluate_normals_at_t(u)
 
     def __repr__(self) -> str:
         return f'<NurbsCurve2D: degree={self.degree:d}>'
