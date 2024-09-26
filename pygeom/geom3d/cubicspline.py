@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional, Tuple
 
-from numpy import cumsum, full, logical_and, zeros
+from numpy import asarray, cumsum, full, logical_and, zeros
 
 from ..tools.basis import knot_linspace
 from ..tools.solvers import cubic_pspline_fit_solver
@@ -9,6 +9,9 @@ from .vector import Vector, zero_vector
 if TYPE_CHECKING:
     from numpy.typing import NDArray
     BCLike = Optional[Tuple[Tuple[int, Vector], Tuple[int, Vector]]]
+
+BCSTR1 = ('quadratic', 'not-a-knot', 'natural', 'clamped', 'periodic')
+BCSTR2 = ('quadratic', 'not-a-knot', 'natural', 'clamped')
 
 class CubicSpline():
     u"""This class stores a 3D parametric cubic spline."""
@@ -36,33 +39,66 @@ class CubicSpline():
         if self.points.ndim != 1:
             raise ValueError('Input points must be a 1D Vector object.')
         if isinstance(self.bctype, str):
-            if self.bctype not in ('clamped', 'natural', 'not-a-knot', 'periodic', 'quadratic'):
+            if self.bctype not in BCSTR1:
                 errstr = 'Input bctype must be one of:'
                 errstr += ' clamped, natural, not-a-knot, periodic or quadratic.'
                 raise ValueError(errstr)
         elif isinstance(self.bctype, tuple):
             if len(self.bctype) != 2:
                 raise ValueError('Input bctype must be a tuple of length 2.')
-            if not isinstance(self.bctype[0], tuple) or not isinstance(self.bctype[1], tuple):
-                raise ValueError('Input bctype must be a tuple of tuples.')
-            if len(self.bctype[0]) != 2 or len(self.bctype[1]) != 2:
-                raise ValueError('Input bctype tuples must have a length of 2.')
-            if not isinstance(self.bctype[0][0], int) or not isinstance(self.bctype[1][0], int):
-                raise ValueError('Input bctype tuple elements must be integers.')
-            if not isinstance(self.bctype[0][1], Vector) or not isinstance(self.bctype[1][1], Vector):
-                raise ValueError('Input bctype tuple elements must be Vector objects.')
+            if isinstance(self.bctype[0], tuple):
+                if len(self.bctype[0]) != 2:
+                    raise ValueError('Input bctype[0] must be a tuple of length 2.')
+                if not isinstance(self.bctype[0][0], int):
+                    raise ValueError('Input bctype[0][0] must be an integer.')
+                if self.bctype[0][0] != 1 and self.bctype[0][0] != 2:
+                    raise ValueError('Input bctype[0][0] must be a 1 or 2.')
+                if not isinstance(self.bctype[0][1], Vector):
+                    raise ValueError('Input bctype[0][1] must be a Vector object.')
+            elif isinstance(self.bctype[0], str):
+                if self.bctype[0] not in BCSTR2:
+                    errstr = 'Input bctype[0] must be one of:'
+                    errstr += ' clamped, natural, not-a-knot or quadratic.'
+                    raise ValueError(errstr)
+            else:
+                raise ValueError('Input bctype[0] must be a string or a tuple.')
+            if isinstance(self.bctype[1], tuple):
+                if len(self.bctype[1]) != 2:
+                    raise ValueError('Input bctype[1] must be a tuple of length 2.')
+                if not isinstance(self.bctype[1][0], int):
+                    raise ValueError('Input bctype[1][0] must be an integer.')
+                if self.bctype[1][0] != 1 and self.bctype[1][0] != 2:
+                    raise ValueError('Input bctype[1][0] must be a 1 or 2.')
+                if not isinstance(self.bctype[1][1], Vector):
+                    raise ValueError('Input bctype[1][1] must be a Vector object.')
+            elif isinstance(self.bctype[1], str):
+                if self.bctype[1] not in BCSTR2:
+                    errstr = 'Input bctype[1] must be one of:'
+                    errstr += ' clamped, natural, not-a-knot or quadratic.'
+                    raise ValueError(errstr)
+            else:
+                raise ValueError('Input bctype[1] must be a string or a tuple.')
         else:
             raise ValueError('Input bctype must be a string or a tuple of tuples.')
-    
+
     @property
     def input(self) -> Vector:
         if self._input is None:
             if isinstance(self.bctype, tuple):
-                self._input = zero_vector(self.points.size + 2,
+                numcond = 0
+                if not isinstance(self.bctype[0], str):
+                    numcond += 1
+                if not isinstance(self.bctype[1], str):
+                    numcond += 1
+                self._input = zero_vector(self.points.size + numcond,
                                           dtype=self.points.dtype)
-                self._input[:-2] = self.points
-                self._input[-2] = self.bctype[0][1]
-                self._input[-1] = self.bctype[1][1]
+                self._input[:self.points.size] = self.points
+                count = 0
+                if not isinstance(self.bctype[0], str):
+                    self._input[self.points.size + count] = self.bctype[0][1]
+                    count += 1
+                if not isinstance(self.bctype[1], str):
+                    self._input[self.points.size + count] = self.bctype[1][1]
             else:
                 self._input = self.points
         return self._input
@@ -72,38 +108,48 @@ class CubicSpline():
         if self._Dr is None:
             self._Dr = self.points[1:] - self.points[:-1]
         return self._Dr
-    
+
     @property
     def Ds(self) -> 'NDArray':
         if self._Ds is None:
             self._Ds = self.Dr.return_magnitude()
         return self._Ds
-    
+
     @property
     def s(self) -> 'NDArray':
         if self._s is None:
             self._s = zeros(self.points.shape)
             self._s[1:] = cumsum(self.Ds)
         return self._s
-    
+
     @property
     def gmat(self) -> 'NDArray':
         if self._gmat is None:
-            if isinstance(self.bctype, tuple):
-                bctype = (self.bctype[0][0], self.bctype[1][0])
-            else:
+            if isinstance(self.bctype, str):
                 bctype = self.bctype
+            elif isinstance(self.bctype, tuple):
+                bctype = []
+                if isinstance(self.bctype[0], str):
+                    bctype.append(self.bctype[0])
+                elif isinstance(self.bctype[0], tuple):
+                    bctype.append(self.bctype[0][0])
+                if isinstance(self.bctype[1], str):
+                    bctype.append(self.bctype[1])
+                elif isinstance(self.bctype[1], tuple):
+                    bctype.append(self.bctype[1][0])
+                bctype = tuple(bctype)
             self._gmat = cubic_pspline_fit_solver(self.s, bctype=bctype)
         return self._gmat
-    
+
     @property
     def d2r(self) -> Vector:
         if self._d2r is None:
             self._d2r = self.input.rmatmul(self.gmat)
         return self._d2r
-    
+
     def evaluate_points_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the spline at a given s."""
+        s = asarray(s)
         x = full(s.shape, float('nan'))
         y = full(s.shape, float('nan'))
         z = full(s.shape, float('nan'))
@@ -125,9 +171,10 @@ class CubicSpline():
             Dv = (Bv**3 - Bv)*Dsi**2/6
             points[s_check] = ra*Av + rb*Bv + d2ra*Cv + d2rb*Dv
         return points
-    
+
     def evaluate_first_derivatives_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the first derivatives of the spline at a given s."""
+        s = asarray(s)
         dx = full(s.shape, float('nan'))
         dy = full(s.shape, float('nan'))
         dz = full(s.shape, float('nan'))
@@ -147,9 +194,10 @@ class CubicSpline():
             Fv = (3*Bv**2 - 1)/6*Dsi
             deriv1[s_check] = Dri/Dsi + d2ra*Ev + d2rb*Fv
         return deriv1
-    
+
     def evaluate_second_derivatives_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the second derivatives of the spline at a given s."""
+        s = asarray(s)
         d2x = full(s.shape, float('nan'))
         d2y = full(s.shape, float('nan'))
         d2z = full(s.shape, float('nan'))
@@ -167,65 +215,65 @@ class CubicSpline():
             Bv = (sv - sa)/Dsi
             deriv2[s_check] = d2ra*Av + d2rb*Bv
         return deriv2
-    
+
     def evaluate_curvatures_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the curvature of the spline at a given s."""
         deriv1 = self.evaluate_first_derivatives_at_t(s)
         deriv2 = self.evaluate_second_derivatives_at_t(s)
         curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
         return curvature
-    
+
     def evaluate_tangents_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the tangent of the spline at a given s."""
         deriv1 = self.evaluate_first_derivatives_at_t(s)
         tangent = deriv1.to_unit()
         return tangent
-    
+
     def evaluate_normals_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the normal of the spline at a given s."""
         deriv2 = self.evaluate_second_derivatives_at_t(s)
         normal = deriv2.to_unit()
         return normal
-    
+
     def evaluate_binormals_at_t(self, s: 'NDArray') -> Vector:
         u"""This function evaluates the binormal of the spline at a given s."""
         curvature = self.evaluate_curvatures_at_t(s)
         binormal = curvature.to_unit()
         return binormal
-    
+
     def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.s)
-    
+
     def evaluate_points(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         points = self.evaluate_points_at_t(s)
         return points
-    
+
     def evaluate_first_derivatives(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         deriv1 = self.evaluate_first_derivatives_at_t(s)
         return deriv1
-    
+
     def evaluate_second_derivatives(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         deriv2 = self.evaluate_second_derivatives_at_t(s)
         return deriv2
-    
+
     def evaluate_curvatures(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         curvature = self.evaluate_curvatures_at_t(s)
         return curvature
-    
+
     def evaluate_tangents(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         tangent = self.evaluate_tangents_at_t(s)
         return tangent
-    
+
     def evaluate_normals(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         normal = self.evaluate_normals_at_t(s)
         return normal
-    
+
     def evaluate_binormals(self, num: int) -> Vector:
         s = self.evaluate_t(num)
         binormal = self.evaluate_binormals_at_t(s)

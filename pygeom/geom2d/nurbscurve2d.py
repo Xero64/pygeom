@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, float64, full, ones
+from numpy import concatenate, divide, float64, full, ones, zeros
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
@@ -98,18 +98,20 @@ class NurbsCurve2D():
         else:
             deriv2 = d2numer
         return deriv2
-    
+
     def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'NDArray':
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         deriv2 = self.evaluate_second_derivatives_at_t(u)
-        curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
+        deriv1mag = deriv1.return_magnitude()
+        curvature = zeros(deriv1mag.shape)
+        divide(deriv1.cross(deriv2), deriv1mag**3, where=deriv1mag != 0.0, out=curvature)
         return curvature
-    
+
     def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector2D':
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         tangent = deriv1.to_unit()
         return tangent
-    
+
     def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector2D':
         deriv2 = self.evaluate_second_derivatives_at_t(u)
         normal = deriv2.to_unit()
@@ -129,15 +131,15 @@ class NurbsCurve2D():
     def evaluate_second_derivatives(self, num: int) -> 'Vector2D':
         u = self.evaluate_t(num)
         return self.evaluate_second_derivatives_at_t(u)
-    
+
     def evaluate_curvatures(self, num: int) -> 'NDArray':
         u = self.evaluate_t(num)
         return self.evaluate_curvatures_at_t(u)
-    
+
     def evaluate_tangents(self, num: int) -> 'Vector2D':
         u = self.evaluate_t(num)
         return self.evaluate_tangents_at_t(u)
-    
+
     def evaluate_normals(self, num: int) -> 'Vector2D':
         u = self.evaluate_t(num)
         return self.evaluate_normals_at_t(u)

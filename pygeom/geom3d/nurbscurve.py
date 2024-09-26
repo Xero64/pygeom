@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, full, ones
+from numpy import concatenate, full, ones, divide
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
                            knot_linspace)
+
+from ..geom3d.vector import zero_vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -103,21 +105,27 @@ class NurbsCurve():
         if deriv2.size == 1:
             deriv2 = deriv2[0]
         return deriv2
-    
+
     def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'Vector':
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         deriv2 = self.evaluate_second_derivatives_at_t(u)
-        curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
+        deriv1mag = deriv1.return_magnitude()
+        deriv1magnot0 = deriv1mag != 0.0
+        deriv1mag3 = deriv1mag**3
+        deriv1xderiv2 = deriv1.cross(deriv2)
+        curvature = zero_vector(deriv1mag.shape)
+        divide(deriv1xderiv2, deriv1mag3, where=deriv1magnot0, out=curvature)
+        # curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
         return curvature
-    
+
     def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector':
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         return deriv1.to_unit()
-    
+
     def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector':
         deriv2 = self.evaluate_second_derivatives_at_t(u)
         return deriv2.to_unit()
-    
+
     def evaluate_binormals_at_t(self, u: 'NDArray') -> 'Vector':
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         deriv2 = self.evaluate_second_derivatives_at_t(u)
@@ -138,19 +146,19 @@ class NurbsCurve():
     def evaluate_second_derivatives(self, num: int) -> 'Vector':
         u = self.evaluate_t(num)
         return self.evaluate_second_derivatives_at_t(u)
-    
+
     def evaluate_curvatures(self, num: int) -> 'Vector':
         u = self.evaluate_t(num)
         return self.evaluate_curvatures_at_t(u)
-    
+
     def evaluate_tangents(self, num: int) -> 'Vector':
         u = self.evaluate_t(num)
         return self.evaluate_tangents_at_t(u)
-    
+
     def evaluate_normals(self, num: int) -> 'Vector':
         u = self.evaluate_t(num)
         return self.evaluate_normals_at_t(u)
-    
+
     def evaluate_binormals(self, num: int) -> 'Vector':
         u = self.evaluate_t(num)
         return self.evaluate_binormals_at_t(u)

@@ -1,113 +1,56 @@
 #%%
 # Import Dependencies
-from typing import TYPE_CHECKING
-
-from matplotlib.pyplot import figure
-from numpy import linspace
-from pygeom.geom2d import Vector2D
-from pygeom.geom2d import Vector2D
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
+from math import sqrt
+from pygeom.geom2d import Vector2D, CubicSpline2D, zero_vector2d
+from pygeom.tools.mpl import (plot_curvature, plot_curve,
+                              plot_first_derivatives, plot_points,
+                              plot_second_derivatives)
 
 #%%
-# Define Class
-class CubicPiece2D():
-    ra: 'Vector2D' = None
-    rb: 'Vector2D' = None
-    d2ra: 'Vector2D' = None
-    d2rb: 'Vector2D' = None
-    _vec: 'Vector2D' = None
-    _length: float = None
-    _uvec: 'Vector2D' = None
-    _sa: float = None
-    _sb: float = None
+# Create CubicSpline2D 1
+pnts = zero_vector2d(2)
+pnts[0] = Vector2D(0.0, 0.0)
+pnts[1] = Vector2D(1.0, 0.0)
 
-    def __init__(self, ra: 'Vector2D', rb: 'Vector2D',
-                 d2ra: 'Vector2D', d2rb: 'Vector2D') -> None:
-        self.ra = ra
-        self.rb = rb
-        self.d2ra = d2ra
-        self.d2rb = d2rb
+tana = Vector2D(1.0, 1.0).to_unit()
+tanb = Vector2D(1.0, -1.0).to_unit()
 
-    @property
-    def vec(self) -> 'Vector2D':
-        if self._vec is None:
-            self._vec = self.rb - self.ra
-        return self._vec
+nrma = Vector2D(1.0, -1.0).to_unit()
+nrmb = Vector2D(-1.0, -1.0).to_unit()
 
-    @property
-    def length(self) -> float:
-        if self._length is None:
-            self._length = self.vec.return_magnitude()
-        return self._length
+abm = 1.0
+adb = tana.dot(tanb)
 
-    @property
-    def uvec(self) -> 'Vector2D':
-        if self._uvec is None:
-            self._uvec = self.vec/self.length
-        return self._uvec
+K = 4*sqrt(abm + adb)/(3*(sqrt(2)*abm**2 + sqrt(abm + adb)))
+print(f'K = {K}\n')
 
-    @property
-    def sa(self) -> float:
-        if self._sa is None:
-            self._sa = 0.0
-        return self._sa
+# tena = 0.8
+# tenb = 0.4
 
-    @sa.setter
-    def sa(self, value: float) -> None:
-        self._sa = value
-        self._sb = value + self.length
+tena = 1.0
+tenb = 1.0
 
-    @property
-    def sb(self) -> float:
-        if self._sb is None:
-            self._sb = self.length
-        return self._sb
+bctype = ((1, tana*tena*K*2), (1, tanb*tenb*K*2))
+# bctype = ((2, nrma*tena), (2, nrmb*tenb))
 
-    @sb.setter
-    def sb(self, value: float) -> None:
-        self._sb = value
-        self._sa = value - self.length
+cs1 = CubicSpline2D(pnts, bctype=bctype)
 
-    def spline_points(self, s: 'NDArray') -> Vector2D:
-        Axl = (self.sb - s)
-        Bxl = (s - self.sa)
-        A = Axl/self.length
-        B = Bxl/self.length
-        J = -Axl*Bxl/6
-        C = J*(2*A + B)
-        D = J*(A + 2*B)
-        x = A*self.ra.x + B*self.rb.x + C*self.d2ra.x + D*self.d2rb.x
-        y = A*self.ra.y + B*self.rb.y + C*self.d2ra.y + D*self.d2rb.y
-        return Vector2D(x, y)
+ax = None
+ax = plot_curve(cs1, ax=ax, label='Cubic Spline 1', ls='-.')
+_ = ax.legend()
 
-#%%
-# Create Spline
-s = linspace(0.0, 2.0, 100, dtype=float)
+ax = None
+ax = plot_points(cs1, ax=ax, label='Cubic Spline 1', ls='-.')
+_ = ax.legend()
 
-ra = Vector2D(1.0, 1.0)
-rb = Vector2D(3.0, 1.0)
-d2ra = Vector2D(1.0, -1.0)
-d2rb = Vector2D(-1.0, -1.0)
+ax = None
+ax = plot_first_derivatives(cs1, ax=ax, label='Cubic Spline 1', ls='-.')
+_ = ax.legend()
 
-splpc = CubicPiece2D(ra, rb, d2ra, d2rb)
+ax = None
+ax = plot_second_derivatives(cs1, ax=ax, label='Cubic Spline 1', ls='-.')
+_ = ax.legend()
 
-r = splpc.spline_points(s)
-
-fig = figure(figsize=(10, 8))
-ax = fig.gca()
-ax.set_aspect('equal')
-ax.grid(True)
-_ = ax.plot(r.x, r.y)
-
-#%%
-# Checks
-dxa = r.x[1] - r.x[0]
-dya = r.y[1] - r.y[0]
-dxb = r.x[-1] - r.x[-2]
-dyb = r.y[-1] - r.y[-2]
-
-print(f'Vector2D(dxa, dya).to_unit() = {Vector2D(dxa, dya).to_unit()}')
-
-print(f'Vector2D(dxb, dyb).to_unit() = {Vector2D(dxb, dyb).to_unit()}')
+ax = None
+ax = plot_curvature(cs1, ax=ax, label='Cubic Spline 1', ls='-.')
+_ = ax.legend()

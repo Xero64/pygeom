@@ -38,6 +38,13 @@ print(f'dx = {dx.collect((xa, xb, d2xa, d2xb))}\n')
 d2x = dx.diff(s)
 d2x: Expr = d2x.expand()
 
+print(f'd2x = {d2x.collect((xa, xb, d2xa, d2xb))}\n')
+
+d3x = d2x.diff(s)
+d3x: Expr = d3x.expand()
+
+print(f'd3x = {d3x.collect((xa, xb, d2xa, d2xb))}\n')
+
 x_a = x.subs(s, sa).subs(sa, sb - sba)
 x_a = x_a.expand()
 

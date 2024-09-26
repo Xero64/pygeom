@@ -12,26 +12,26 @@ set_printoptions(suppress=True)
 x = asarray([1.0, 2.2, 3.0, 4.1, 5.0])
 y = asarray([5.0, 2.6, 3.5, 1.2, 4.3])
 
-# bc_type = 'clamped'
-bc_type = ((1, 2.0), (1, -3.0))
+bctype = 'not-a-knot'
+# bctype = ((2, 2.0), (1, -3.0))
 
-if bc_type == 'periodic':
+if bctype == 'periodic':
     y[-1] = y[0]
 
-if bc_type == 'periodic' or bc_type == 'quadratic':
-    rmat = cubic_pspline_fit_solver(x, bc_type=bc_type)
+if bctype == 'periodic' or bctype == 'quadratic':
+    rmat = cubic_pspline_fit_solver(x, bctype=bctype)
     d2y = rmat@y
-    bc_type = ((2, d2y[0]), (2, d2y[-1]))
+    bctype = ((2, d2y[0]), (2, d2y[-1]))
 
-spl = CubicSpline(x, y, bc_type=bc_type)
+spl = CubicSpline(x, y, bc_type=bctype)
 
-if isinstance(bc_type, tuple):
-    bc_type = (bc_type[0][0], bc_type[1][0])
-    rval = concatenate((y, [spl(x[0], bc_type[0])], [spl(x[-1], bc_type[1])]))
+if isinstance(bctype, tuple):
+    bctype = (bctype[0][0], bctype[1][0])
+    rval = concatenate((y, [spl(x[0], bctype[0])], [spl(x[-1], bctype[1])]))
 else:
     rval = y
 
-rmat = cubic_pspline_fit_solver(x, bc_type=bc_type)
+rmat = cubic_pspline_fit_solver(x, bctype=bctype)
 
 d2y = rmat@rval
 
