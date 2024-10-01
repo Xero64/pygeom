@@ -1,18 +1,17 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple
 
-from numpy import zeros
-from numpy.linalg import lstsq
+from numpy import zeros, ones
+from numpy.linalg import lstsq, solve
 
-if TYPE_CHECKING:
-    from .vector import Vector
+from .vector import Vector
 
 
 class Plane():
     """Plane Class"""
-    pnt: 'Vector' = None
-    nrm: 'Vector' = None
+    pnt: Vector = None
+    nrm: Vector = None
 
-    def __init__(self, pnt: 'Vector', nrm: 'Vector') -> None:
+    def __init__(self, pnt: Vector, nrm: Vector) -> None:
         self.pnt = pnt
         self.nrm = nrm.to_unit()
 
@@ -23,32 +22,61 @@ class Plane():
         d = -a*self.pnt.x - b*self.pnt.y - c*self.pnt.z
         return a, b, c, d
 
-    def point_z_from_plane(self, pnt: 'Vector') -> float:
+    def point_z_from_plane(self, pnt: Vector) -> float:
         vec = pnt - self.pnt
         return vec*self.nrm
 
     def reverse_normal(self) -> None:
         self.nrm = -self.nrm
 
+    @classmethod
+    def from_3_points(cls, pnta: Vector, pntb: Vector, pntc: Vector) -> 'Plane':
+        pnt = (pnta + pntb + pntc)/3
+        vecab = pntb - pnta
+        vecbc = pntc - pntb
+        nrm = vecab.cross(vecbc)
+        return cls(pnt, nrm)
+
+    @classmethod
+    def from_n_points_best_fit(cls, pnts: Vector) -> 'Plane':
+        """Create a plane from multiple points"""
+        if pnts.size < 3:
+            raise ValueError('Need at least 3 points to fit a plane.')
+        pnto = pnts.sum()/pnts.size
+        vecs = pnts - pnto
+        sxx = (vecs.x*vecs.x).sum()
+        sxy = (vecs.x*vecs.y).sum()
+        sxz = (vecs.x*vecs.z).sum()
+        syy = (vecs.y*vecs.y).sum()
+        syz = (vecs.y*vecs.z).sum()
+        d = sxx*syy - sxy**2
+        a = (syz*sxy - sxz*syy)/d
+        b = (sxy*sxz - sxx*syz)/d
+        nrm = Vector(a, b, 1.0)
+        return Plane(pnto, nrm)
+
     def __repr__(self) -> str:
         return '<Plane>'
 
 
-def plane_from_3_points(pnta: 'Vector', pntb: 'Vector', pntc: 'Vector') -> Plane:
-    pnt = (pnta + pntb + pntc)/3
-    vecab = pntb - pnta
-    vecbc = pntc - pntb
-    nrm = vecab.cross(vecbc).to_unit()
-    return Plane(pnt, nrm)
+# def plane_from_3_points(pnta: Vector, pntb: Vector, pntc: Vector) -> Plane:
+#     pnt = (pnta + pntb + pntc)/3
+#     vecab = pntb - pnta
+#     vecbc = pntc - pntb
+#     nrm = vecab.cross(vecbc).to_unit()
+#     return Plane(pnt, nrm)
 
-def plane_from_multiple_points(*pnts: 'Vector', rcond: float = None) -> Plane:
-    num = len(pnts)
-    amat = zeros((num, 3))
-    bmat = zeros((num, 1))
-    for i, pnt in enumerate(pnts):
-        amat[i, :] = [pnt.x, pnt.y, pnt.z]
-        bmat[i, 0] = -1
-    xmat, _, _, _ = lstsq(amat, bmat, rcond=rcond)
-    pnt = sum(pnts, Vector(0.0, 0.0, 0.0))/num
-    nrm = Vector(*xmat).to_unit()
-    return Plane(pnt, nrm)    
+# def plane_from_multiple_points(pnts: Vector) -> Plane:
+#     """Create a plane from multiple points"""
+#     pnto = pnts.sum()/pnts.size
+#     vecs = pnts - pnto
+#     sxx = (vecs.x*vecs.x).sum()
+#     sxy = (vecs.x*vecs.y).sum()
+#     sxz = (vecs.x*vecs.z).sum()
+#     syy = (vecs.y*vecs.y).sum()
+#     syz = (vecs.y*vecs.z).sum()
+#     d = sxx*syy - sxy**2
+#     a = (syz*sxy - sxz*syy)/d
+#     b = (sxy*sxz - sxx*syz)/d
+#     nrm = Vector(a, b, 1.0)
+#     return Plane(pnto, nrm)

@@ -294,15 +294,26 @@ class Vector2D():
         """Returns the complex number of this Vector2D"""
         return self.x + 1j*self.y
 
+    @classmethod
+    def zeros(cls, shape: Tuple[int, ...] = (),
+              **kwargs: Dict[str, Any]) -> 'Vector2D':
+        x = zeros(shape, **kwargs)
+        y = zeros(shape, **kwargs)
+        return cls(x, y)
+
+    @classmethod
+    def fromiter(cls, vecs: Iterable['Vector2D'],
+                 **kwargs: Dict[str, Any]) -> 'Vector2D':
+        num = len(vecs)
+        vec = cls.zeros(num, **kwargs)
+        for i, veci in enumerate(vecs):
+            vec[i] = veci
+        return vec
+
 
 def zero_vector2d(shape: Optional[Tuple[int, ...]] = None,
                   **kwargs: Dict[str, Any]) -> Vector2D:
-    if shape is None:
-        x, y = 0.0, 0.0
-    else:
-        x = zeros(shape, **kwargs)
-        y = zeros(shape, **kwargs)
-    return Vector2D(x, y)
+    return Vector2D.zeros(shape, **kwargs)
 
 def vector2d_isclose(a: Vector2D, b: Vector2D,
                      rtol: float=1e-09, atol: float=0.0) -> bool:

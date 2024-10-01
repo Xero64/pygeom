@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
 from numpy import (allclose, copy, divide, hsplit, hstack, isclose,
                    logical_and, logical_or, ndim, ravel, repeat, reshape,
                    result_type, shape, size, split, sqrt, square, stack, sum,
-                   transpose, zeros)
+                   transpose, zeros, fromiter)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -145,7 +145,7 @@ class Vector():
         else:
             outstr = f'Vector shape: {self.shape:}, dtype: {self.dtype}\n'
             outstr += f'x:\n{self.x:}\ny:\n{self.y:}\nz:\n{self.z:}\n'
-            return outstr
+        return outstr
 
     def __format__(self, frm: str) -> str:
         if self.ndim == 0:
@@ -306,16 +306,27 @@ class Vector():
         except AttributeError:
             return False
 
-
-def zero_vector(shape: Optional[Tuple[int, ...]] = None,
-                **kwargs: Dict[str, Any]) -> Vector:
-    if shape is None:
-        x, y, z = 0.0, 0.0, 0.0
-    else:
+    @classmethod
+    def zeros(cls, shape: Tuple[int, ...] = (),
+              **kwargs: Dict[str, Any]) -> 'Vector':
         x = zeros(shape, **kwargs)
         y = zeros(shape, **kwargs)
         z = zeros(shape, **kwargs)
-    return Vector(x, y, z)
+        return cls(x, y, z)
+
+    @classmethod
+    def fromiter(cls, vecs: Iterable['Vector'],
+                 **kwargs: Dict[str, Any]) -> 'Vector':
+        num = len(vecs)
+        vec = cls.zeros(num, **kwargs)
+        for i, veci in enumerate(vecs):
+            vec[i] = veci
+        return vec
+
+
+def zero_vector(shape: Optional[Tuple[int, ...]] = None,
+                **kwargs: Dict[str, Any]) -> Vector:
+    return Vector.zeros(shape, **kwargs)
 
 def vector_isclose(a: Vector, b: Vector,
                    rtol: float=1e-09, atol: float=0.0) -> bool:
