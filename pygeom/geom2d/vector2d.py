@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
 
-from numpy import (allclose, arctan2, bool_, copy, cos, divide, hsplit, hstack,
-                   isclose, logical_and, logical_or, ndim, ravel, repeat,
-                   reshape, result_type, shape, sin, size, split, sqrt, square,
-                   stack, sum, transpose, zeros)
+from numpy import (allclose, arctan2, bool_, copy, cos, divide, full, hsplit,
+                   hstack, isclose, logical_and, logical_or, ndim, ravel,
+                   repeat, reshape, result_type, shape, sin, size, split, sqrt,
+                   square, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -308,6 +308,32 @@ class Vector2D():
         vec = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
             vec[i] = veci
+        return vec
+    
+    @classmethod
+    def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Vector2D':
+        cur_ndim = 0
+        cur_shape = ()
+        x, y = 0.0, 0.0
+        if hasattr(obj, 'x'):
+            x = obj.__dict__['x']
+            if ndim(x) > cur_ndim:
+                cur_ndim = ndim(x)
+                cur_shape = shape(x)
+        if hasattr(obj, 'y'):
+            y = obj.__dict__['y']
+            if ndim(y) > cur_ndim:
+                cur_ndim = ndim(y)
+                cur_shape = shape(y)
+        vec = cls.zeros(cur_shape, **kwargs)
+        if ndim(x) == 0:
+            vec.x = full(cur_shape, x)
+        else:
+            vec.x = x
+        if ndim(y) == 0:
+            vec.y = full(cur_shape, y)
+        else:
+            vec.y = y
         return vec
 
 
