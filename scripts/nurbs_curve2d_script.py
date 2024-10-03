@@ -2,7 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import cos, ones, pi, sin, sqrt
-from pygeom.geom2d import NurbsCurve2D, Vector2D, zero_vector2d
+from pygeom.geom2d import NurbsCurve2D, Vector2D
 from pygeom.tools.k3d import Plot, k3d_curve, k3d_nurbs_control_points
 
 #%%
@@ -11,7 +11,7 @@ num = 20
 a = 2.0
 b = 1.0
 
-ctlpts = zero_vector2d(3)
+ctlpts = Vector2D.zeros(3)
 ctlpts[0] = Vector2D(a, 0.0)
 ctlpts[1] = Vector2D(a, b)
 ctlpts[2] = Vector2D(0.0, b)
@@ -122,7 +122,7 @@ _ = ax.legend()
 num = 20
 r = 1.0
 
-ctlpts = zero_vector2d(3)
+ctlpts = Vector2D.zeros(3)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0.0, r)
@@ -232,7 +232,7 @@ r = 1.0
 ang = pi/3
 a = pi/2 - ang
 
-ctlpts = zero_vector2d(3)
+ctlpts = Vector2D.zeros(3)
 ctlpts[0] = Vector2D(r*cos(ang), -r*sin(ang))
 ctlpts[1] = Vector2D(r/cos(ang), 0.0)
 ctlpts[2] = Vector2D(r*cos(ang), r*sin(ang))
@@ -354,7 +354,7 @@ _ = ax.legend()
 num = 20
 r = 2.0
 
-ctlpts = zero_vector2d(9)
+ctlpts = Vector2D.zeros(9)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0.0, r)
@@ -487,7 +487,7 @@ _ = ax.legend()
 num = 20
 r = 2.0
 
-ctlpts = zero_vector2d(7)
+ctlpts = Vector2D.zeros(7)
 ctlpts[0] = Vector2D(0.0, -r)
 ctlpts[1] = Vector2D(2*r*cos(pi/6), -r)
 ctlpts[2] = Vector2D(r*cos(pi/6), r*sin(pi/6))

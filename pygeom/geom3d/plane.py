@@ -1,8 +1,5 @@
 from typing import Tuple
 
-from numpy import zeros, ones
-from numpy.linalg import lstsq, solve
-
 from .vector import Vector
 
 

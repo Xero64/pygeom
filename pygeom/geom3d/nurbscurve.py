@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING, Any, Dict
 
-from numpy import concatenate, full, ones, divide
+from numpy import concatenate, divide, full, ones
 
+from ..geom3d.vector import Vector
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
                            knot_linspace)
-
-from ..geom3d.vector import zero_vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -113,7 +112,7 @@ class NurbsCurve():
         deriv1magnot0 = deriv1mag != 0.0
         deriv1mag3 = deriv1mag**3
         deriv1xderiv2 = deriv1.cross(deriv2)
-        curvature = zero_vector(deriv1mag.shape)
+        curvature = Vector.zeros(deriv1mag.shape)
         divide(deriv1xderiv2, deriv1mag3, where=deriv1magnot0, out=curvature)
         # curvature = deriv1.cross(deriv2)/deriv1.return_magnitude()**3
         return curvature

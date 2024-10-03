@@ -1,4 +1,4 @@
-from numpy import sqrt, isclose
+from numpy import isclose, sqrt
 from pygeom.geom3d.vector import Vector, vector_isclose
 
 x1, y1, z1 = 2.0, 3.0, 1.0

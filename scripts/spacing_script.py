@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from pygeom.tools.spacing import semi_cosine_spacing, full_cosine_spacing
+from pygeom.tools.spacing import full_cosine_spacing, semi_cosine_spacing
 
 #%%
 # Create a semi-cosine spacing array

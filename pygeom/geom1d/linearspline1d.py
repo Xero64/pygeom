@@ -1,10 +1,8 @@
-from numbers import Number
 from typing import TYPE_CHECKING, Optional, Tuple
 
-from numpy import full, logical_and, ndarray, zeros
+from numpy import full, logical_and, ndarray
 
 from ..tools.basis import knot_linspace
-from ..tools.solvers import cubic_pspline_fit_solver
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

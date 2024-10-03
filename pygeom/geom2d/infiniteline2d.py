@@ -1,5 +1,6 @@
 from .vector2d import Vector2D
 
+
 class InfiniteLine2D():
     pnt: Vector2D = None
     uvec: Vector2D = None

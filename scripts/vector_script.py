@@ -1,11 +1,11 @@
 #%%
 # Import Dependencies
 from numpy import zeros
-from pygeom.geom3d.vector import Vector, zero_vector
+from pygeom.geom3d.vector import Vector
 
 #%%
 # Create Array Vector
-A = zero_vector((2, 2))
+A = Vector.zeros((2, 2))
 A[0, 0] = Vector(1, 2, 3)
 A[0, 1] = Vector(2, 3, 4)
 A[1, 0] = Vector(3, 4, 5)

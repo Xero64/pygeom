@@ -1,11 +1,10 @@
 #%%
 # Import Dependencies
-from numpy import asarray, divide
-from numpy import zeros
-from numpy.linalg import solve
-from pygeom.interp1d.quadraticinterp import QuadraticCentreInterpSolver
-from pygeom.interp1d.quadraticinterp import QuadraticCentreInterp
 from matplotlib.pyplot import figure
+from numpy import asarray, divide, zeros
+from numpy.linalg import solve
+from pygeom.interp1d.quadraticinterp import (QuadraticCentreInterp,
+                                             QuadraticCentreInterpSolver)
 from scipy.interpolate import interp1d
 
 #%%

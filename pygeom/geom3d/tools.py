@@ -5,9 +5,9 @@ from numpy import absolute, argwhere, divide, full, logical_and
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .vector import Vector
     from .lines import Lines
     from .triangles import Triangles
+    from .vector import Vector
 
 def intersection_lines_and_triangles(lines: 'Lines', triangles: 'Triangles',
                                      tolerance: float = 1e-12) -> Tuple['Vector',

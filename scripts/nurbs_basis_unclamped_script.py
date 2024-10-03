@@ -3,8 +3,9 @@
 from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
-from numpy import asarray, linspace, gradient
-from pygeom.tools.basis import basis_functions, basis_first_derivatives, basis_second_derivatives
+from numpy import asarray, gradient, linspace
+from pygeom.tools.basis import (basis_first_derivatives, basis_functions,
+                                basis_second_derivatives)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

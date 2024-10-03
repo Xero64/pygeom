@@ -1,14 +1,15 @@
 #%%
 # Import Dependencies
 from math import sqrt
-from pygeom.geom2d import Vector2D, CubicSpline2D, zero_vector2d
+
+from pygeom.geom2d import CubicSpline2D, Vector2D
 from pygeom.tools.mpl import (plot_curvature, plot_curve,
                               plot_first_derivatives, plot_points,
                               plot_second_derivatives)
 
 #%%
 # Create CubicSpline2D 1
-pnts = zero_vector2d(2)
+pnts = Vector2D.zeros(2)
 pnts[0] = Vector2D(0.0, 0.0)
 pnts[1] = Vector2D(1.0, 0.0)
 

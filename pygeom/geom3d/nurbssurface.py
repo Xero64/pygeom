@@ -1,11 +1,10 @@
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
-from numpy import concatenate, float64, full, ones, zeros, shape
-
-from .vector import zero_vector
+from numpy import concatenate, float64, full, ones, shape, zeros
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            default_knots, knot_linspace)
+from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -105,7 +104,7 @@ class NurbsSurface():
         Nu, Nv = self.basis_functions(um, vm)
         numu = Nu.shape[0]
         numv = Nv.shape[0]
-        numer = zero_vector(shp)
+        numer = Vector.zeros(shp)
         for i in range(numu):
             for j in range(numv):
                 numer += self.wpoints[i, j]*Nu[i]*Nv[j]
@@ -146,14 +145,14 @@ class NurbsSurface():
         dNu, dNv = self.basis_first_derivatives(um, vm)
         numu = Nu.shape[0]
         numv = Nv.shape[0]
-        dnumer_u = zero_vector(shp)
-        dnumer_v = zero_vector(shp)
+        dnumer_u = Vector.zeros(shp)
+        dnumer_v = Vector.zeros(shp)
         for i in range(numu):
             for j in range(numv):
                 dnumer_u += self.wpoints[i, j]*dNu[i]*Nv[j]
                 dnumer_v += self.wpoints[i, j]*Nu[i]*dNv[j]
         if self.rational:
-            numer = zero_vector(shp)
+            numer = Vector.zeros(shp)
             denom = zeros(shp)
             ddenom_u = zeros(shp)
             ddenom_v = zeros(shp)

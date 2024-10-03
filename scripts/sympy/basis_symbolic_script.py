@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from sympy import Function, Symbol, Derivative, Expr
+from sympy import Derivative, Expr, Function, Symbol
 
 #%%
 # Define the Symbols and Functions

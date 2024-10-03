@@ -1,7 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import float64, sqrt, zeros
-from pygeom.geom2d import NurbsSurface2D, Vector2D, zero_vector2d
+from pygeom.geom2d import NurbsSurface2D, Vector2D
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
                               k3d_surface_normals, k3d_surface_tangents)
@@ -11,7 +11,7 @@ from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
 ro = 4.0
 ri = 0.0
 
-ctlpnts = zero_vector2d((9, 2))
+ctlpnts = Vector2D.zeros((9, 2))
 
 ctlpnts[0, 0] = Vector2D(ro, 0.0)
 ctlpnts[1, 0] = Vector2D(ro, ro)
@@ -75,7 +75,7 @@ plot.display()
 
 #%%
 # Create a Nurbs Trapezoid Surface
-ctlpnts = zero_vector2d((2, 2))
+ctlpnts = Vector2D.zeros((2, 2))
 
 ctlpnts[0, 0] = Vector2D(-2.0, -1.5)
 ctlpnts[1, 0] = Vector2D(1.8, -1.7)

@@ -2,9 +2,8 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import float64, zeros, sqrt
-from pygeom.geom3d import zero_vector, RationalBezierSurface
-from pygeom.geom3d import Vector
+from numpy import float64, sqrt, zeros
+from pygeom.geom3d import RationalBezierSurface, Vector
 
 #%%
 # Define the control points and weights
@@ -14,7 +13,7 @@ numv = 19
 ro = 3.0
 ri = 2.0
 
-ctlpts = zero_vector((3, 3))
+ctlpts = Vector.zeros((3, 3))
 ctlpts[0, 0] = Vector(ro, 0.0, 0.0)
 ctlpts[1, 0] = Vector(ro, ro, 0.0)
 ctlpts[2, 0] = Vector(0.0, ro, 0.0)

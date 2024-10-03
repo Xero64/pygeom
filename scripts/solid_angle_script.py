@@ -1,7 +1,9 @@
 #%%
 # Import Dependencies
 from math import pi
-from pygeom.geom3d import Vector, solid_angle_apex_trapzpyr, solid_angle_tetrahedron
+
+from pygeom.geom3d import (Vector, solid_angle_apex_trapzpyr,
+                           solid_angle_tetrahedron)
 
 #%%
 # Calculate Solid Angle Attempt 1

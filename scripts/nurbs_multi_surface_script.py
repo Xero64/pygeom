@@ -1,7 +1,7 @@
 #%%
 # Import Dependencies
-from numpy import sqrt, zeros, set_printoptions
-from pygeom.geom3d import NurbsCurve, NurbsSurface, Vector, zero_vector
+from numpy import set_printoptions, sqrt, zeros
+from pygeom.geom3d import NurbsCurve, NurbsSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
                               k3d_surface_normals, k3d_surface_tangents)
@@ -11,7 +11,7 @@ set_printoptions(suppress=True)
 
 #%%
 # Nurbs Circles
-ctlpnts = zero_vector(9)
+ctlpnts = Vector.zeros(9)
 ctlpnts[0] = Vector(1.0, 0.0, 0.0)
 ctlpnts[1] = Vector(1.0, 1.0, 0.0)
 ctlpnts[2] = Vector(0.0, 1.0, 0.0)
@@ -56,7 +56,7 @@ nurbscircle4 = NurbsCurve(ctlpnts4, weights=weights)
 
 #%%
 # Create Nurbs Surface
-pntsS = zero_vector((9, 4))
+pntsS = Vector.zeros((9, 4))
 
 pntsS[:, 0] = ctlpnts1
 pntsS[:, 1] = ctlpnts2

@@ -4,7 +4,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
 from numpy import argwhere, array, concatenate, linspace, logical_and, zeros
 
-from ..geom3d import Vector, solve_vector, zero_vector
+from ..geom3d import Vector, solve_vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -457,7 +457,7 @@ class Spline():
     def calc_d2r(self) -> Vector:
         numres = 2*self.numpnl
         Amat = zeros((numres, numres))
-        Bmat = zero_vector((numres, 1))
+        Bmat = Vector.zeros((numres, 1))
         j = 0
         for pnt in self.pnts:
             tup = pnt.get_ind_lhs_rhs()
@@ -477,7 +477,7 @@ class Spline():
     @property
     def dr(self) -> Vector:
         if self._dr is None:
-            self._dr = zero_vector(2*self.numpnl)
+            self._dr = Vector.zeros(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._dr[inda] = pnl.dra
@@ -488,7 +488,7 @@ class Spline():
     @property
     def r(self) -> Vector:
         if self._r is None:
-            self._r = zero_vector(2*self.numpnl)
+            self._r = Vector.zeros(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._r[inda] = pnl.pnta
@@ -525,7 +525,7 @@ class Spline():
     @property
     def k(self) -> 'Vector':
         if self._k is None:
-            self._k = zero_vector(2*self.numpnl)
+            self._k = Vector.zeros(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._k[inda] = pnl.ka
@@ -561,7 +561,7 @@ class Spline():
         u"""This function interpolates the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        r = zero_vector(numpnt)
+        r = Vector.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -579,7 +579,7 @@ class Spline():
         u"""This function interpolates the gradient of the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        dr = zero_vector(numpnt)
+        dr = Vector.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -597,7 +597,7 @@ class Spline():
         u"""This function interpolates the curvature of the spline."""
 
         numpnt = self.numpnl*num + 1
-        d2r = zero_vector(numpnt)
+        d2r = Vector.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -615,7 +615,7 @@ class Spline():
         u"""This function interpolates the inverse radius of the spline."""
 
         numpnt = self.numpnl*num + 1
-        k = zero_vector(numpnt)
+        k = Vector.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -782,7 +782,7 @@ class Spline():
     def spline_points_ratio(self, ratio: 'NDArray') -> Vector:
         s = ratio*self.length
         num = s.size
-        pnts = zero_vector(s.shape)
+        pnts = Vector.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -797,7 +797,7 @@ class Spline():
     def spline_gradient_ratio(self, ratio: 'NDArray') -> Vector:
         s = ratio*self.length
         num = s.size
-        grds = zero_vector(s.shape)
+        grds = Vector.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -812,7 +812,7 @@ class Spline():
     def spline_curvature_ratio(self, ratio: 'NDArray') -> Vector:
         s = ratio*self.length
         num = s.size
-        crvs = zero_vector(s.shape)
+        crvs = Vector.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -827,7 +827,7 @@ class Spline():
     def spline_inverse_radius_ratio(self, ratio: 'NDArray') -> Vector:
         s = ratio*self.length
         num = s.size
-        ks = zero_vector(s.shape)
+        ks = Vector.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):

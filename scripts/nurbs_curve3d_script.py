@@ -3,7 +3,7 @@
 from matplotlib.pyplot import figure
 from numpy import arctan2, cos, full, hstack, pi, sin, zeros
 from pygeom.geom2d import Vector2D
-from pygeom.geom3d import NurbsCurve, Vector, zero_vector
+from pygeom.geom3d import NurbsCurve, Vector
 from pygeom.tools.k3d import Plot, k3d_curve, k3d_nurbs_control_points, line
 
 #%%
@@ -12,7 +12,7 @@ num = 20
 r = 2.0
 l = 8.0
 
-ctlpts = zero_vector(9)
+ctlpts = Vector.zeros(9)
 ctlpts[0] = Vector(r, 0.0, 0*l/8)
 ctlpts[1] = Vector(r, r, 1*l/8)
 ctlpts[2] = Vector(0.0, r, 2*l/8)

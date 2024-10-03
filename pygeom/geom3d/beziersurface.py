@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Tuple
 
 from numpy import linspace
-from pygeom.tools.bernstein import bernstein_polynomials, bernstein_first_derivatives
+from pygeom.tools.bernstein import (bernstein_first_derivatives,
+                                    bernstein_polynomials)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

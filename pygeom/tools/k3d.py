@@ -4,7 +4,6 @@ from numpy import arange, asarray, hstack, vstack, zeros
 from pygeom.geom3d import Vector
 
 try:
-    from k3d import Plot as Plot
     from k3d import line, lines, mesh, points, vectors
     from k3d.objects import Line, Lines, Mesh, Points, Vectors
 except ImportError:

@@ -4,7 +4,7 @@ from pygeom.symbol2d import SymbolicVector2D, empty_symbolicvector2d
 from pygeom.tools.bernstein import (symbolic_bernstein_first_derivatives,
                                     symbolic_bernstein_polynomials,
                                     symbolic_bernstein_second_derivatives)
-from sympy import Symbol, Expr
+from sympy import Expr, Symbol
 
 #%%
 # Create Symbols

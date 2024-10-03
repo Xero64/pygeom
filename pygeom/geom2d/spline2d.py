@@ -4,7 +4,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
 from numpy import array, concatenate, linspace, zeros
 
-from ..geom2d import Vector2D, solve_vector2d, zero_vector2d
+from ..geom2d import Vector2D, solve_vector2d
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -450,7 +450,7 @@ class Spline2D():
     def calc_d2r(self) -> Vector2D:
         numres = 2*self.numpnl
         Amat = zeros((numres, numres))
-        Bmat = zero_vector2d((numres, 1))
+        Bmat = Vector2D.zeros((numres, 1))
         j = 0
         for pnt in self.pnts:
             tup = pnt.get_ind_lhs_rhs()
@@ -470,7 +470,7 @@ class Spline2D():
     @property
     def dr(self) -> Vector2D:
         if self._dr is None:
-            self._dr = zero_vector2d(2*self.numpnl)
+            self._dr = Vector2D.zeros(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._dr[inda] = pnl.dra
@@ -481,7 +481,7 @@ class Spline2D():
     @property
     def r(self) -> Vector2D:
         if self._r is None:
-            self._r = zero_vector2d(2*self.numpnl)
+            self._r = Vector2D.zeros(2*self.numpnl)
             for pnl in self.pnls:
                 inda = pnl.ind[0]
                 self._r[inda] = pnl.pnta
@@ -539,7 +539,7 @@ class Spline2D():
         u"""This function interpolates the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        r = zero_vector2d(numpnt)
+        r = Vector2D.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -557,7 +557,7 @@ class Spline2D():
         u"""This function interpolates the gradient of the spline with a float of points per piece."""
 
         numpnt = self.numpnl*num + 1
-        dr = zero_vector2d(numpnt)
+        dr = Vector2D.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -575,7 +575,7 @@ class Spline2D():
         u"""This function interpolates the curvature of the spline."""
 
         numpnt = self.numpnl*num + 1
-        d2r = zero_vector2d(numpnt)
+        d2r = Vector2D.zeros(numpnt)
         ratio = linspace(0.0, 1.0, num)
 
         for i, pnl in enumerate(self.pnls):
@@ -693,7 +693,7 @@ class Spline2D():
     def spline_points_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        pnts = zero_vector2d(s.shape)
+        pnts = Vector2D.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -708,7 +708,7 @@ class Spline2D():
     def spline_gradient_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        grds = zero_vector2d(s.shape)
+        grds = Vector2D.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):
@@ -723,7 +723,7 @@ class Spline2D():
     def spline_curvature_ratio(self, ratio: 'NDArray') -> Vector2D:
         s = ratio*self.length
         num = s.size
-        crvs = zero_vector2d(s.shape)
+        crvs = Vector2D.zeros(s.shape)
         k = 0
         for pnl in self.pnls:
             for j in range(k, num):

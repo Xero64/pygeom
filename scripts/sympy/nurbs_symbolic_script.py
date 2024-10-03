@@ -1,8 +1,8 @@
 #%%
 # Import Dependencies
-from sympy import Symbol
 from numpy import empty
-from pygeom.geom2d import Vector2D, NurbsCurve2D
+from pygeom.geom2d import NurbsCurve2D, Vector2D
+from sympy import Symbol
 
 #%%
 # Symbolic Degree 3 Bernstein Polynomials

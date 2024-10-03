@@ -1,11 +1,11 @@
 #%%
 # Import Dependencies
-from pygeom.geom2d import Vector2D, zero_vector2d
+from pygeom.geom2d import Vector2D
 from pygeom.geom2d.spline2d import Spline2D
 
 #%%
 # Create Spline and Plot
-points = zero_vector2d(4)
+points = Vector2D.zeros(4)
 points[0] = Vector2D(1.0, 0.0)
 points[1] = Vector2D(-1.0, 0.0)
 points[2] = Vector2D(0.0, 1.0)

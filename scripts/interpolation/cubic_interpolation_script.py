@@ -1,7 +1,7 @@
 #%%
 # Import Dependencies
 from matplotlib.pyplot import figure
-from numpy import asarray, linspace, concatenate, set_printoptions
+from numpy import asarray, concatenate, linspace, set_printoptions
 from pygeom.tools.solvers import cubic_pspline_fit_solver
 from scipy.interpolate import CubicSpline
 

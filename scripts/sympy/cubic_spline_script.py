@@ -1,8 +1,8 @@
 #%%
 # Import Dependencies
-from sympy import Symbol, Expr
-from sympy.solvers import solve
 from pygeom.tools.bernstein import symbolic_bernstein_polynomials
+from sympy import Expr, Symbol
+from sympy.solvers import solve
 
 #%%
 # Create Symbols

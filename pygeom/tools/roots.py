@@ -1,4 +1,5 @@
-from math import sqrt, copysign, acos, cos, pi
+from math import acos, copysign, cos, pi, sqrt
+
 
 def quadratic_roots(a: float, b: float, c: float):
     dx = b**2-4*a*c

@@ -1,6 +1,6 @@
 #%%
 # Import Depenedencies
-from sympy import Symbol, Poly
+from sympy import Poly, Symbol
 from sympy.solvers import solve
 
 #%%

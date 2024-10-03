@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, Union
 
 from numpy import ndarray
+
 from ..geom3d import Vector
 
 try:

@@ -1,6 +1,7 @@
-from .linearinterp import LinearInterpSolver as LinearInterpSolver
 from .linearinterp import LinearInterp as LinearInterp
-from .quadraticinterp import QuadraticInterpSolver as QuadraticInterpSolver
-from .quadraticinterp import QuadraticInterp as QuadraticInterp
-from .quadraticinterp import QuadraticCentreInterpSolver as QuadraticCentreInterpSolver
+from .linearinterp import LinearInterpSolver as LinearInterpSolver
 from .quadraticinterp import QuadraticCentreInterp as QuadraticCentreInterp
+from .quadraticinterp import \
+    QuadraticCentreInterpSolver as QuadraticCentreInterpSolver
+from .quadraticinterp import QuadraticInterp as QuadraticInterp
+from .quadraticinterp import QuadraticInterpSolver as QuadraticInterpSolver

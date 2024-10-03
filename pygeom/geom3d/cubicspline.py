@@ -4,7 +4,7 @@ from numpy import asarray, cumsum, full, logical_and, zeros
 
 from ..tools.basis import knot_linspace
 from ..tools.solvers import cubic_pspline_fit_solver
-from .vector import Vector, zero_vector
+from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -90,7 +90,7 @@ class CubicSpline():
                     numcond += 1
                 if not isinstance(self.bctype[1], str):
                     numcond += 1
-                self._input = zero_vector(self.points.size + numcond,
+                self._input = Vector.zeros(self.points.size + numcond,
                                           dtype=self.points.dtype)
                 self._input[:self.points.size] = self.points
                 count = 0

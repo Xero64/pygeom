@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from numpy import (arange, argsort, array, bool_, hstack, int64,
-                   logical_and, take_along_axis, unique, vstack, zeros, round)
+from numpy import (arange, argsort, array, bool_, hstack, int64, logical_and,
+                   round, take_along_axis, unique, vstack, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray

@@ -1,9 +1,9 @@
 #%%
 # Import Dependencies
-from sympy import Symbol
+from numpy import empty
 from pygeom.geom2d import BezierCurve2D
 from pygeom.symbol2d import SymbolicVector2D, empty_symbolicvector2d
-from numpy import empty
+from sympy import Symbol
 from sympy.solvers import solve
 
 #%%

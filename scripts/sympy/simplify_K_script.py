@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from sympy import cos, Symbol, Rational, Expr, sqrt
+from sympy import Expr, Rational, Symbol, cos, sqrt
 
 #%%
 # Create Symbols

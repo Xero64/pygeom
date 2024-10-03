@@ -50,26 +50,26 @@ class Vector():
         """Returns the x, y and z values of this array vector"""
         return self.x, self.y, self.z
 
-    def dot(self, vec: 'Vector') -> 'NDArray':
+    def dot(self, vector: 'Vector') -> 'NDArray':
         try:
-            return self.x*vec.x + self.y*vec.y + self.z*vec.z
+            return self.x*vector.x + self.y*vector.y + self.z*vector.z
         except AttributeError:
             err = 'Vector dot product must be with Vector object.'
             raise TypeError(err)
 
-    def cross(self, vec: 'Vector') -> 'Vector':
+    def cross(self, vector: 'Vector') -> 'Vector':
         try:
-            x = self.y*vec.z - self.z*vec.y
-            y = self.z*vec.x - self.x*vec.z
-            z = self.x*vec.y - self.y*vec.x
+            x = self.y*vector.z - self.z*vector.y
+            y = self.z*vector.x - self.x*vector.z
+            z = self.x*vector.y - self.y*vector.x
             return Vector(x, y, z)
         except AttributeError:
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)
 
-    def rcross(self, vec: 'Vector') -> 'Vector':
+    def rcross(self, vector: 'Vector') -> 'Vector':
         try:
-            return vec.cross(self)
+            return vector.cross(self)
         except AttributeError:
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)
@@ -318,11 +318,11 @@ class Vector():
     def fromiter(cls, vecs: Iterable['Vector'],
                  **kwargs: Dict[str, Any]) -> 'Vector':
         num = len(vecs)
-        vec = cls.zeros(num, **kwargs)
+        vector = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
-            vec[i] = veci
-        return vec
-    
+            vector[i] = veci
+        return vector
+
     @classmethod
     def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Vector':
         cur_ndim = 0
@@ -343,25 +343,27 @@ class Vector():
             if ndim(z) > cur_ndim:
                 cur_ndim = ndim(z)
                 cur_shape = shape(z)
-        vec = cls.zeros(cur_shape, **kwargs)
+        vector = cls.zeros(cur_shape, **kwargs)
         if ndim(x) == 0:
-            vec.x = full(cur_shape, x)
+            vector.x = full(cur_shape, x)
         else:
-            vec.x = x
+            vector.x = x
         if ndim(y) == 0:
-            vec.y = full(cur_shape, y)
+            vector.y = full(cur_shape, y)
         else:
-            vec.y = y
+            vector.y = y
         if ndim(z) == 0:
-            vec.z = full(cur_shape, z)
+            vector.z = full(cur_shape, z)
         else:
-            vec.z = z
-        return vec
+            vector.z = z
+        return vector
 
 
-def zero_vector(shape: Optional[Tuple[int, ...]] = None,
-                **kwargs: Dict[str, Any]) -> Vector:
-    return Vector.zeros(shape, **kwargs)
+def solve_vector(a: 'NDArray', b: 'Vector') -> 'Vector':
+    newb = hstack(b.to_xyz())
+    newc = solve(a, newb)
+    x, y, z = hsplit(newc, 3)
+    return Vector(x, y, z)
 
 def vector_isclose(a: Vector, b: Vector,
                    rtol: float=1e-09, atol: float=0.0) -> bool:
@@ -369,12 +371,6 @@ def vector_isclose(a: Vector, b: Vector,
     return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
            isclose(a.y, b.y, rtol=rtol, atol=atol) and \
            isclose(a.z, b.z, rtol=rtol, atol=atol)
-
-def solve_vector(a: 'NDArray', b: 'Vector') -> 'Vector':
-    newb = hstack(b.to_xyz())
-    newc = solve(a, newb)
-    x, y, z = hsplit(newc, 3)
-    return Vector(x, y, z)
 
 def vector_allclose(a: Vector, b: Vector,
                     rtol: float=1e-09, atol: float=0.0) -> bool:

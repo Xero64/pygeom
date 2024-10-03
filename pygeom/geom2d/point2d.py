@@ -1,5 +1,6 @@
 from .vector2d import Vector2D
 
+
 class Point2D(Vector2D):
 
     def __init__(self, x: float, y: float) -> None:

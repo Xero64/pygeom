@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
 from numpy import gradient, linspace
-from pygeom.tools.bernstein import bernstein_first_derivatives, bernstein_polynomials
+from pygeom.tools.bernstein import (bernstein_first_derivatives,
+                                    bernstein_polynomials)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

@@ -2,13 +2,13 @@
 # Import Dependencies
 from numpy import cos, float64, linspace, ones, pi, set_printoptions, sqrt
 from numpy.typing import NDArray
-from pygeom.geom2d import (BSplineCurve2D, CubicSpline2D, NurbsCurve2D,
-                           Vector2D, zero_vector2d)
+from pygeom.geom2d import BSplineCurve2D, CubicSpline2D, NurbsCurve2D, Vector2D
 from pygeom.tools.basis import knots_from_spacing
 from pygeom.tools.mpl import (plot_curvature, plot_curve,
                               plot_first_derivatives, plot_points,
                               plot_second_derivatives)
-from pygeom.tools.solvers import cubic_bspline_from_pspline, cubic_bspline_correction
+from pygeom.tools.solvers import (cubic_bspline_correction,
+                                  cubic_bspline_from_pspline)
 from scipy.interpolate import splev, splprep
 
 set_printoptions(suppress=True)
@@ -25,7 +25,7 @@ Kchk = 4.0/3.0/(sqrt(2.0/(1.0 + cos(ang))) + 1.0)
 print(f'K = {K}')
 # print(f'Kchk = {Kchk}')
 
-ctlpts = zero_vector2d(13, dtype=float64)
+ctlpts = Vector2D.zeros(13, dtype=float64)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, K*r)
 ctlpts[2] = Vector2D(K*r, r)
@@ -114,7 +114,7 @@ bsplinecurve = BSplineCurve2D(ctlpnts_corrected, knots=bknots, degree=3)
 
 print(bsplinecurve)
 
-ctlpnts = zero_vector2d(9)
+ctlpnts = Vector2D.zeros(9)
 ctlpnts[0] = Vector2D(r, 0.0)
 ctlpnts[1] = Vector2D(r, r)
 ctlpnts[2] = Vector2D(0.0, r)

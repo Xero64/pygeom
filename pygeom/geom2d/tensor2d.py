@@ -1,9 +1,8 @@
-from typing import TYPE_CHECKING, Any, List, Tuple, Dict, Optional, Iterable
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple
 
-from numpy import (bool_, copy, isclose, logical_and,
+from numpy import (allclose, bool_, copy, full, isclose, logical_and,
                    logical_or, ndim, ravel, repeat, reshape, result_type,
-                   shape, size, split, sum,
-                   transpose, zeros)
+                   shape, size, split, sum, transpose, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
@@ -275,17 +274,68 @@ class Tensor2D():
         except AttributeError:
             return False
 
-
-def zero_tensor2d(shape: Optional[Tuple[int, ...]] = None,
-                  **kwargs: Dict[str, Any]) -> Tensor2D:
-    if shape is None:
-        xx, xy, yx, yy = 0.0, 0.0, 0.0, 0.0
-    else:
+    @classmethod
+    def zeros(cls, shape: Tuple[int, ...] = (),
+              **kwargs: Dict[str, Any]) -> 'Tensor2D':
         xx = zeros(shape, **kwargs)
         xy = zeros(shape, **kwargs)
         yx = zeros(shape, **kwargs)
         yy = zeros(shape, **kwargs)
-    return Tensor2D(xx, xy, yx, yy)
+        return cls(xx, xy, yx, yy)
+
+    @classmethod
+    def fromiter(cls, tens: Iterable['Tensor2D'],
+                 **kwargs: Dict[str, Any]) -> 'Tensor2D':
+        num = len(tens)
+        vec = cls.zeros(num, **kwargs)
+        for i, veci in enumerate(tens):
+            vec[i] = veci
+        return vec
+
+    @classmethod
+    def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Tensor2D':
+        cur_ndim = 0
+        cur_shape = ()
+        xx, xy, yx, yy = 0.0, 0.0, 0.0, 0.0
+        if hasattr(obj, 'xx'):
+            xx = obj.__dict__['xx']
+            if ndim(xx) > cur_ndim:
+                cur_ndim = ndim(xx)
+                cur_shape = shape(xx)
+        if hasattr(obj, 'xy'):
+            xy = obj.__dict__['xy']
+            if ndim(xy) > cur_ndim:
+                cur_ndim = ndim(xy)
+                cur_shape = shape(xy)
+        if hasattr(obj, 'yx'):
+            yx = obj.__dict__['yx']
+            if ndim(yx) > cur_ndim:
+                cur_ndim = ndim(yx)
+                cur_shape = shape(yx)
+        if hasattr(obj, 'yy'):
+            yy = obj.__dict__['yy']
+            if ndim(yy) > cur_ndim:
+                cur_ndim = ndim(yy)
+                cur_shape = shape(yy)
+        tensor = cls.zeros(cur_shape, **kwargs)
+        if ndim(xx) == 0:
+            tensor.xx = full(cur_shape, xx)
+        else:
+            tensor.xx = xx
+        if ndim(xy) == 0:
+            tensor.xy = full(cur_shape, xy)
+        else:
+            tensor.xy = xy
+        if ndim(yx) == 0:
+            tensor.yx = full(cur_shape, yx)
+        else:
+            tensor.yx = yx
+        if ndim(yy) == 0:
+            tensor.yy = full(cur_shape, yy)
+        else:
+            tensor.yy = yy
+        return tensor
+
 
 def tensor2d_isclose(a: Tensor2D, b: Tensor2D,
                      rtol: float=1e-09, atol: float=0.0) -> bool:
@@ -294,3 +344,12 @@ def tensor2d_isclose(a: Tensor2D, b: Tensor2D,
            isclose(a.xy, b.xy, rtol=rtol, atol=atol) and \
            isclose(a.yx, b.yx, rtol=rtol, atol=atol) and \
            isclose(a.yy, b.yy, rtol=rtol, atol=atol)
+
+
+def tensor2d_allclose(a: Tensor2D, b: Tensor2D,
+                      rtol: float=1e-09, atol: float=0.0) -> bool:
+    """Returns True if two Tensor2Ds are close enough to be considered equal."""
+    return allclose(a.xx, b.xx, rtol=rtol, atol=atol) and \
+           allclose(a.xy, b.xy, rtol=rtol, atol=atol) and \
+           allclose(a.yx, b.yx, rtol=rtol, atol=atol) and \
+           allclose(a.yy, b.yy, rtol=rtol, atol=atol)

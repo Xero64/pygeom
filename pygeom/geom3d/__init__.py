@@ -19,7 +19,6 @@ from .plane import Plane as Plane
 from .point import Point as Point
 from .transform import Transform as Transform
 from .vector import Vector as Vector
-from .vector import zero_vector as zero_vector
 from .vector import solve_vector as solve_vector
 
 IHAT = Vector(1.0, 0.0, 0.0)

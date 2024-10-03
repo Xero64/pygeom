@@ -2,8 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import asarray, cos, linspace, pi, sin
-from pygeom.geom2d import (BezierCurve2D, RationalBezierCurve2D, Vector2D,
-                           zero_vector2d)
+from pygeom.geom2d import BezierCurve2D, RationalBezierCurve2D, Vector2D
 from sympy import Symbol, sqrt
 
 #%%
@@ -15,7 +14,7 @@ t = Symbol('t', real=True, positive=True)
 # Create Bezier Curve
 num = 21
 
-ctlpts = zero_vector2d(3)
+ctlpts = Vector2D.zeros(3)
 ctlpts[0] = Vector2D(0.0, 0.0)
 ctlpts[1] = Vector2D(0.0, 0.05)
 ctlpts[2] = Vector2D(1.0, 0.0)
@@ -37,7 +36,7 @@ num = 21
 a = 2
 b = 1
 
-ctlpts = zero_vector2d(3, dtype=int)
+ctlpts = Vector2D.zeros(3, dtype=int)
 ctlpts[0] = Vector2D(a, 0)
 ctlpts[1] = Vector2D(a, b)
 ctlpts[2] = Vector2D(0, b)
@@ -66,7 +65,7 @@ _ = ax.legend()
 num = 21
 r = 2
 
-ctlpts = zero_vector2d(3, dtype=int)
+ctlpts = Vector2D.zeros(3, dtype=int)
 ctlpts[0] = Vector2D(r, 0)
 ctlpts[1] = Vector2D(r, r)
 ctlpts[2] = Vector2D(0, r)
@@ -99,7 +98,7 @@ K = 4/3*(sqrt(2) - 1)
 ang = pi/2
 K = 4.0/3.0/(1.0/cos(ang/2) + 1.0)
 
-ctlpts = zero_vector2d(4, dtype=int)
+ctlpts = Vector2D.zeros(4, dtype=int)
 ctlpts[0] = Vector2D(r, 0)
 ctlpts[1] = Vector2D(r, K*r)
 ctlpts[2] = Vector2D(K*r, r)

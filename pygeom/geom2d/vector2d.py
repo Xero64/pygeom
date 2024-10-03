@@ -44,23 +44,23 @@ class Vector2D():
         """Returns the x and y values of this vector"""
         return self.x, self.y
 
-    def dot(self, vec: 'Vector2D') -> 'NDArray':
+    def dot(self, vector: 'Vector2D') -> 'NDArray':
         try:
-            return self.x*vec.x + self.y*vec.y
+            return self.x*vector.x + self.y*vector.y
         except AttributeError:
             err = 'Vector2D dot product must be with Vector2D object.'
             raise TypeError(err)
 
-    def cross(self, vec: 'Vector2D') -> 'NDArray':
+    def cross(self, vector: 'Vector2D') -> 'NDArray':
         try:
-            return self.x*vec.y - self.y*vec.x
+            return self.x*vector.y - self.y*vector.x
         except AttributeError:
             err = 'Vector2D cross product must be with Vector2D object.'
             raise TypeError(err)
 
-    def rcross(self, vec: 'Vector2D') -> 'Vector2D':
+    def rcross(self, vector: 'Vector2D') -> 'Vector2D':
         try:
-            return vec.cross(self)
+            return vector.cross(self)
         except AttributeError:
             err = 'Vector2D cross product must be with Vector2D object.'
             raise TypeError(err)
@@ -305,11 +305,11 @@ class Vector2D():
     def fromiter(cls, vecs: Iterable['Vector2D'],
                  **kwargs: Dict[str, Any]) -> 'Vector2D':
         num = len(vecs)
-        vec = cls.zeros(num, **kwargs)
+        vector = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
-            vec[i] = veci
-        return vec
-    
+            vector[i] = veci
+        return vector
+
     @classmethod
     def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Vector2D':
         cur_ndim = 0
@@ -325,33 +325,29 @@ class Vector2D():
             if ndim(y) > cur_ndim:
                 cur_ndim = ndim(y)
                 cur_shape = shape(y)
-        vec = cls.zeros(cur_shape, **kwargs)
+        vector = cls.zeros(cur_shape, **kwargs)
         if ndim(x) == 0:
-            vec.x = full(cur_shape, x)
+            vector.x = full(cur_shape, x)
         else:
-            vec.x = x
+            vector.x = x
         if ndim(y) == 0:
-            vec.y = full(cur_shape, y)
+            vector.y = full(cur_shape, y)
         else:
-            vec.y = y
-        return vec
+            vector.y = y
+        return vector
 
-
-def zero_vector2d(shape: Optional[Tuple[int, ...]] = None,
-                  **kwargs: Dict[str, Any]) -> Vector2D:
-    return Vector2D.zeros(shape, **kwargs)
-
-def vector2d_isclose(a: Vector2D, b: Vector2D,
-                     rtol: float=1e-09, atol: float=0.0) -> bool:
-    """Returns True if two Vector2Ds are close enough to be considered equal."""
-    return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
-           isclose(a.y, b.y, rtol=rtol, atol=atol)
 
 def solve_vector2d(a: 'NDArray', b: 'Vector2D') -> 'Vector2D':
     newb = hstack(b.to_xy())
     newc = solve(a, newb)
     x, y = hsplit(newc, 2)
     return Vector2D(x, y)
+
+def vector2d_isclose(a: Vector2D, b: Vector2D,
+                     rtol: float=1e-09, atol: float=0.0) -> bool:
+    """Returns True if two Vector2Ds are close enough to be considered equal."""
+    return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
+           isclose(a.y, b.y, rtol=rtol, atol=atol)
 
 def vector2d_allclose(a: Vector2D, b: Vector2D,
                       rtol: float=1e-09, atol: float=0.0) -> bool:
