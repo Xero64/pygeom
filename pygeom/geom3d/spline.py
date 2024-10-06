@@ -4,7 +4,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
 from numpy import argwhere, array, concatenate, linspace, logical_and, zeros
 
-from ..geom3d import Vector, solve_vector
+from ..geom3d import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -465,7 +465,7 @@ class Spline():
                 Amat[j, ind] = lhs
                 Bmat[j, 0] = rhs
                 j += 1
-        d2r = solve_vector(Amat, Bmat)
+        d2r = Vector.solve(Amat, Bmat)
         self._d2r = Vector(d2r.x.ravel(), d2r.y.ravel(), d2r.z.ravel())
 
     @property

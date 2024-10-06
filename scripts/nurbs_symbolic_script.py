@@ -1,7 +1,8 @@
 #%%
 # Import Dependencies
-from pygeom.tools.bernstein import symbolic_bernstein_polynomials
 from sympy import Poly, Rational, Symbol, fraction, sqrt
+
+from pygeom.tools.bernstein import symbolic_bernstein_polynomials
 
 #%%
 # Symbolic Degree 3 Bernstein Polynomials

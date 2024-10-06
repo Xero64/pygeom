@@ -2,6 +2,8 @@
 # Import Dependencies
 from numpy import cos, float64, linspace, ones, pi, set_printoptions, sqrt
 from numpy.typing import NDArray
+from scipy.interpolate import splev, splprep
+
 from pygeom.geom2d import BSplineCurve2D, CubicSpline2D, NurbsCurve2D, Vector2D
 from pygeom.tools.basis import knots_from_spacing
 from pygeom.tools.mpl import (plot_curvature, plot_curve,
@@ -9,7 +11,6 @@ from pygeom.tools.mpl import (plot_curvature, plot_curve,
                               plot_second_derivatives)
 from pygeom.tools.solvers import (cubic_bspline_correction,
                                   cubic_bspline_from_pspline)
-from scipy.interpolate import splev, splprep
 
 set_printoptions(suppress=True)
 
@@ -111,6 +112,7 @@ ctlpnts_corrected = cubic_bspline_correction(ctlpnts)
 print(f'ctlpnts_corrected = \n{ctlpnts_corrected}\n')
 
 bsplinecurve = BSplineCurve2D(ctlpnts_corrected, knots=bknots, degree=3)
+# bsplinecurve = BSplineCurve2D(ctlpnts_corrected, degree=3)
 
 print(bsplinecurve)
 

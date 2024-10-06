@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import asarray
+
 from pygeom.geom2d import Vector2D
 from pygeom.geom2d.spline2d import Spline2D
 

@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import ones, sqrt
+
 from pygeom.geom3d import NurbsSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,

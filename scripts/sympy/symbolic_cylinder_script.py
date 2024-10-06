@@ -1,7 +1,8 @@
 #%%
 # Import Dependencies
-from pygeom.symbol3d import SymbolicVector
 from sympy import Symbol, cos, pi, sin
+
+from pygeom.symbol3d import SymbolicVector
 
 #%%
 # Create Symbols

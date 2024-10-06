@@ -4,11 +4,13 @@ from typing import TYPE_CHECKING, Union
 
 from matplotlib.pyplot import figure
 from numpy import asarray, cos, float64, linspace, pi, sqrt
+
 from pygeom.geom2d import (BezierCurve2D, BSplineCurve2D, NurbsCurve2D,
                            RationalBezierCurve2D, Vector2D)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from pygeom.geom2d import Vector2D
     NDArray = Union[float64, NDArray]
     VectorLike = Union[Vector2D, Vector2D]

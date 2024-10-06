@@ -2,6 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import cos, ones, pi, sin, sqrt
+
 from pygeom.geom2d import NurbsCurve2D, Vector2D
 from pygeom.tools.k3d import Plot, k3d_curve, k3d_nurbs_control_points
 

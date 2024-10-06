@@ -2,8 +2,9 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import asarray, concatenate, linspace, set_printoptions
-from pygeom.tools.solvers import cubic_pspline_fit_solver
 from scipy.interpolate import CubicSpline
+
+from pygeom.tools.solvers import cubic_pspline_fit_solver
 
 set_printoptions(suppress=True)
 

@@ -2,6 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import cos, pi, sin
+
 from pygeom.geom2d import ParamCurve2D, Vector2D
 from pygeom.tools.k3d import Plot, k3d_curve
 

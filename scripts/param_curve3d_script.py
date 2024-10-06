@@ -3,6 +3,7 @@
 from matplotlib.pyplot import figure
 from numpy import cos, full, pi, sin, zeros
 from numpy.typing import NDArray
+
 from pygeom.geom3d import ParamCurve, Vector
 from pygeom.tools.k3d import Plot, k3d_curve
 

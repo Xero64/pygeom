@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import cos, linspace, pi, sin, zeros
+
 from pygeom.geom3d import Vector
 from pygeom.geom3d.cubicspline import CubicSpline
 from pygeom.geom3d.spline import Spline

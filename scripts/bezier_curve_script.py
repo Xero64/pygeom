@@ -2,8 +2,9 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from numpy import asarray, cos, linspace, pi, sin
-from pygeom.geom2d import BezierCurve2D, RationalBezierCurve2D, Vector2D
 from sympy import Symbol, sqrt
+
+from pygeom.geom2d import BezierCurve2D, RationalBezierCurve2D, Vector2D
 
 #%%
 # Create Symbols

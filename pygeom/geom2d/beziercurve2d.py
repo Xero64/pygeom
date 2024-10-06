@@ -1,11 +1,13 @@
 from typing import TYPE_CHECKING
 
 from numpy import linspace
+
 from pygeom.tools.bernstein import (bernstein_first_derivatives,
                                     bernstein_polynomials)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from pygeom.geom2d import Vector2D
 
 

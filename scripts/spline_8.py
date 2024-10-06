@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import asarray, cos, pi, sin
+
 from pygeom.geom3d import point_from_lists
 from pygeom.geom3d.spline import Spline, Vector
 

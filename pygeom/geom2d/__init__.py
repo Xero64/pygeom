@@ -18,7 +18,6 @@ from .point2d import Point2D as Point2D
 from .tensor2d import Tensor2D as Tensor2D
 from .transform2d import Transform2D as Transform2D
 from .vector2d import Vector2D as Vector2D
-from .vector2d import solve_vector2d as solve_vector2d
 
 I2D = Vector2D(1.0, 0.0)
 J2D = Vector2D(0.0, 1.0)

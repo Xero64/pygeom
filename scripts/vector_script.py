@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import zeros
+
 from pygeom.geom3d.vector import Vector
 
 #%%

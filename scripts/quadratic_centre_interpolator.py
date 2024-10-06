@@ -3,9 +3,10 @@
 from matplotlib.pyplot import figure
 from numpy import asarray, divide, zeros
 from numpy.linalg import solve
+from scipy.interpolate import interp1d
+
 from pygeom.interp1d.quadraticinterp import (QuadraticCentreInterp,
                                              QuadraticCentreInterpSolver)
-from scipy.interpolate import interp1d
 
 #%%
 # Create Arrays

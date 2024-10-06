@@ -6,6 +6,7 @@ from .vector2d import Vector2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from pygeom.geom2d import Vector2D
     ParamCallable = Callable[['NDArray'], 'Vector2D']
 

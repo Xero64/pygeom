@@ -2,9 +2,10 @@
 from typing import Any, Dict, Optional, Tuple, Union
 
 from numpy import empty
-from pygeom.geom2d.vector2d import Vector2D
 from sympy import (Symbol, atan, cos, diff, expand, expand_trig, integrate,
                    simplify, sin, sqrt, trigsimp)
+
+from pygeom.geom2d.vector2d import Vector2D
 
 
 class SymbolicVector2D(Vector2D):

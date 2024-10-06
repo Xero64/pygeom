@@ -3,6 +3,7 @@
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import float64, sqrt, zeros
+
 from pygeom.geom3d import RationalBezierSurface, Vector
 
 #%%

@@ -4,7 +4,7 @@ from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
 from numpy import array, concatenate, linspace, zeros
 
-from ..geom2d import Vector2D, solve_vector2d
+from ..geom2d import Vector2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -458,7 +458,7 @@ class Spline2D():
                 Amat[j, ind] = lhs
                 Bmat[j, 0] = rhs
                 j += 1
-        d2r = solve_vector2d(Amat, Bmat)
+        d2r = Vector2D.solve(Amat, Bmat)
         self._d2r = Vector2D(d2r.x.ravel(), d2r.y.ravel())
 
     @property

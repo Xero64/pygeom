@@ -1,9 +1,10 @@
 from typing import Any, Dict, Optional, Tuple, Union
 
 from numpy import empty
-from pygeom.geom3d.vector import Vector
 from sympy import (Symbol, collect, diff, expand, expand_trig, integrate,
                    simplify, sqrt, trigsimp)
+
+from pygeom.geom3d.vector import Vector
 
 
 class SymbolicVector(Vector):

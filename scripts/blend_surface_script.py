@@ -2,6 +2,7 @@
 # Import Dependencies
 from numpy import full, zeros
 from numpy.typing import NDArray
+
 from pygeom.geom3d import ParamCurve, ParamSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_surface, k3d_surface_normals,
                               k3d_surface_tangents)

@@ -4,6 +4,7 @@ from numpy import linspace, meshgrid, shape
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from pygeom.geom3d import Vector
     ParamCallable = Callable[['NDArray', 'NDArray'], 'Vector']
 

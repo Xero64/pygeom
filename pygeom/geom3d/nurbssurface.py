@@ -8,6 +8,7 @@ from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from pygeom.geom3d import Vector
 
 

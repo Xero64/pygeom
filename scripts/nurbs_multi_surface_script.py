@@ -1,6 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import set_printoptions, sqrt, zeros
+
 from pygeom.geom3d import NurbsCurve, NurbsSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
