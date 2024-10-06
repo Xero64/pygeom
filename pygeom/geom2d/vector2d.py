@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
 
-from numpy import (allclose, arctan2, bool_, copy, cos, divide, full, hsplit,
-                   hstack, isclose, logical_and, logical_or, ndim, ravel,
-                   repeat, reshape, result_type, shape, sin, size, split, sqrt,
-                   square, stack, sum, transpose, zeros)
+from numpy import (allclose, arctan2, bool_, concatenate, copy, cos, divide,
+                   full, hsplit, hstack, isclose, logical_and, logical_or,
+                   ndim, ravel, repeat, reshape, result_type, shape, sin, size,
+                   split, sqrt, square, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -336,21 +336,29 @@ class Vector2D():
             vector.y = y
         return vector
 
+    @classmethod
+    def concatenate(cls, vecs: Iterable['Vector2D'], **kwargs: Dict[str, Any]) -> 'Vector2D':
+        x = concatenate([vec.x for vec in vecs], **kwargs)
+        y = concatenate([vec.y for vec in vecs], **kwargs)
+        return cls(x, y)
 
-def solve_vector2d(a: 'NDArray', b: 'Vector2D') -> 'Vector2D':
-    newb = hstack(b.to_xy())
-    newc = solve(a, newb)
-    x, y = hsplit(newc, 2)
-    return Vector2D(x, y)
+    @classmethod
+    def stack(cls, vecs: Iterable['Vector2D'], **kwargs: Dict[str, Any]) -> 'Vector2D':
+        x = stack([vec.x for vec in vecs], **kwargs)
+        y = stack([vec.y for vec in vecs], **kwargs)
+        return cls(x, y)
 
-def vector2d_isclose(a: Vector2D, b: Vector2D,
-                     rtol: float=1e-09, atol: float=0.0) -> bool:
-    """Returns True if two Vector2Ds are close enough to be considered equal."""
-    return isclose(a.x, b.x, rtol=rtol, atol=atol) and \
-           isclose(a.y, b.y, rtol=rtol, atol=atol)
+    def isclose(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> 'NDArray[bool_]':
+        xclose = isclose(self.x, obj.x, rtol=rtol, atol=atol)
+        yclose = isclose(self.y, obj.y, rtol=rtol, atol=atol)
+        return logical_and(xclose, yclose)
 
-def vector2d_allclose(a: Vector2D, b: Vector2D,
-                      rtol: float=1e-09, atol: float=0.0) -> bool:
-    """Returns True if two Vector2Ds are close enough to be considered equal."""
-    return allclose(a.x, b.x, rtol=rtol, atol=atol) and \
-           allclose(a.y, b.y, rtol=rtol, atol=atol)
+    def allclose(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> bool:
+        xclose = allclose(self.x, obj.x, rtol=rtol, atol=atol)
+        yclose = allclose(self.y, obj.y, rtol=rtol, atol=atol)
+        return xclose and yclose
+
+    def solve(self, amat: 'NDArray') -> 'Vector2D':
+        bmat = hstack(self.to_xy())
+        cmat = solve(amat, bmat)
+        return Vector2D(*hsplit(cmat, 2))

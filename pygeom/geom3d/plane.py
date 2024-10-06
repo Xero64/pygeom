@@ -35,7 +35,8 @@ class Plane():
         return cls(pnt, nrm)
 
     @classmethod
-    def from_n_points_best_fit(cls, pnts: Vector) -> 'Plane':
+    def from_n_points_best_fit(cls, pnts: Vector,
+                               orientate: bool = False) -> 'Plane':
         """Create a plane from multiple points"""
         if pnts.size < 3:
             raise ValueError('Need at least 3 points to fit a plane.')
@@ -50,6 +51,17 @@ class Plane():
         a = (syz*sxy - sxz*syy)/d
         b = (sxy*sxz - sxx*syz)/d
         nrm = Vector(a, b, 1.0)
+        if orientate:
+            extpnts = Vector.concatenate((pnts[-2:], pnts))
+            pntsa = extpnts[0:-2]
+            pntsb = extpnts[1:-1]
+            pntsc = extpnts[2:]
+            vecab = pntsb - pntsa
+            vecbc = pntsc - pntsb
+            nrms = vecab.cross(vecbc)
+            avgnrm = nrms.sum()/nrms.size
+            if nrm.dot(avgnrm) < 0.0:
+                nrm = -nrm
         return Plane(pnto, nrm)
 
     def __repr__(self) -> str:
