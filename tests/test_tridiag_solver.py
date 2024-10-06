@@ -1,5 +1,6 @@
 from numpy import asarray, diag, isclose
 from numpy.linalg import solve
+
 from pygeom.tools.solvers import tridiag_solver
 
 a = asarray([3.5, 2.2, 1.4])
