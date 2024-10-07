@@ -465,7 +465,7 @@ class Spline():
                 Amat[j, ind] = lhs
                 Bmat[j, 0] = rhs
                 j += 1
-        d2r = Vector.solve(Amat, Bmat)
+        d2r = Bmat.solve(Amat)
         self._d2r = Vector(d2r.x.ravel(), d2r.y.ravel(), d2r.z.ravel())
 
     @property
