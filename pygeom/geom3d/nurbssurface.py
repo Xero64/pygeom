@@ -137,6 +137,11 @@ class NurbsSurface():
             tangent_v = dnumer_v
         return tangent_u, tangent_v
 
+    def evaluate_normals_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
+        tangent_u, tangent_v = self.evaluate_tangents_at_uv(u, v)
+        normal = tangent_u.cross(tangent_v)
+        return normal
+
     def evaluate_tangents_at_uv_mesh(self, um: 'NDArray',
                                      vm: 'NDArray') -> Tuple['Vector', 'Vector']:
         shp = shape(um)
@@ -184,6 +189,10 @@ class NurbsSurface():
                                                                'Vector']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
+
+    def evaluate_normals(self, numu: int, numv: int) -> 'Vector':
+        u, v = self.evaluate_uv(numu, numv)
+        return self.evaluate_normals_at_uv(u, v)
 
     def __repr__(self) -> str:
         return f'<NurbsSurface: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'

@@ -46,6 +46,10 @@ class ParamSurface():
         drdv = self.drdv(um, vm)
         return drdu, drdv
 
+    def evaluate_normals_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
+        drdu, drdv = self.evaluate_tangents_at_uv(u, v)
+        return drdu.cross(drdv)
+
     def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray',
                                                          'NDArray']:
         u = linspace(0.0, 1.0, numu)
@@ -65,6 +69,10 @@ class ParamSurface():
                                                                'Vector']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
+
+    def evaluate_normals(self, numu: int, numv: int) -> 'Vector':
+        u, v = self.evaluate_uv(numu, numv)
+        return self.evaluate_normals_at_uv(u, v)
 
     def __repr__(self) -> str:
         return f'<ParamSurface>'
