@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
 
 from numpy import (allclose, arctan2, bool_, concatenate, copy, cos, divide,
-                   full, hsplit, hstack, isclose, logical_and, logical_or,
-                   ndim, ravel, repeat, reshape, result_type, shape, sin, size,
-                   split, sqrt, square, stack, sum, transpose, zeros)
+                   full, isclose, logical_and, logical_or, ndim, ravel, repeat,
+                   reshape, result_type, shape, sin, size, split, sqrt, square,
+                   stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -359,6 +359,18 @@ class Vector2D():
         return xclose and yclose
 
     def solve(self, amat: 'NDArray') -> 'Vector2D':
-        bmat = hstack(self.to_xy())
+        if self.ndim == 0:
+            bmat = stack(self.reshape((1, 1)).to_xy(), axis=1)
+        elif self.ndim == 1 or self.ndim == 2:
+            bmat = stack(self.to_xy(), axis=1)
+        else:
+            raise ValueError('Vector2D cannot be solved.')
         cmat = solve(amat, bmat)
-        return Vector2D(*hsplit(cmat, 2))
+        if self.ndim == 0:
+            return Vector2D(*split(cmat, 2, axis=1)).reshape(())
+        elif self.ndim == 1:
+            return Vector2D(*split(cmat, 2, axis=1)).reshape((self.size,))
+        elif self.ndim == 2:
+            return Vector2D(*split(cmat, 2, axis=1))
+        else:
+            raise ValueError('Vector2D cannot be solved.')

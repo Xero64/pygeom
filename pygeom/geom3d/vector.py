@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
 
-from numpy import (allclose, concatenate, copy, divide, full, hsplit, hstack,
-                   isclose, logical_and, logical_or, ndim, ravel, repeat,
-                   reshape, result_type, shape, size, split, sqrt, square,
-                   stack, sum, transpose, zeros)
+from numpy import (allclose, concatenate, copy, divide, full, isclose,
+                   logical_and, logical_or, ndim, ravel, repeat, reshape,
+                   result_type, shape, size, split, sqrt, square, stack, sum,
+                   transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -387,6 +387,18 @@ class Vector():
         return xclose and yclose and zclose
 
     def solve(self, amat: 'NDArray') -> 'Vector':
-        bmat = hstack(self.to_xyz())
+        if self.ndim == 0:
+            bmat = stack(self.reshape((1, 1)).to_xyz(), axis=1)
+        elif self.ndim == 1 or self.ndim == 2:
+            bmat = stack(self.to_xyz(), axis=1)
+        else:
+            raise ValueError('Vector cannot be solved.')
         cmat = solve(amat, bmat)
-        return Vector(*hsplit(cmat, 3))
+        if self.ndim == 0:
+            return Vector(*split(cmat, 3, axis=1)).reshape(())
+        elif self.ndim == 1:
+            return Vector(*split(cmat, 3, axis=1)).reshape((self.size,))
+        elif self.ndim == 2:
+            return Vector(*split(cmat, 3, axis=1))
+        else:
+            raise ValueError('Vector cannot be solved.')
