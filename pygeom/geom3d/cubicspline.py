@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from numpy import asarray, cumsum, full, logical_and, zeros
 
@@ -8,7 +8,7 @@ from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    BCLike = Optional[Tuple[Tuple[int, Vector], Tuple[int, Vector]]]
+    BCLike = tuple[tuple[int, Vector], tuple[int, Vector]] | None
 
 BCSTR1 = ('quadratic', 'not-a-knot', 'natural', 'clamped', 'periodic')
 BCSTR2 = ('quadratic', 'not-a-knot', 'natural', 'clamped')

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from numpy import concatenate, divide, float64, full, ones, zeros
 
@@ -21,7 +21,7 @@ class NurbsCurve2D():
     _wpoints: 'Vector2D' = None
     _cknots: 'NDArray' = None
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts.ravel()
         self.weights = kwargs.get('weights',
                                   ones(ctlpnts.size, dtype=float64)).ravel()
@@ -160,7 +160,7 @@ class NurbsCurve2D():
 
 class BSplineCurve2D(NurbsCurve2D):
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
         kwargs['weights'] = ones(ctlpnts.shape, dtype=float64)
         super().__init__(ctlpnts, **kwargs)
 

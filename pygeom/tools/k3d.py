@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Any, Dict, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from numpy import arange, asarray, hstack, vstack, zeros
-
+from pygeom.geom2d import Vector2D
 from pygeom.geom3d import Vector
 
 try:
@@ -13,21 +13,21 @@ except ImportError:
 
 if TYPE_CHECKING:
     from ..geom2d import (CubicSpline2D, NurbsCurve2D, NurbsSurface2D,
-                          ParamCurve2D, Vector2D)
+                          ParamCurve2D)
     from ..geom3d import (CubicSpline, NurbsCurve, NurbsSurface, ParamCurve,
                           ParamSurface)
-    CurveLike = Union[NurbsCurve2D, NurbsCurve, ParamCurve2D, ParamCurve, CubicSpline2D, CubicSpline]
-    SurfaceLike = Union[NurbsSurface2D, NurbsSurface, ParamSurface]
-    NurbsLike = Union[NurbsCurve2D, NurbsCurve, NurbsSurface]
+    CurveLike = NurbsCurve2D | NurbsCurve | ParamCurve2D | ParamCurve | CubicSpline2D | CubicSpline
+    SurfaceLike = NurbsSurface2D | NurbsSurface | ParamSurface
+    NurbsLike = NurbsCurve2D | NurbsCurve | NurbsSurface
 
 
-def make_vector_3d(vec: Union['Vector2D', Vector]) -> Vector:
+def make_vector_3d(vec: Vector | Vector2D) -> Vector:
     if hasattr(vec, 'z'):
         return vec
     else:
         return Vector(vec.x, vec.y, zeros(vec.shape))
 
-def k3d_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Line:
+def k3d_curve(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Line:
 
     num = kwargs.get('num', 12)
     kwargs.setdefault('color', 0xffd500)
@@ -39,7 +39,7 @@ def k3d_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Line:
 
     return line(k3dpnts, **kwargs)
 
-def k3d_curve_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+def k3d_curve_tangents(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Vectors:
 
     num = kwargs.get('num', 12)
     scale = kwargs.pop('scale', 1.0)
@@ -54,7 +54,7 @@ def k3d_curve_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
 
     return vectors(k3dpnts, k3dtgts, **kwargs)
 
-def k3d_curve_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+def k3d_curve_normals(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Vectors:
 
     num = kwargs.get('num', 12)
     scale = kwargs.pop('scale', 1.0)
@@ -69,7 +69,7 @@ def k3d_curve_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
 
     return vectors(k3dpnts, k3dnrms, **kwargs)
 
-def k3d_curve_binormals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors:
+def k3d_curve_binormals(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Vectors:
 
     num = kwargs.get('num', 12)
     scale = kwargs.pop('scale', 1.0)
@@ -86,7 +86,7 @@ def k3d_curve_binormals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Vectors
 
     return vectors(k3dpnts, binsxyz, **kwargs)
 
-def k3d_surface(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Mesh:
+def k3d_surface(surface: 'SurfaceLike', **kwargs: dict[str, Any]) -> Mesh:
 
     unum = kwargs.pop('unum', 12)
     vnum = kwargs.pop('vnum', 12)
@@ -120,7 +120,7 @@ def k3d_surface(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Mesh:
 
     return mesh(k3dpnts, faceind, k3dnrms, **kwargs)
 
-def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Vectors:
+def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: dict[str, Any]) -> Vectors:
 
     unum = kwargs.pop('unum', 12)
     vnum = kwargs.pop('vnum', 12)
@@ -147,7 +147,7 @@ def k3d_surface_normals(surface: 'SurfaceLike', **kwargs: Dict[str, Any]) -> Vec
     return vectors(k3dpnts, k3dnrms, **kwargs)
 
 def k3d_surface_tangents(surface: 'SurfaceLike',
-                         **kwargs: Dict[str, Any]) -> Tuple[Vectors, Vectors]:
+                         **kwargs: dict[str, Any]) -> tuple[Vectors, Vectors]:
 
     unum = kwargs.pop('unum', 12)
     vnum = kwargs.pop('vnum', 12)
@@ -179,7 +179,7 @@ def k3d_surface_tangents(surface: 'SurfaceLike',
     return vectors(k3dpnts, k3dtgtsu, **kwargsu), \
            vectors(k3dpnts, k3dtgtsv, **kwargsv)
 
-def k3d_nurbs_control_points(curve: 'NurbsLike', **kwargs: Dict[str, Any]) -> Points:
+def k3d_nurbs_control_points(curve: 'NurbsLike', **kwargs: dict[str, Any]) -> Points:
 
     kwargs.setdefault('color', 0xFF0000)
     scale = kwargs.get('scale', 1.0)
@@ -194,7 +194,7 @@ def k3d_nurbs_control_points(curve: 'NurbsLike', **kwargs: Dict[str, Any]) -> Po
 
     return points(k3dpnts, **kwargs)
 
-def k3d_nurbs_control_polygon(surface: 'NurbsSurface', **kwargs: Dict[str, Any]) -> Lines:
+def k3d_nurbs_control_polygon(surface: 'NurbsSurface', **kwargs: dict[str, Any]) -> Lines:
 
     kwargs.setdefault('ucolor', 0x00FF00)
     kwargs.setdefault('vcolor', 0x0000FF)

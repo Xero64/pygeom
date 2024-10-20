@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable
 
 from numpy import arctan2
 
@@ -54,7 +54,7 @@ def plane_from_multiple_points(pnts: Iterable[Point]) -> Plane:
     return Plane(pntc, nrm)
 
 def point_from_lists(x: Iterable[float], y: Iterable[float],
-                     z: Iterable[float]) -> List['Point']:
+                     z: Iterable[float]) -> list['Point']:
     """Create a list of Point objects"""
     return [Point(x[i], y[i], z[i]) for i in range(len(x))]
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any
 
 from numpy import ndarray
 
@@ -15,18 +15,18 @@ if TYPE_CHECKING:
                           ParamCurve2D)
     from ..geom3d import (CubicSpline, NurbsCurve, NurbsSurface, ParamCurve,
                           ParamSurface)
-    CurveLike = Union[NurbsCurve2D, ParamCurve2D, CubicSpline2D, NurbsCurve, ParamCurve, CubicSpline]
-    SurfaceLike = Union[NurbsSurface2D, NurbsSurface, ParamSurface]
-    NurbsLike = Union[NurbsCurve2D, NurbsCurve, NurbsSurface]
+    CurveLike = NurbsCurve2D | NurbsCurve | ParamCurve2D | ParamCurve | CubicSpline2D | CubicSpline
+    SurfaceLike = NurbsSurface2D | NurbsSurface | ParamSurface
+    NurbsLike = NurbsCurve2D | NurbsCurve | NurbsSurface
 
 NUM = 36
 
-def plot_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
+def plot_curve(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
 
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
     t = kwargs.pop('t', curve.evaluate_t(num))
-    
+
     pnts = curve.evaluate_points_at_t(t)
 
     if ax is None:
@@ -38,7 +38,7 @@ def plot_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
             ax = fig.gca()
         ax.set_aspect('equal')
         ax.grid(True)
-    
+
     if hasattr(pnts, 'z'):
         ax.plot(pnts.x, pnts.y, pnts.z, **kwargs)
     else:
@@ -46,7 +46,7 @@ def plot_curve(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
 
     return ax
 
-def quiver_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
+def quiver_tangents(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
 
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
@@ -65,7 +65,7 @@ def quiver_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
             ax = fig.gca()
         ax.set_aspect('equal')
         ax.grid(True)
-    
+
     if hasattr(pnts, 'z'):
         ax.quiver(pnts.x, pnts.y, pnts.z,
                   tgts.x*scale, tgts.y*scale, tgts.z*scale, **kwargs)
@@ -74,7 +74,7 @@ def quiver_tangents(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
 
     return ax
 
-def quiver_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
+def quiver_normals(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
 
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
@@ -92,7 +92,7 @@ def quiver_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
         else:
             ax = fig.gca()
         ax.grid(True)
-    
+
     if hasattr(pnts, 'z'):
         ax.quiver(pnts.x, pnts.y, pnts.z,
                   nrms.x*scale, nrms.y*scale, nrms.z*scale, **kwargs)
@@ -101,7 +101,7 @@ def quiver_normals(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
 
     return ax
 
-def plot_points(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
+def plot_points(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
 
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
@@ -122,7 +122,7 @@ def plot_points(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
     kwargs_y = kwargs.copy()
     kwargs_y['label'] = f'{kwargs_y.get("label", "Curve")} Y'
     ax.plot(t, pnts.y, **kwargs_y)
-    
+
     if hasattr(pnts, 'z'):
         kwargs_z = kwargs.copy()
         kwargs_z['label'] = f'{kwargs_z.get("label", "Curve")} Z'
@@ -130,7 +130,7 @@ def plot_points(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
 
     return ax
 
-def plot_first_derivatives(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
+def plot_first_derivatives(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
 
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
@@ -143,7 +143,7 @@ def plot_first_derivatives(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes
         fig = figure(figsize=figsize)
         ax = fig.gca()
         ax.grid(True)
-    
+
     kwargs_x = kwargs.copy()
     kwargs_x['label'] = f'{kwargs_x.get("label", "Curve")} dXdt'
     ax.plot(t, deriv1.x, **kwargs_x)
@@ -159,20 +159,20 @@ def plot_first_derivatives(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes
 
     return ax
 
-def plot_second_derivatives(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
-    
+def plot_second_derivatives(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
+
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
     t = kwargs.pop('t', curve.evaluate_t(num))
-    
+
     deriv2 = curve.evaluate_second_derivatives_at_t(t)
-    
+
     if ax is None:
         figsize = kwargs.pop('figsize', (10, 8))
         fig = figure(figsize=figsize)
         ax = fig.gca()
         ax.grid(True)
-     
+
     kwargs_x = kwargs.copy()
     kwargs_x['label'] = f'{kwargs_x.get("label", "Curve")} d2Xdt2'
     ax.plot(t, deriv2.x, **kwargs_x)
@@ -185,15 +185,15 @@ def plot_second_derivatives(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axe
         kwargs_z = kwargs.copy()
         kwargs_z['label'] = f'{kwargs_z.get("label", "Curve")} d2Zdt2'
         ax.plot(t, deriv2.z, **kwargs_z)
-    
+
     return ax
 
-def plot_curvature(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
-    
+def plot_curvature(curve: 'CurveLike', **kwargs: dict[str, Any]) -> Axes:
+
     ax = kwargs.pop('ax', None)
     num = kwargs.pop('num', NUM)
     t = kwargs.pop('t', curve.evaluate_t(num))
-    
+
     curvature = curve.evaluate_curvatures_at_t(t)
 
     if ax is None:
@@ -201,7 +201,7 @@ def plot_curvature(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
         fig = figure(figsize=figsize)
         ax = fig.gca()
         ax.grid(True)
-    
+
     if isinstance(curvature, Vector):
 
         kwargs_x = kwargs.copy()
@@ -215,13 +215,13 @@ def plot_curvature(curve: 'CurveLike', **kwargs: Dict[str, Any]) -> Axes:
         kwargs_z = kwargs.copy()
         kwargs_z['label'] = f'{kwargs_z.get("label", "Curve")} Curvature Z'
         ax.plot(t, curvature.z, **kwargs_z)
-    
+
     elif isinstance(curvature, ndarray):
-    
+
         ax.plot(t, curvature, **kwargs)
-    
+
     else:
 
         raise ValueError(f'Unknown curvature type: {type(curvature)}')
-    
+
     return ax

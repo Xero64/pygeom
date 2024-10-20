@@ -1,10 +1,9 @@
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 from numpy import empty
+from pygeom.geom3d.vector import Vector
 from sympy import (Symbol, collect, diff, expand, expand_trig, integrate,
                    simplify, sqrt, trigsimp)
-
-from pygeom.geom3d.vector import Vector
 
 
 class SymbolicVector(Vector):
@@ -57,9 +56,7 @@ class SymbolicVector(Vector):
                               self.y.subs(*args),
                               self.z.subs(*args))
 
-    def to_unit(self, return_magnitude: bool = False) -> Union['SymbolicVector',
-                                                               Tuple['SymbolicVector',
-                                                                     'SymbolicVector']]:
+    def to_unit(self, return_magnitude: bool = False) -> 'SymbolicVector | tuple[SymbolicVector, Symbol]':
         mag = self.return_magnitude()
         if mag != 0.0:
             x = self.x/mag
@@ -78,7 +75,7 @@ class SymbolicVector(Vector):
         """Returns the magnitude of this vector"""
         return sqrt(self.x**2 + self.y**2 + self.z**2).simplify()
 
-    def to_xyz(self) -> Tuple['Symbol', 'Symbol', 'Symbol']:
+    def to_xyz(self) -> tuple['Symbol', 'Symbol', 'Symbol']:
         """Returns the x, y and z values of this vector"""
         return self.x, self.y, self.z
 
@@ -196,8 +193,8 @@ class SymbolicVector(Vector):
         except AttributeError:
             return False
 
-def empty_symbolicvector(shape: Optional[Tuple[int, ...]] = None,
-                        **kwargs: Dict[str, Any]) -> SymbolicVector:
+def empty_symbolicvector(shape: tuple[int, ...] | None = None,
+                        **kwargs: dict[str, Any]) -> SymbolicVector:
     kwargs['dtype'] = object
     if shape is None:
         x, y, z = 0, 0, 0

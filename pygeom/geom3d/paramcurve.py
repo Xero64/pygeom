@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING, Callable, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from numpy import linspace
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-
     from pygeom.geom3d import Vector
     ParamCallable = Callable[['NDArray'], 'Vector']
 
@@ -16,8 +16,8 @@ class ParamCurve():
     scale: float = None
 
     def __init__(self, ru: 'ParamCallable',
-                 drdu: Optional['ParamCallable'] = None,
-                 d2rdu2: Optional['ParamCallable'] = None,
+                 drdu: 'ParamCallable | None' = None,
+                 d2rdu2: 'ParamCallable | None' = None,
                  scale: float = 1.0) -> None:
         self.ru = ru
         self.drdu = drdu

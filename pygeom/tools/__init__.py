@@ -3,7 +3,7 @@ from typing import Tuple
 
 
 def cubic_roots(a: float, b: float,
-                c: float, d: float) -> Tuple[complex, complex, complex]:
+                c: float, d: float) -> tuple[complex, complex, complex]:
     tmp = a
     a = b/tmp
     b = c/tmp

@@ -23,7 +23,7 @@ x2: Expr = xd + ld*dxd
 eqn_x = x1 - x2
 eqn_s = la - ld - 1
 
-res: Dict[Symbol, Expr] = solve([eqn_x, eqn_s], [la, ld])
+res: dict[Symbol, Expr] = solve([eqn_x, eqn_s], [la, ld])
 
 for sym in res:
     print(f'{sym} = {res[sym]}')

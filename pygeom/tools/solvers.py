@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from numpy import asarray, diag, divide, eye, hstack, ndim, sqrt, vstack, zeros
 from numpy.linalg import solve
@@ -8,8 +8,7 @@ if TYPE_CHECKING:
 
     from ..geom2d import Vector2D
     from ..geom3d import Vector
-    BCLike = Optional[Union[str, Tuple[Union[int, str], Union[int, str]]]]
-    VectorLike = Union['Vector', 'Vector2D']
+    BCLike = str | tuple[int | str, int | str] | None
 
 
 def tridiag_solver(a: 'NDArray', b: 'NDArray', c: 'NDArray',
@@ -249,7 +248,7 @@ def cubic_bspline_from_pspline(s: 'NDArray', bctype: 'BCLike') -> 'NDArray':
     return rmat
 
 
-def cubic_bspline(s: 'NDArray', conds: Dict[int, int],
+def cubic_bspline(s: 'NDArray', conds: dict[int, int],
                   end_cond: str = 'quadratic') -> 'NDArray':
 
     if s.ndim != 1:
@@ -302,7 +301,7 @@ def cubic_bspline(s: 'NDArray', conds: Dict[int, int],
     return rmats
 
 
-def cubic_bspline_correction(ctlpnts: 'VectorLike') -> 'NDArray':
+def cubic_bspline_correction(ctlpnts: 'Vector | Vector2D') -> 'NDArray':
     if ndim(ctlpnts) != 1:
         raise ValueError('Input ctlpnts must be 1D array.')
     pntsad = ctlpnts[0::3]

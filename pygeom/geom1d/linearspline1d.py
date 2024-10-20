@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from numpy import full, logical_and, ndarray
 
@@ -6,7 +6,7 @@ from ..tools.basis import knot_linspace
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    BCLike = Optional[Tuple[Tuple[int, float], Tuple[int, float]]]
+    BCLike = tuple[tuple[int, float], tuple[int, float]] | None
 
 BCSTR1 = ('quadratic', 'not-a-knot', 'natural', 'clamped', 'periodic')
 BCSTR2 = ('quadratic', 'not-a-knot', 'natural', 'clamped')

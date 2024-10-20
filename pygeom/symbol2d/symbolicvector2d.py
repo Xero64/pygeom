@@ -1,11 +1,9 @@
-
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 from numpy import empty
+from pygeom.geom2d.vector2d import Vector2D
 from sympy import (Symbol, atan, cos, diff, expand, expand_trig, integrate,
                    simplify, sin, sqrt, trigsimp)
-
-from pygeom.geom2d.vector2d import Vector2D
 
 
 class SymbolicVector2D(Vector2D):
@@ -15,9 +13,7 @@ class SymbolicVector2D(Vector2D):
         self.x = x
         self.y = y
 
-    def to_unit(self, return_magnitude: bool = False) -> Union['SymbolicVector2D',
-                                                               Tuple['SymbolicVector2D',
-                                                                     'Symbol']]:
+    def to_unit(self, return_magnitude: bool = False) -> 'SymbolicVector2D | tuple[SymbolicVector2D, Symbol]':
         """Returns the unit vector of this vector2d"""
         mag = self.return_magnitude()
         if mag != 0.0:
@@ -174,12 +170,12 @@ class SymbolicVector2D(Vector2D):
         cplx = self.x + 1j*self.y
         return cplx
 
-    def to_xy(self) -> Tuple['Symbol', 'Symbol']:
+    def to_xy(self) -> tuple['Symbol', 'Symbol']:
         """Returns the x, y values of this symbolic vector"""
         return self.x, self.y
 
-def empty_symbolicvector2d(shape: Optional[Tuple[int, ...]] = None,
-                          **kwargs: Dict[str, Any]) -> SymbolicVector2D:
+def empty_symbolicvector2d(shape: tuple[int, ...] | None = None,
+                          **kwargs: dict[str, Any]) -> SymbolicVector2D:
     kwargs['dtype'] = object
     if shape is None:
         x, y = 0, 0

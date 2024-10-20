@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable
 
 from numpy import cos, sin
 
@@ -34,14 +34,14 @@ def vector2d_from_magang(mag: float, ang: float) -> 'Vector2D':
     y = mag*sin(ang)
     return Vector2D(x, y)
 
-def vector2d_from_lists(x: List[float], y: List[float]) -> List['Vector2D']:
+def vector2d_from_lists(x: list[float], y: list[float]) -> list['Vector2D']:
     """Create a list of Vector2D objects"""
     n = len(x)
     if len(y) == n:
         vecs = [Vector2D(x[i], y[i]) for i in range(n)]
         return vecs
 
-def point2d_from_lists(x: Iterable[float], y: Iterable[float]) -> List['Point2D']:
+def point2d_from_lists(x: Iterable[float], y: Iterable[float]) -> list['Point2D']:
     """Create a list of Point2D objects"""
     n = len(x)
     if len(y) == n:
@@ -72,7 +72,7 @@ def coordinate2d_from_angle(pnt: 'Point2D', angle: float) -> 'Coordinate2D':
 
 def tensor2d_from_lists(xx: Iterable[float], xy: Iterable[float],
                         yx: Iterable[float],
-                        yy: Iterable[float]) -> List['Tensor2D']:
+                        yy: Iterable[float]) -> list['Tensor2D']:
     """Create a list of Tensor2D objects"""
     n = len(xx)
     if len(xy) == n and len(yx) == n and len(yy) == n:

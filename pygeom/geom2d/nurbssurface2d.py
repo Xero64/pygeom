@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any
 
 from numpy import concatenate, float64, full, ones
 
@@ -25,7 +25,7 @@ class NurbsSurface2D():
     _ucknots: 'NDArray' = None
     _vcknots: 'NDArray' = None
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts
 
         self.weights = kwargs.get('weights', ones(ctlpnts.shape, dtype=float64))
@@ -75,13 +75,13 @@ class NurbsSurface2D():
         check: 'NDArray' = self.weights == 1.0
         return not check.all()
 
-    def basis_functions(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
+    def basis_functions(self, u: 'NDArray', v: 'NDArray') -> tuple['NDArray',
                                                                    'NDArray']:
         Nu = basis_functions(self.udegree, self.ucknots, u)
         Nv = basis_functions(self.vdegree, self.vcknots, v)
         return Nu, Nv
 
-    def basis_first_derivatives(self, u: 'NDArray', v: 'NDArray') -> Tuple['NDArray',
+    def basis_first_derivatives(self, u: 'NDArray', v: 'NDArray') -> tuple['NDArray',
                                                                      'NDArray']:
         dNu = basis_first_derivatives(self.udegree, self.ucknots, u)
         dNv = basis_first_derivatives(self.vdegree, self.vcknots, v)
@@ -97,7 +97,7 @@ class NurbsSurface2D():
             points = numer
         return points
 
-    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> Tuple['Vector2D',
+    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> tuple['Vector2D',
                                                                            'Vector2D']:
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_first_derivatives(u, v)
@@ -115,7 +115,7 @@ class NurbsSurface2D():
             tangent_v = dnumer_v
         return tangent_u, tangent_v
 
-    def evaluate_uv(self, numu: int, numv: int) -> Tuple['NDArray',
+    def evaluate_uv(self, numu: int, numv: int) -> tuple['NDArray',
                                                          'NDArray']:
         u = knot_linspace(numu, self.uknots)
         v = knot_linspace(numv, self.vknots)
@@ -125,7 +125,7 @@ class NurbsSurface2D():
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_points_at_uv(u, v)
 
-    def evaluate_tangents(self, numu: int, numv: int) -> Tuple['Vector2D',
+    def evaluate_tangents(self, numu: int, numv: int) -> tuple['Vector2D',
                                                                'Vector2D']:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
@@ -150,7 +150,7 @@ class NurbsSurface2D():
 
 class BSplineSurface2D(NurbsSurface2D):
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
         kwargs['weights'] = ones(ctlpnts.shape)
         kwargs['rational'] = False
         super().__init__(ctlpnts, **kwargs)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from numpy import concatenate, divide, full, ones
 
@@ -22,7 +22,7 @@ class NurbsCurve():
     _wpoints: 'Vector' = None
     _cknots: 'NDArray' = None
 
-    def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector', **kwargs: dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts.ravel()
         self.weights = kwargs.get('weights', ones(ctlpnts.size)).ravel()
         self.degree = kwargs.get('degree', self.ctlpnts.size - 1)
@@ -179,7 +179,7 @@ class NurbsCurve():
 
 class BSplineCurve(NurbsCurve):
 
-    def __init__(self, ctlpnts: 'Vector', **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: 'Vector', **kwargs: dict[str, Any]) -> None:
         kwargs['weights'] = ones(ctlpnts.shape)
         kwargs['rational'] = False
         super().__init__(ctlpnts, **kwargs)

@@ -1,18 +1,17 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 from numpy import (arange, argsort, array, bool_, hstack, int64, logical_and,
                    round, take_along_axis, unique, vstack, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
-    MeshType = Union['Mesh', 'Mesh2D']
 
 
 class MetaCache():
     key: str = None
     dtype: 'DTypeLike' = None
     default: Any = None
-    data: List[Any] = None
+    data: list[Any] = None
 
     def __init__(self, key: str, dtype: 'DTypeLike', default: Any) -> None:
         self.key = key
@@ -56,8 +55,8 @@ class MetaCache():
 
 
 class MeshObject():
-    meta: Dict[str, 'NDArray'] = None
-    meta_cache: Dict[str, MetaCache] = None
+    meta: dict[str, 'NDArray'] = None
+    meta_cache: dict[str, MetaCache] = None
 
     def __init__(self) -> None:
         self.meta = {}
@@ -75,7 +74,7 @@ class MeshVectors(MeshObject):
     name: str = None
     label: str = None
     vecs: 'NDArray' = None
-    vecs_cache: List[Tuple[float, float, float]] = None
+    vecs_cache: list[tuple[float, float, float]] = None
 
     def __init__(self, label: str, name: str = 'MeshVectors') -> None:
         self.name = name
@@ -84,7 +83,7 @@ class MeshVectors(MeshObject):
         self.vecs = zeros((0, self.ndim))
         self.vecs_cache = []
 
-    def add(self, x: float, y: float, z: float, **kwargs: Dict[str, Any]) -> None:
+    def add(self, x: float, y: float, z: float, **kwargs: dict[str, Any]) -> None:
         self.vecs_cache.append((x, y, z))
         for key in self.meta_cache.keys():
             value = kwargs.get(key, self.meta_cache[key].default)
@@ -123,8 +122,8 @@ class MeshVectors(MeshObject):
                     self.meta[key] = vstack(tuple(meta_data[key]))
         self.clear_cache()
 
-    def duplicate_indices(self, decimals: Optional[int] = None) -> Tuple['NDArray[int64]',
-                                                                         'NDArray[int64]']:
+    def duplicate_indices(self, decimals: int | None = None) -> tuple['NDArray[int64]',
+                                                                      'NDArray[int64]']:
         if self.size == 0:
             return zeros(0, dtype=int64), zeros(0, dtype=int64)
         if decimals is not None:
@@ -192,7 +191,7 @@ class MeshVectors2D(MeshVectors):
     def __init__(self, label: str, name: str = 'MeshVectors2D') -> None:
         super().__init__(label, name)
 
-    def add(self, x: float, y: float, **kwargs: Dict[str, Any]) -> None:
+    def add(self, x: float, y: float, **kwargs: dict[str, Any]) -> None:
         self.vecs_cache.append((x, y))
         for key in self.meta_cache.keys():
             value = kwargs.get(key, self.meta_cache[key].default)
@@ -223,14 +222,14 @@ class MeshElems(MeshObject):
     desc: str = 'elems'
     numg: int = 0
     grids: 'NDArray[int64]' = None
-    grids_cache: List[Tuple[int, ...]] = None
+    grids_cache: list[tuple[int, ...]] = None
 
     def __init__(self) -> None:
         super().__init__()
         self.grids = zeros((0, self.numg), dtype=int64)
         self.grids_cache = []
 
-    def add(self, *grids: int, **kwargs: Dict[str, Any]) -> None:
+    def add(self, *grids: int, **kwargs: dict[str, Any]) -> None:
         self.grids_cache.append(grids)
         for key in self.meta_cache.keys():
             value = kwargs.get(key, self.meta_cache[key].default)
@@ -269,7 +268,7 @@ class MeshElems(MeshObject):
                     self.meta[key] = vstack(tuple(meta_data[key]))
         self.clear_cache()
 
-    def duplicate_indices(self) -> Tuple['NDArray[int64]',
+    def duplicate_indices(self) -> tuple['NDArray[int64]',
                                          'NDArray[int64]']:
         if self.size == 0:
             return None
@@ -385,7 +384,7 @@ class Mesh():
     lines: MeshLines = None
     trias: MeshTrias = None
     quads: MeshQuads = None
-    attrs: Dict[str, MeshVectors] = None
+    attrs: dict[str, MeshVectors] = None
 
     def __init__(self) -> None:
         if self.ndim == 3:
@@ -432,7 +431,7 @@ class Mesh():
         for attr in self.attrs.values():
             attr.append_cache()
 
-    def remove_duplicate_grids(self, decimals: Optional[int] = None) -> None:
+    def remove_duplicate_grids(self, decimals: int | None = None) -> None:
         if self.grids.size == 0:
             return None
         unind, invind = self.grids.duplicate_indices(decimals=decimals)
@@ -444,7 +443,7 @@ class Mesh():
             attr.apply_inverse(invind, 'grids')
 
     def remove_duplicate_vectors(self, label: str,
-                                 decimals: Optional[int] = None) -> None:
+                                 decimals: int | None = None) -> None:
         attr = self.attrs[label]
         if attr.size == 0:
             return None
@@ -584,13 +583,13 @@ class Mesh():
         self.trias.apply_inverse(invind, attr.label)
         self.quads.apply_inverse(invind, attr.label)
 
-    def merge(self, mesh: 'MeshType') -> 'MeshType':
+    def merge(self, mesh: 'Mesh | Mesh2D') -> 'Mesh | Mesh2D':
 
         mergedmesh = merge_meshes(self, mesh)
 
         return mergedmesh
 
-    def new_mesh_from_template(self) -> 'MeshType':
+    def new_mesh_from_template(self) -> 'Mesh | Mesh2D':
 
         newmesh = self.__class__()
         for key in self.grids.meta:
@@ -620,7 +619,7 @@ class Mesh():
 
         return newmesh
 
-    def compare_mesh_template(self, mesh: 'MeshType') -> bool:
+    def compare_mesh_template(self, mesh: 'Mesh | Mesh2D') -> bool:
 
         if self.ndim != mesh.ndim:
             return False
@@ -700,7 +699,7 @@ class Mesh():
 class Mesh2D(Mesh):
     ndim: int = 2
     grids: MeshGrids2D = None
-    attrs: Dict[str, MeshVectors2D] = None
+    attrs: dict[str, MeshVectors2D] = None
 
     def add_mesh_vectors(self, label: str, name: str) -> None:
         self.attrs[label] = MeshVectors2D(label, name)

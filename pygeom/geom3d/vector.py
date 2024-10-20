@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
-from numpy import (allclose, concatenate, copy, divide, full, isclose,
+from numpy import (allclose, concatenate, copy, divide, full, hstack, isclose,
                    logical_and, logical_or, ndim, ravel, repeat, reshape,
                    result_type, shape, size, split, sqrt, square, stack, sum,
                    transpose, zeros)
@@ -10,11 +11,13 @@ if TYPE_CHECKING:
     from numpy import bool_
     from numpy.typing import DTypeLike, NDArray
 
-class Vector():
+class Vector:
     """Vector Class"""
-    x: 'NDArray' = None
-    y: 'NDArray' = None
-    z: 'NDArray' = None
+    x: 'NDArray'
+    y: 'NDArray'
+    z: 'NDArray'
+
+    __slots__ = tuple(__annotations__)
 
     def __init__(self, x: 'NDArray', y: 'NDArray', z: 'NDArray') -> None:
         self.x = x
@@ -29,9 +32,7 @@ class Vector():
         r2 = x2 + y2 + z2
         return sqrt(r2)
 
-    def to_unit(self, return_magnitude: bool = False) -> Union['Vector',
-                                                               Tuple['Vector',
-                                                               'NDArray']]:
+    def to_unit(self, return_magnitude: bool = False) -> 'Vector | tuple[Vector, NDArray]':
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
         x = zeros(shape(mag))
@@ -46,7 +47,7 @@ class Vector():
         else:
             return Vector(x, y, z)
 
-    def to_xyz(self) -> Tuple['NDArray', 'NDArray', 'NDArray']:
+    def to_xyz(self) -> tuple['NDArray', 'NDArray', 'NDArray']:
         """Returns the x, y and z values of this array vector"""
         return self.x, self.y, self.z
 
@@ -199,7 +200,7 @@ class Vector():
         return stack((self.x, self.y, self.z), axis=-1)
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         shape_x = shape(self.x)
         shape_y = shape(self.y)
         shape_z = shape(self.z)
@@ -238,7 +239,7 @@ class Vector():
         z = transpose(self.z)
         return Vector(x, y, z)
 
-    def sum(self, **kwargs: Dict[str, Any]) -> 'Vector':
+    def sum(self, **kwargs: dict[str, Any]) -> 'Vector':
         x = sum(self.x, **kwargs)
         y = sum(self.y, **kwargs)
         z = sum(self.z, **kwargs)
@@ -269,7 +270,7 @@ class Vector():
         return Vector(x, y, z)
 
     def split(self, numsect: int,
-              axis: Optional[int]=-1) -> Iterable['Vector']:
+              axis: int = -1) -> Iterable['Vector']:
         xlst = split(self.x, numsect, axis=axis)
         ylst = split(self.y, numsect, axis=axis)
         zlst = split(self.z, numsect, axis=axis)
@@ -307,8 +308,8 @@ class Vector():
             return False
 
     @classmethod
-    def zeros(cls, shape: Tuple[int, ...] = (),
-              **kwargs: Dict[str, Any]) -> 'Vector':
+    def zeros(cls, shape: tuple[int, ...] = (),
+              **kwargs: dict[str, Any]) -> 'Vector':
         x = zeros(shape, **kwargs)
         y = zeros(shape, **kwargs)
         z = zeros(shape, **kwargs)
@@ -316,7 +317,7 @@ class Vector():
 
     @classmethod
     def fromiter(cls, vecs: Iterable['Vector'],
-                 **kwargs: Dict[str, Any]) -> 'Vector':
+                 **kwargs: dict[str, Any]) -> 'Vector':
         num = len(vecs)
         vector = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
@@ -324,22 +325,22 @@ class Vector():
         return vector
 
     @classmethod
-    def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Vector':
+    def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector':
         cur_ndim = 0
         cur_shape = ()
         x, y, z = 0.0, 0.0, 0.0
         if hasattr(obj, 'x'):
-            x = obj.__dict__['x']
+            x = getattr(obj, 'x')
             if ndim(x) > cur_ndim:
                 cur_ndim = ndim(x)
                 cur_shape = shape(x)
         if hasattr(obj, 'y'):
-            y = obj.__dict__['y']
+            y = getattr(obj, 'y')
             if ndim(y) > cur_ndim:
                 cur_ndim = ndim(y)
                 cur_shape = shape(y)
         if hasattr(obj, 'z'):
-            z = obj.__dict__['z']
+            z = getattr(obj, 'z')
             if ndim(z) > cur_ndim:
                 cur_ndim = ndim(z)
                 cur_shape = shape(z)
@@ -359,14 +360,14 @@ class Vector():
         return vector
 
     @classmethod
-    def concatenate(cls, vecs: Iterable['Vector'], **kwargs: Dict[str, Any]) -> 'Vector':
+    def concatenate(cls, vecs: Iterable['Vector'], **kwargs: dict[str, Any]) -> 'Vector':
         x = concatenate([vec.x for vec in vecs], **kwargs)
         y = concatenate([vec.y for vec in vecs], **kwargs)
         z = concatenate([vec.z for vec in vecs], **kwargs)
         return cls(x, y, z)
 
     @classmethod
-    def stack(cls, vecs: Iterable['Vector'], **kwargs: Dict[str, Any]) -> 'Vector':
+    def stack(cls, vecs: Iterable['Vector'], **kwargs: dict[str, Any]) -> 'Vector':
         x = stack([vec.x for vec in vecs], **kwargs)
         y = stack([vec.y for vec in vecs], **kwargs)
         z = stack([vec.z for vec in vecs], **kwargs)
@@ -387,18 +388,16 @@ class Vector():
         return xclose and yclose and zclose
 
     def solve(self, amat: 'NDArray') -> 'Vector':
+        shp = self.shape
         if self.ndim == 0:
-            bmat = stack(self.reshape((1, 1)).to_xyz(), axis=1)
-        elif self.ndim == 1 or self.ndim == 2:
-            bmat = stack(self.to_xyz(), axis=1)
-        else:
-            raise ValueError('Vector cannot be solved.')
-        cmat = solve(amat, bmat)
-        if self.ndim == 0:
-            return Vector(*split(cmat, 3, axis=1)).reshape(())
+            bvec = self.reshape((1, 1))
         elif self.ndim == 1:
-            return Vector(*split(cmat, 3, axis=1)).reshape((self.size,))
+            bvec = self.reshape((self.size, 1))
         elif self.ndim == 2:
-            return Vector(*split(cmat, 3, axis=1))
+            bvec = self
         else:
             raise ValueError('Vector cannot be solved.')
+        bmat = hstack(bvec.to_xyz())
+        cmat = solve(amat, bmat)
+        cvec = Vector(*split(cmat, 3, axis=1)).reshape(shp)
+        return cvec

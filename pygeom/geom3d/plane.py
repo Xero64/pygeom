@@ -12,7 +12,7 @@ class Plane():
         self.pnt = pnt
         self.nrm = nrm.to_unit()
 
-    def return_abcd(self) -> Tuple[float, float, float, float]:
+    def return_abcd(self) -> tuple[float, float, float, float]:
         a = self.nrm.x
         b = self.nrm.y
         c = self.nrm.z

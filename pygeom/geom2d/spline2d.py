@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
@@ -18,9 +18,9 @@ class SplinePoint2D(Vector2D):
     _endpntb: bool = None
     _c1: bool = None
     _c2: bool = None
-    _lhs: List['NDArray'] = None
-    _rhs: List['NDArray'] = None
-    _ind: List[Tuple[int, ...]] = None
+    _lhs: list['NDArray'] = None
+    _rhs: list['NDArray'] = None
+    _ind: list[tuple[int, ...]] = None
     c2a0: bool = None
     c2b0: bool = None
 
@@ -76,9 +76,9 @@ class SplinePoint2D(Vector2D):
                     self._c2 = True
         return self._c2
 
-    def get_ind_lhs_rhs(self) -> Tuple[List['NDArray'],
-                                       List['NDArray'],
-                                       List[Vector2D]]:
+    def get_ind_lhs_rhs(self) -> tuple[list['NDArray'],
+                                       list['NDArray'],
+                                       list[Vector2D]]:
         ind = []
         lhs = []
         rhs = []
@@ -144,19 +144,19 @@ class SplinePoint2D(Vector2D):
         return ind, lhs, rhs
 
     @property
-    def lhs(self) -> List['NDArray']:
+    def lhs(self) -> list['NDArray']:
         if self._lhs is None:
             self.get_ind_lhs_rhs()
         return self._lhs
 
     @property
-    def rhs(self) -> List['NDArray']:
+    def rhs(self) -> list['NDArray']:
         if self._rhs is None:
             self.get_ind_lhs_rhs()
         return self._rhs
 
     @property
-    def ind(self) -> List['NDArray']:
+    def ind(self) -> list['NDArray']:
         if self._ind is None:
             self.get_ind_lhs_rhs()
         return self._ind
@@ -377,14 +377,14 @@ class SplinePanel2D():
 
 class Spline2D():
     u"""This class stores a 3D parametric spline."""
-    pnts: List[SplinePoint2D] = None
+    pnts: list[SplinePoint2D] = None
     closed: bool = False
-    tanA: Optional[Vector2D] = None
-    tanB: Optional[Vector2D] = None
-    nrmA: Optional[Vector2D] = None
-    nrmB: Optional[Vector2D] = None
+    tanA: Vector2D | None = None
+    tanB: Vector2D | None = None
+    nrmA: Vector2D | None = None
+    nrmB: Vector2D | None = None
     _numpnt: int = None
-    _pnls: List[SplinePanel2D] = None
+    _pnls: list[SplinePanel2D] = None
     _numpnl: int = None
     _d2r: Vector2D = None
     _dr: Vector2D = None
@@ -393,7 +393,7 @@ class Spline2D():
     _k: Vector2D = None
     _length: float = None
 
-    def __init__(self, pnts: List[Vector2D], closed: bool=False,
+    def __init__(self, pnts: list[Vector2D], closed: bool=False,
                  tanA: Vector2D=None, tanB: Vector2D=None,
                  nrmA: Vector2D=None, nrmB: Vector2D=None) -> None:
         if closed and pnts[0] == pnts[-1]:
@@ -424,7 +424,7 @@ class Spline2D():
         return self._numpnt
 
     @property
-    def pnls(self) -> List[SplinePanel2D]:
+    def pnls(self) -> list[SplinePanel2D]:
         if self._pnls is None:
             self._pnls = []
             j = 0
@@ -450,15 +450,15 @@ class Spline2D():
     def calc_d2r(self) -> Vector2D:
         numres = 2*self.numpnl
         Amat = zeros((numres, numres))
-        Bmat = Vector2D.zeros((numres, 1))
+        Bmat = Vector2D.zeros(numres)
         j = 0
         for pnt in self.pnts:
             tup = pnt.get_ind_lhs_rhs()
             for ind, lhs, rhs in zip(*tup):
                 Amat[j, ind] = lhs
-                Bmat[j, 0] = rhs
+                Bmat[j] = rhs
                 j += 1
-        d2r = Vector2D.solve(Amat, Bmat)
+        d2r = Bmat.solve(Amat)
         self._d2r = Vector2D(d2r.x.ravel(), d2r.y.ravel())
 
     @property
@@ -750,7 +750,7 @@ class Spline2D():
                     break
         return ks
 
-    def split_at_index(self, index: int) -> Tuple['Spline2D', 'Spline2D']:
+    def split_at_index(self, index: int) -> tuple['Spline2D', 'Spline2D']:
         u"""This function splits the spline at the given index."""
         if index < 0 or index >= self.numpnt:
             raise ValueError('Index out of range.')

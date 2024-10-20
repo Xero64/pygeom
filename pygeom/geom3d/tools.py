@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 from numpy import absolute, argwhere, divide, full, logical_and
 
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .vector import Vector
 
 def intersection_lines_and_triangles(lines: 'Lines', triangles: 'Triangles',
-                                     tolerance: float = 1e-12) -> Tuple['Vector',
+                                     tolerance: float = 1e-12) -> tuple['Vector',
                                                                         'NDArray']:
     """Intersection of Lines and Triangles"""
 

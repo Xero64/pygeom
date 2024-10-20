@@ -1,30 +1,25 @@
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING
 
 from ..geom3d import Vector
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
-    from .vector import Vector
-    LineLike = Union['Line', 'Lines']
-    from numpy.typing import DTypeLike
-    ArrayLike = Union['NDArray', 'Vector']
+    from numpy.typing import DTypeLike, NDArray
 
 class Line():
     """Line Class"""
 
-    pnta: 'Vector' = None
-    pntb: 'Vector' = None
-    _lvec: 'Vector' = None
+    pnta: Vector = None
+    pntb: Vector = None
+    _lvec: Vector = None
     _lmag: 'NDArray' = None
-    _ldir: 'Vector' = None
+    _ldir: Vector = None
 
-    def __init__(self, pnta: 'Vector', pntb: 'Vector') -> None:
+    def __init__(self, pnta: Vector, pntb: Vector) -> None:
         self.pnta = pnta
         self.pntb = pntb
 
     @property
-    def lvec(self) -> 'Vector':
+    def lvec(self) -> Vector:
         if self._lvec is None:
             self._lvec = self.pntb - self.pnta
         return self._lvec
@@ -36,7 +31,7 @@ class Line():
         return self._lmag
 
     @property
-    def ldir(self) -> 'Vector':
+    def ldir(self) -> Vector:
         if self._ldir is None:
             if self._lmag is None:
                 self._ldir, self._lmag = self.lvec.to_unit(return_magnitude=True)
@@ -47,18 +42,18 @@ class Line():
 class Lines():
     """Lines Class"""
 
-    pnta: 'Vector' = None
-    pntb: 'Vector' = None
-    _lvec: 'Vector' = None
+    pnta: Vector = None
+    pntb: Vector = None
+    _lvec: Vector = None
     _lmag: 'NDArray' = None
-    _ldir: 'Vector' = None
+    _ldir: Vector = None
 
-    def __init__(self, pnta: 'Vector', pntb: 'Vector') -> None:
+    def __init__(self, pnta: Vector, pntb: Vector) -> None:
         self.pnta = pnta
         self.pntb = pntb
 
     @property
-    def lvec(self) -> 'Vector':
+    def lvec(self) -> Vector:
         if self._lvec is None:
             self._lvec = self.pntb - self.pnta
         return self._lvec
@@ -70,7 +65,7 @@ class Lines():
         return self._lmag
 
     @property
-    def ldir(self) -> 'Vector':
+    def ldir(self) -> Vector:
         if self._ldir is None:
             if self._lmag is None:
                 self._ldir, self._lmag = self.lvec.to_unit(return_magnitude=True)
@@ -78,7 +73,7 @@ class Lines():
                 self._ldir = self.lvec/self.lmag
         return self._ldir
 
-    def __getitem__(self, key: int) -> 'LineLike':
+    def __getitem__(self, key: int) -> 'Line | Lines':
         pnta = self.pnta[key]
         pntb = self.pntb[key]
 
@@ -94,7 +89,7 @@ class Lines():
 
         return output
 
-    def __setitem__(self, key, value: 'LineLike') -> None:
+    def __setitem__(self, key, value: 'Line | Lines') -> None:
         try:
             self.pnta[key] = value.pnta
             self.pntb[key] = value.pntb
@@ -109,7 +104,7 @@ class Lines():
             raise IndexError(err)
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         if self.pnta.shape == self.pntb.shape:
             return self.pnta.shape
         else:
@@ -136,12 +131,12 @@ class Lines():
         else:
             raise ValueError('Line pnts should have the same size.')
 
-    def transpose(self) -> 'Vector':
+    def transpose(self) -> Vector:
         pnta = self.pnta.transpose()
         pntb = self.pntb.transpose()
         return Lines(pnta, pntb)
 
-    def sum(self, axis=None, dtype=None, out=None) -> 'LineLike':
+    def sum(self, axis=None, dtype=None, out=None) -> 'Line | Lines':
         pnta = self.pnta.sum(axis=axis, dtype=dtype, out=out)
         pntb = self.pntb.sum(axis=axis, dtype=dtype, out=out)
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from numpy import asarray, divide, fromiter, zeros
 from numpy.linalg import inv
@@ -94,7 +94,7 @@ class LinearInterpSolver():
         hmat[-1, :] = -gmat*ainv
         return hmat
 
-    def ymat_from_list(self, y: List[float]) -> 'NDArray':
+    def ymat_from_list(self, y: list[float]) -> 'NDArray':
         ymat: 'NDArray' = asarray([y]).reshape((-1, 1))
         return ymat
 

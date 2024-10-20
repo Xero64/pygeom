@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 from numpy import (allclose, bool_, copy, full, isclose, logical_and,
                    logical_or, ndim, ravel, repeat, reshape, result_type,
@@ -22,7 +23,7 @@ class Tensor2D():
         self.yx = yx
         self.yy = yy
 
-    def to_xy(self) -> Tuple['NDArray', 'NDArray', 'NDArray', 'NDArray']:
+    def to_xy(self) -> tuple['NDArray', 'NDArray', 'NDArray', 'NDArray']:
         """Returns the xx, xy, yx and yy values of this ndarray tensor"""
         return self.xx, self.xy, self.yx, self.yy
 
@@ -153,7 +154,7 @@ class Tensor2D():
             raise IndexError(err)
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         shape_xx = shape(self.xx)
         shape_xy = shape(self.xy)
         shape_yx = shape(self.yx)
@@ -190,14 +191,14 @@ class Tensor2D():
         else:
             raise ValueError('Tensor2D xx, xy, yz and yy should have the same size.')
 
-    def transpose(self, **kwargs: Dict[str, Any]) -> 'Tensor2D':
+    def transpose(self, **kwargs: dict[str, Any]) -> 'Tensor2D':
         xx = transpose(self.xx, **kwargs)
         xy = transpose(self.xy, **kwargs)
         yx = transpose(self.yx, **kwargs)
         yy = transpose(self.yy, **kwargs)
         return Tensor2D(xx, xy, yx, yy)
 
-    def sum(self, **kwargs: Dict[str, Any]) -> 'Tensor2D':
+    def sum(self, **kwargs: dict[str, Any]) -> 'Tensor2D':
         xx = sum(self.xx, **kwargs)
         xy = sum(self.xy, **kwargs)
         yx = sum(self.yx, **kwargs)
@@ -233,7 +234,7 @@ class Tensor2D():
         return Tensor2D(xx, xy, yx, yy)
 
     def split(self, numsect: int,
-              axis: Optional[int]=-1) -> Iterable['Tensor2D']:
+              axis: int = -1) -> Iterable['Tensor2D']:
         xxlst = split(self.xx, numsect, axis=axis)
         xylst = split(self.xy, numsect, axis=axis)
         yxlst = split(self.yx, numsect, axis=axis)
@@ -275,8 +276,8 @@ class Tensor2D():
             return False
 
     @classmethod
-    def zeros(cls, shape: Tuple[int, ...] = (),
-              **kwargs: Dict[str, Any]) -> 'Tensor2D':
+    def zeros(cls, shape: tuple[int, ...] = (),
+              **kwargs: dict[str, Any]) -> 'Tensor2D':
         xx = zeros(shape, **kwargs)
         xy = zeros(shape, **kwargs)
         yx = zeros(shape, **kwargs)
@@ -285,7 +286,7 @@ class Tensor2D():
 
     @classmethod
     def fromiter(cls, tens: Iterable['Tensor2D'],
-                 **kwargs: Dict[str, Any]) -> 'Tensor2D':
+                 **kwargs: dict[str, Any]) -> 'Tensor2D':
         num = len(tens)
         vec = cls.zeros(num, **kwargs)
         for i, veci in enumerate(tens):
@@ -293,7 +294,7 @@ class Tensor2D():
         return vec
 
     @classmethod
-    def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Tensor2D':
+    def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Tensor2D':
         cur_ndim = 0
         cur_shape = ()
         xx, xy, yx, yy = 0.0, 0.0, 0.0, 0.0

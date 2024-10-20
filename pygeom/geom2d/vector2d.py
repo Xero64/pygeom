@@ -1,18 +1,23 @@
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Tuple, Union
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
-from numpy import (allclose, arctan2, bool_, concatenate, copy, cos, divide,
-                   full, isclose, logical_and, logical_or, ndim, ravel, repeat,
-                   reshape, result_type, shape, sin, size, split, sqrt, square,
-                   stack, sum, transpose, zeros)
+from numpy import (allclose, arctan2, concatenate, copy, cos, divide, full,
+                   hstack, isclose, logical_and, logical_or, ndim, ravel,
+                   repeat, reshape, result_type, shape, sin, size, split, sqrt,
+                   square, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
+    from numpy import bool_
     from numpy.typing import DTypeLike, NDArray
 
-class Vector2D():
+
+class Vector2D:
     """Vector2D Class"""
-    x: 'NDArray' = None
-    y: 'NDArray' = None
+    x: 'NDArray'
+    y: 'NDArray'
+
+    __slots__ = tuple(__annotations__)
 
     def __init__(self, x: 'NDArray', y: 'NDArray') -> None:
         self.x = x
@@ -25,9 +30,7 @@ class Vector2D():
         r2 = x2 + y2
         return sqrt(r2)
 
-    def to_unit(self, return_magnitude: bool = False) -> Union['Vector2D',
-                                                               Tuple['Vector2D',
-                                                               'NDArray']]:
+    def to_unit(self, return_magnitude: bool = False) -> 'Vector2D | tuple[Vector2D, NDArray]':
         """Returns the unit vector of this vector"""
         mag = self.return_magnitude()
         x = zeros(shape(mag))
@@ -40,7 +43,7 @@ class Vector2D():
         else:
             return Vector2D(x, y)
 
-    def to_xy(self) -> Tuple['NDArray', 'NDArray']:
+    def to_xy(self) -> tuple['NDArray', 'NDArray']:
         """Returns the x and y values of this vector"""
         return self.x, self.y
 
@@ -178,7 +181,7 @@ class Vector2D():
         return stack((self.x, self.y), axis=-1)
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         shape_x = shape(self.x)
         shape_y = shape(self.y)
         if shape_x == shape_y:
@@ -208,12 +211,12 @@ class Vector2D():
         else:
             raise ValueError('Vector2D x and y should have the same size.')
 
-    def transpose(self, **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def transpose(self, **kwargs: dict[str, Any]) -> 'Vector2D':
         x = transpose(self.x, **kwargs)
         y = transpose(self.y, **kwargs)
         return Vector2D(x, y)
 
-    def sum(self, **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def sum(self, **kwargs: dict[str, Any]) -> 'Vector2D':
         x = sum(self.x, **kwargs)
         y = sum(self.y, **kwargs)
         return Vector2D(x, y)
@@ -238,8 +241,7 @@ class Vector2D():
         y = copy(self.y, order=order)
         return Vector2D(x, y)
 
-    def split(self, numsect: int,
-              axis: Optional[int]=-1) -> Iterable['Vector2D']:
+    def split(self, numsect: int, axis: int=-1) -> Iterable['Vector2D']:
         xlst = split(self.x, numsect, axis=axis)
         ylst = split(self.y, numsect, axis=axis)
         for xi, yi in zip(xlst, ylst):
@@ -295,15 +297,15 @@ class Vector2D():
         return self.x + 1j*self.y
 
     @classmethod
-    def zeros(cls, shape: Tuple[int, ...] = (),
-              **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def zeros(cls, shape: tuple[int, ...] = (),
+              **kwargs: dict[str, Any]) -> 'Vector2D':
         x = zeros(shape, **kwargs)
         y = zeros(shape, **kwargs)
         return cls(x, y)
 
     @classmethod
     def fromiter(cls, vecs: Iterable['Vector2D'],
-                 **kwargs: Dict[str, Any]) -> 'Vector2D':
+                 **kwargs: dict[str, Any]) -> 'Vector2D':
         num = len(vecs)
         vector = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
@@ -311,17 +313,17 @@ class Vector2D():
         return vector
 
     @classmethod
-    def fromobj(cls, obj: Any, **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector2D':
         cur_ndim = 0
         cur_shape = ()
         x, y = 0.0, 0.0
         if hasattr(obj, 'x'):
-            x = obj.__dict__['x']
+            x = getattr(obj, 'x')
             if ndim(x) > cur_ndim:
                 cur_ndim = ndim(x)
                 cur_shape = shape(x)
         if hasattr(obj, 'y'):
-            y = obj.__dict__['y']
+            y = getattr(obj, 'y')
             if ndim(y) > cur_ndim:
                 cur_ndim = ndim(y)
                 cur_shape = shape(y)
@@ -337,13 +339,13 @@ class Vector2D():
         return vector
 
     @classmethod
-    def concatenate(cls, vecs: Iterable['Vector2D'], **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def concatenate(cls, vecs: Iterable['Vector2D'], **kwargs: dict[str, Any]) -> 'Vector2D':
         x = concatenate([vec.x for vec in vecs], **kwargs)
         y = concatenate([vec.y for vec in vecs], **kwargs)
         return cls(x, y)
 
     @classmethod
-    def stack(cls, vecs: Iterable['Vector2D'], **kwargs: Dict[str, Any]) -> 'Vector2D':
+    def stack(cls, vecs: Iterable['Vector2D'], **kwargs: dict[str, Any]) -> 'Vector2D':
         x = stack([vec.x for vec in vecs], **kwargs)
         y = stack([vec.y for vec in vecs], **kwargs)
         return cls(x, y)
@@ -359,18 +361,16 @@ class Vector2D():
         return xclose and yclose
 
     def solve(self, amat: 'NDArray') -> 'Vector2D':
+        shp = self.shape
         if self.ndim == 0:
-            bmat = stack(self.reshape((1, 1)).to_xy(), axis=1)
-        elif self.ndim == 1 or self.ndim == 2:
-            bmat = stack(self.to_xy(), axis=1)
-        else:
-            raise ValueError('Vector2D cannot be solved.')
-        cmat = solve(amat, bmat)
-        if self.ndim == 0:
-            return Vector2D(*split(cmat, 2, axis=1)).reshape(())
+            bvec = self.reshape((1, 1))
         elif self.ndim == 1:
-            return Vector2D(*split(cmat, 2, axis=1)).reshape((self.size,))
+            bvec = self.reshape((self.size, 1))
         elif self.ndim == 2:
-            return Vector2D(*split(cmat, 2, axis=1))
+            bvec = self
         else:
             raise ValueError('Vector2D cannot be solved.')
+        bmat = hstack(bvec.to_xy())
+        cmat = solve(amat, bmat)
+        cvec = Vector2D(*split(cmat, 2, axis=1)).reshape(shp)
+        return cvec
