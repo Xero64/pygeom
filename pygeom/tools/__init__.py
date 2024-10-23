@@ -1,5 +1,4 @@
 from math import acos, copysign, cos, pi, sqrt
-from typing import Tuple
 
 
 def cubic_roots(a: float, b: float,

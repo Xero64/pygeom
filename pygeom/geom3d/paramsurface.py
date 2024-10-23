@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING
 
 from numpy import linspace, meshgrid, shape
 
+from .vector import Vector
+
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    from pygeom.geom3d import Vector
-    ParamCallable = Callable[['NDArray', 'NDArray'], 'Vector']
+    ParamCallable = Callable[['NDArray', 'NDArray'], Vector]
 
 
 class ParamSurface():
@@ -21,32 +22,32 @@ class ParamSurface():
         self.drdu = drdu
         self.drdv = drdv
 
-    def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
+    def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> Vector:
         um, vm = meshgrid(u, v, indexing='ij')
         return self.ruv(um, vm)
 
     def evaluate_points_at_uv_mesh(self, um: 'NDArray',
-                                   vm: 'NDArray') -> tuple['Vector', 'Vector']:
+                                   vm: 'NDArray') -> tuple[Vector, Vector]:
         if shape(um) != shape(vm):
             raise ValueError('The shapes of um and vm must be the same.')
         return self.ruv(um, vm)
 
-    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> tuple['Vector',
-                                                                           'Vector']:
+    def evaluate_tangents_at_uv(self, u: 'NDArray', v: 'NDArray') -> tuple[Vector,
+                                                                           Vector]:
         um, vm = meshgrid(u, v, indexing='ij')
         drdu = self.drdu(um, vm)
         drdv = self.drdv(um, vm)
         return drdu, drdv
 
     def evaluate_tangents_at_uv_mesh(self, um: 'NDArray',
-                                     vm: 'NDArray') -> tuple['Vector', 'Vector']:
+                                     vm: 'NDArray') -> tuple[Vector, Vector]:
         if shape(um) != shape(vm):
             raise ValueError('The shapes of um and vm must be the same.')
         drdu = self.drdu(um, vm)
         drdv = self.drdv(um, vm)
         return drdu, drdv
 
-    def evaluate_normals_at_uv(self, u: 'NDArray', v: 'NDArray') -> 'Vector':
+    def evaluate_normals_at_uv(self, u: 'NDArray', v: 'NDArray') -> Vector:
         drdu, drdv = self.evaluate_tangents_at_uv(u, v)
         return drdu.cross(drdv)
 
@@ -61,16 +62,16 @@ class ParamSurface():
         u, v = self.evaluate_uv(numu, numv)
         return meshgrid(u, v, indexing='ij')
 
-    def evaluate_points(self, numu: int, numv: int) -> 'Vector':
+    def evaluate_points(self, numu: int, numv: int) -> Vector:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_points_at_uv(u, v)
 
-    def evaluate_tangents(self, numu: int, numv: int) -> tuple['Vector',
-                                                               'Vector']:
+    def evaluate_tangents(self, numu: int, numv: int) -> tuple[Vector,
+                                                               Vector]:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_tangents_at_uv(u, v)
 
-    def evaluate_normals(self, numu: int, numv: int) -> 'Vector':
+    def evaluate_normals(self, numu: int, numv: int) -> Vector:
         u, v = self.evaluate_uv(numu, numv)
         return self.evaluate_normals_at_uv(u, v)
 

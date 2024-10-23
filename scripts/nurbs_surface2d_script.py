@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from numpy import float64, sqrt, zeros
+from numpy import sqrt, zeros
 
 from pygeom.geom2d import NurbsSurface2D, Vector2D
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
@@ -33,7 +33,7 @@ ctlpnts[6, 1] = Vector2D(0.0, -ri)
 ctlpnts[7, 1] = Vector2D(ri, -ri)
 ctlpnts[8, 1] = Vector2D(ri, 0.0)
 
-weights = zeros((9, 2), dtype=float64)
+weights = zeros((9, 2))
 weights[0, 0] = 1.0
 weights[1, 0] = 1.0/sqrt(2.0)
 weights[2, 0] = 1.0
@@ -83,7 +83,7 @@ ctlpnts[1, 0] = Vector2D(1.8, -1.7)
 ctlpnts[0, 1] = Vector2D(-1.9, 2.0)
 ctlpnts[1, 1] = Vector2D(2.1, 1.6)
 
-weights = zeros((2, 2), dtype=float64)
+weights = zeros((2, 2))
 weights[0, 0] = 1.0
 weights[1, 0] = 1.0
 weights[0, 1] = 1.0

@@ -1,6 +1,6 @@
 from numpy import isclose, sqrt
 
-from pygeom.geom3d.vector import Vector
+from pygeom.geom3d import Vector
 
 x1, y1, z1 = 2.0, 3.0, 1.0
 

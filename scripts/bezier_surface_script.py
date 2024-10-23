@@ -2,7 +2,7 @@
 # Import Dependencies
 from matplotlib.pyplot import figure
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import float64, sqrt, zeros
+from numpy import sqrt, zeros
 
 from pygeom.geom3d import RationalBezierSurface, Vector
 
@@ -25,7 +25,7 @@ ctlpts[0, 2] = Vector(ri, 0.0, ro - ri)
 ctlpts[1, 2] = Vector(ri, ri, ro - ri)
 ctlpts[2, 2] = Vector(0.0, ri, ro - ri)
 
-weights = zeros((3, 3), dtype=float64)
+weights = zeros((3, 3))
 weights[0, 0] = 1.0
 weights[1, 0] = 1.0/sqrt(2.0)
 weights[2, 0] = 1.0

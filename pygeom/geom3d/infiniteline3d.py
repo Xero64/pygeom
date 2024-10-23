@@ -1,6 +1,4 @@
-from typing import Tuple
-
-from pygeom.geom3d.vector import Vector
+from .vector import Vector
 
 
 class InfiniteLine3D():

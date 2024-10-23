@@ -2,12 +2,13 @@ from typing import TYPE_CHECKING
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
-from numpy import argwhere, array, concatenate, linspace, logical_and, zeros
+from numpy import argwhere, asarray, concatenate, linspace, logical_and, zeros
 
-from ..geom3d import Vector
+from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
 
 class SplinePoint(Vector):
     pnla: 'SplinePanel' = None
@@ -437,13 +438,13 @@ class Spline():
             j = 0
             for i in range(self.numpnt-1):
                 pnl = SplinePanel(self.pnts[i], self.pnts[i+1])
-                pnl.ind = array([j, j+1], dtype=int)
+                pnl.ind = asarray([j, j+1], dtype=int)
                 pnl.spline = self
                 self._pnls.append(pnl)
                 j += 2
             if self.closed:
                 pnl = SplinePanel(self.pnts[-1], self.pnts[0])
-                pnl.ind = array([j, j+1], dtype=int)
+                pnl.ind = asarray([j, j+1], dtype=int)
                 pnl.spline = self
                 self._pnls.append(pnl)
         return self._pnls
@@ -523,7 +524,7 @@ class Spline():
         return self._s
 
     @property
-    def k(self) -> 'Vector':
+    def k(self) -> Vector:
         if self._k is None:
             self._k = Vector.zeros(2*self.numpnl)
             for pnl in self.pnls:
@@ -889,8 +890,8 @@ class Spline():
         pnl = self.spline_panel_ratio(ratio)
 
         ind = self.pnls.index(pnl)
-        pnt = self.spline_points_ratio(array([ratio]))[0]
-        tgt = self.spline_gradient_ratio(array([ratio]))[0]
+        pnt = self.spline_points_ratio(asarray([ratio]))[0]
+        tgt = self.spline_gradient_ratio(asarray([ratio]))[0]
 
         pnts1 = self.pnts[:ind+1] + [pnt]
         tgt1a = self.dr[0].to_unit()

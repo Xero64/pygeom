@@ -1,7 +1,6 @@
 from math import sqrt
 
-from pygeom.geom3d import Transform
-from pygeom.geom3d.vector import Vector
+from pygeom.geom3d import Transform, Vector
 
 x = 5.0
 y = 8.0

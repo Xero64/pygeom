@@ -25,7 +25,7 @@ class Transform2D():
         y = vec.dot(self.diry)
         return vec.__class__(x, y)
 
-    def tensor2d_to_global(self, tens: 'Tensor2D') -> 'Tensor2D':
+    def tensor2d_to_global(self, tens: Tensor2D) -> Tensor2D:
         """Transforms a tensor from this local coordinate system to global"""
         sxx, sxy, syx, syy = tens.to_xy()
         qxx, qxy, qyx, qyy = self.dirx.x, self.dirx.y, self.diry.x, self.diry.y
@@ -35,7 +35,7 @@ class Transform2D():
         eyx = qxx*qxy*sxx + qxx*qyy*syx + qxy*qyx*sxy + qyx*qyy*syy
         return tens.__class__(exx, exy, eyx, eyy)
 
-    def tensor2d_to_local(self, tens: 'Tensor2D') -> 'Tensor2D':
+    def tensor2d_to_local(self, tens: Tensor2D) -> Tensor2D:
         """Transforms a tensor from global to this local coordinate system"""
         sxx, sxy, syx, syy = tens.to_xy()
         qxx, qxy, qyx, qyy = self.dirx.x, self.dirx.y, self.diry.x, self.diry.y

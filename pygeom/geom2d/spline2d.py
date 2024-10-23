@@ -2,12 +2,13 @@ from typing import TYPE_CHECKING
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import figure
-from numpy import array, concatenate, linspace, zeros
+from numpy import asarray, concatenate, linspace, zeros
 
 from ..geom2d import Vector2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
 
 class SplinePoint2D(Vector2D):
     pnla: 'SplinePanel2D' = None
@@ -430,13 +431,13 @@ class Spline2D():
             j = 0
             for i in range(self.numpnt-1):
                 pnl = SplinePanel2D(self.pnts[i], self.pnts[i+1])
-                pnl.ind = array([j, j+1], dtype=int)
+                pnl.ind = asarray([j, j+1], dtype=int)
                 pnl.spline = self
                 self._pnls.append(pnl)
                 j += 2
             if self.closed:
                 pnl = SplinePanel2D(self.pnts[-1], self.pnts[0])
-                pnl.ind = array([j, j+1], dtype=int)
+                pnl.ind = asarray([j, j+1], dtype=int)
                 pnl.spline = self
                 self._pnls.append(pnl)
         return self._pnls

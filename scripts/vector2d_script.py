@@ -2,7 +2,7 @@
 # Import Dependencies
 from sympy import Symbol
 
-from pygeom.geom2d.vector2d import Vector2D
+from pygeom.geom2d import Vector2D
 
 #%%
 # Create Symbols

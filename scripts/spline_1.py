@@ -2,9 +2,8 @@
 # Import Dependencies
 from numpy import cos, pi, sin
 
-from pygeom.geom2d import point2d_from_lists
+from pygeom.geom2d import Vector2D, point2d_from_lists
 from pygeom.geom2d.spline2d import Spline2D
-from pygeom.geom2d.vector2d import Vector2D
 
 #%%
 # Create Spline 1

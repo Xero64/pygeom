@@ -2,7 +2,7 @@
 # Import Dependencies
 from numpy import zeros
 
-from pygeom.geom3d.vector import Vector
+from pygeom.geom3d import Vector
 
 #%%
 # Create Array Vector

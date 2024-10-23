@@ -1,9 +1,10 @@
 from typing import Any
 
 from numpy import empty
-from pygeom.geom3d.vector import Vector
 from sympy import (Symbol, collect, diff, expand, expand_trig, integrate,
                    simplify, sqrt, trigsimp)
+
+from pygeom.geom3d import Vector
 
 
 class SymbolicVector(Vector):
@@ -175,7 +176,7 @@ class SymbolicVector(Vector):
         frmstr = '<{:' + frm + '}, {:' + frm + '}, {:' + frm + '}>'
         return frmstr.format(self.x, self.y, self.z)
 
-    def __eq__(self, obj: 'SymbolicVector') -> 'bool':
+    def __eq__(self, obj: 'SymbolicVector') -> bool:
         try:
             if obj.x == self.x and obj.y == self.y and obj.z == self.z:
                 return True
@@ -184,7 +185,7 @@ class SymbolicVector(Vector):
         except AttributeError:
             return False
 
-    def __neq__(self, obj: 'SymbolicVector') -> 'bool':
+    def __neq__(self, obj: 'SymbolicVector') -> bool:
         try:
             if obj.x != self.x or obj.y != self.y or obj.z != self.z:
                 return True

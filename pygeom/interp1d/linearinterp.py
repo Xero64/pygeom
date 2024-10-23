@@ -59,7 +59,7 @@ class LinearInterpSolver():
                 self._kmat[i, :] = kmat[i, :] - kopp
         return self._kmat
 
-    def x_at_factor(self, fac: 'float'):
+    def x_at_factor(self, fac: float):
         xf = asarray(self.num-1)
         for i in range(self.num-1):
             xf[i] = self.x[i] + fac*self.dx[i]
@@ -140,7 +140,7 @@ class LinearInterp(LinearInterpSolver):
             self._iydx = asarray(self.iymat).ravel()
         return self._iydx
 
-    def linear_interpolation(self, xv: 'float') -> 'float':
+    def linear_interpolation(self, xv: float) -> float:
         found = False
         for j, mj in enumerate(self.m):
             xa = self.x[j]
@@ -156,7 +156,7 @@ class LinearInterp(LinearInterpSolver):
     def linear_interpolation_array(self, xv: 'NDArray') -> 'NDArray':
         return fromiter([self.linear_interpolation(xi) for xi in xv], float)
 
-    def linear_interpolation_integral(self, xv: 'float') -> 'float':
+    def linear_interpolation_integral(self, xv: float) -> float:
         found = False
         for j, dxj in enumerate(self.dx):
             ia = self.iydx[j]

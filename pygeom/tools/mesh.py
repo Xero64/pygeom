@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
-from numpy import (arange, argsort, array, bool_, hstack, int64, logical_and,
+from numpy import (arange, argsort, asarray, bool_, hstack, int64, logical_and,
                    round, take_along_axis, unique, vstack, zeros)
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class MetaCache():
         self.data.append(value)
 
     def asarray(self) -> 'NDArray':
-        arr = array(self.data, dtype=self.dtype)
+        arr = asarray(self.data, dtype=self.dtype)
         if len(arr.shape) == 1:
             return arr.reshape(-1, 1)
         return arr
@@ -95,13 +95,13 @@ class MeshVectors(MeshObject):
             value.clear()
 
     def resolve_cache(self) -> None:
-        self.vecs = array(self.vecs_cache)
+        self.vecs = asarray(self.vecs_cache)
         for key, value in self.meta_cache.items():
             self.meta[key] = value.asarray()
         self.clear_cache()
 
     def append_cache(self) -> None:
-        vecs = array(self.vecs_cache)
+        vecs = asarray(self.vecs_cache)
         meta = {}
         for key, value in self.meta_cache.items():
             meta[key] = value.asarray()
@@ -241,13 +241,13 @@ class MeshElems(MeshObject):
             value.clear()
 
     def resolve_cache(self) -> None:
-        self.grids = array(self.grids_cache, dtype=int64)
+        self.grids = asarray(self.grids_cache, dtype=int64)
         for key, value in self.meta_cache.items():
             self.meta[key] = value.asarray()
         self.clear_cache()
 
     def append_cache(self) -> None:
-        grids = array(self.grids_cache, dtype=int64)
+        grids = asarray(self.grids_cache, dtype=int64)
         meta = {}
         for key, value in self.meta_cache.items():
             meta[key] = value.asarray()
@@ -307,8 +307,8 @@ class MeshElems(MeshObject):
         count = countelem.ravel()
         if self.numg == 4:
             check = count < 2
-            ind1 = array([0, 1], dtype=int64)
-            ind2 = array([2, 3], dtype=int64)
+            ind1 = asarray([0, 1], dtype=int64)
+            ind2 = asarray([2, 3], dtype=int64)
             grids1 = self.grids[:, ind1]
             grids2 = self.grids[:, ind2]
             checkedge: 'NDArray[bool_]' = grids1 == grids2

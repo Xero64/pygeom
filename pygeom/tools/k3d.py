@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
 from numpy import arange, asarray, hstack, vstack, zeros
+
 from pygeom.geom2d import Vector2D
 from pygeom.geom3d import Vector
 

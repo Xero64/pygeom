@@ -1,6 +1,6 @@
 #%%
 # Import Dependencies
-from numpy import cos, float64, linspace, ones, pi, set_printoptions, sqrt
+from numpy import cos, linspace, ones, pi, set_printoptions, sqrt
 from numpy.typing import NDArray
 from scipy.interpolate import splev, splprep
 
@@ -26,7 +26,7 @@ Kchk = 4.0/3.0/(sqrt(2.0/(1.0 + cos(ang))) + 1.0)
 print(f'K = {K}')
 # print(f'Kchk = {Kchk}')
 
-ctlpts = Vector2D.zeros(13, dtype=float64)
+ctlpts = Vector2D.zeros(13)
 ctlpts[0] = Vector2D(r, 0.0)
 ctlpts[1] = Vector2D(r, K*r)
 ctlpts[2] = Vector2D(K*r, r)

@@ -1,37 +1,36 @@
 from typing import TYPE_CHECKING, Any
 
-from numpy import concatenate, divide, float64, full, ones, zeros
+from numpy import concatenate, divide, full, ones, zeros
 
 from ..tools.basis import (basis_first_derivatives, basis_functions,
                            basis_second_derivatives, default_knots,
                            knot_linspace)
+from .vector2d import Vector2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from pygeom.geom2d import Vector2D
-
 
 class NurbsCurve2D():
-    ctlpnts: 'Vector2D' = None
+    ctlpnts: Vector2D = None
     weights: 'NDArray' = None
     degree: int = None
     knots: 'NDArray' = None
     endpoint: bool = None
-    _wpoints: 'Vector2D' = None
+    _wpoints: Vector2D = None
     _cknots: 'NDArray' = None
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
+    def __init__(self, ctlpnts: Vector2D, **kwargs: dict[str, Any]) -> None:
         self.ctlpnts = ctlpnts.ravel()
         self.weights = kwargs.get('weights',
-                                  ones(ctlpnts.size, dtype=float64)).ravel()
+                                  ones(ctlpnts.size)).ravel()
         self.degree = kwargs.get('degree', self.ctlpnts.size - 1)
         self.knots = kwargs.get('knots', default_knots(self.ctlpnts.size,
                                                        self.degree))
         self.endpoint = kwargs.get('endpoint', True)
 
     @property
-    def wpoints(self) -> 'Vector2D':
+    def wpoints(self) -> Vector2D:
         if self._wpoints is None:
             self._wpoints = self.ctlpnts*self.weights
         return self._wpoints
@@ -61,7 +60,7 @@ class NurbsCurve2D():
     def basis_second_derivatives(self, u: 'NDArray') -> 'NDArray':
         return basis_second_derivatives(self.degree, self.cknots, u)
 
-    def evaluate_points_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_points_at_t(self, u: 'NDArray') -> Vector2D:
         Nu = self.basis_functions(u)
         numer = self.wpoints@Nu
         if self.rational:
@@ -71,7 +70,7 @@ class NurbsCurve2D():
             points = numer
         return points
 
-    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> Vector2D:
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         numer = self.wpoints@Nu
@@ -84,7 +83,7 @@ class NurbsCurve2D():
             deriv1 = dnumer
         return deriv1
 
-    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> Vector2D:
         Nu = self.basis_functions(u)
         dNu = self.basis_first_derivatives(u)
         d2Nu = self.basis_second_derivatives(u)
@@ -108,12 +107,12 @@ class NurbsCurve2D():
         divide(deriv1.cross(deriv2), deriv1mag**3, where=deriv1mag != 0.0, out=curvature)
         return curvature
 
-    def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_tangents_at_t(self, u: 'NDArray') -> Vector2D:
         deriv1 = self.evaluate_first_derivatives_at_t(u)
         tangent = deriv1.to_unit()
         return tangent
 
-    def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_normals_at_t(self, u: 'NDArray') -> Vector2D:
         deriv2 = self.evaluate_second_derivatives_at_t(u)
         normal = deriv2.to_unit()
         return normal
@@ -121,15 +120,15 @@ class NurbsCurve2D():
     def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.knots)
 
-    def evaluate_points(self, num: int) -> 'Vector2D':
+    def evaluate_points(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_points_at_t(u)
 
-    def evaluate_first_derivatives(self, num: int) -> 'Vector2D':
+    def evaluate_first_derivatives(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_first_derivatives_at_t(u)
 
-    def evaluate_second_derivatives(self, num: int) -> 'Vector2D':
+    def evaluate_second_derivatives(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_second_derivatives_at_t(u)
 
@@ -137,11 +136,11 @@ class NurbsCurve2D():
         u = self.evaluate_t(num)
         return self.evaluate_curvatures_at_t(u)
 
-    def evaluate_tangents(self, num: int) -> 'Vector2D':
+    def evaluate_tangents(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_tangents_at_t(u)
 
-    def evaluate_normals(self, num: int) -> 'Vector2D':
+    def evaluate_normals(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_normals_at_t(u)
 
@@ -160,8 +159,8 @@ class NurbsCurve2D():
 
 class BSplineCurve2D(NurbsCurve2D):
 
-    def __init__(self, ctlpnts: 'Vector2D', **kwargs: dict[str, Any]) -> None:
-        kwargs['weights'] = ones(ctlpnts.shape, dtype=float64)
+    def __init__(self, ctlpnts: Vector2D, **kwargs: dict[str, Any]) -> None:
+        kwargs['weights'] = ones(ctlpnts.shape)
         super().__init__(ctlpnts, **kwargs)
 
     def __repr__(self) -> str:

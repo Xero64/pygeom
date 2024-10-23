@@ -7,8 +7,7 @@ from .vector2d import Vector2D
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
-    from pygeom.geom2d import Vector2D
-    ParamCallable = Callable[['NDArray'], 'Vector2D']
+    ParamCallable = Callable[['NDArray'], Vector2D]
 
 
 class ParamCurve2D():
@@ -23,22 +22,22 @@ class ParamCurve2D():
         self.drdu = drdu
         self.d2rdu2 = d2rdu2
 
-    def evaluate_points_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_points_at_t(self, u: 'NDArray') -> Vector2D:
         ru = self.ru(u)
         return ru
 
-    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_first_derivatives_at_t(self, u: 'NDArray') -> Vector2D:
         drdu = self.drdu(u)
         return drdu
 
-    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_second_derivatives_at_t(self, u: 'NDArray') -> Vector2D:
         d2rdu2 = self.d2rdu2(u)
         return d2rdu2
 
-    def evaluate_tangents_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_tangents_at_t(self, u: 'NDArray') -> Vector2D:
         return self.evaluate_first_derivatives_at_t(u).to_unit()
 
-    def evaluate_normals_at_t(self, u: 'NDArray') -> 'Vector2D':
+    def evaluate_normals_at_t(self, u: 'NDArray') -> Vector2D:
         return self.evaluate_second_derivatives_at_t(u).to_unit()
 
     def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'NDArray':
@@ -49,23 +48,23 @@ class ParamCurve2D():
     def evaluate_t(self, num: int) -> 'NDArray':
         return linspace(0.0, 1.0, num + 1)
 
-    def evaluate_points(self, num: int) -> 'Vector2D':
+    def evaluate_points(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_points_at_t(u)
 
-    def evaluate_first_derivatives(self, num: int) -> 'Vector2D':
+    def evaluate_first_derivatives(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_first_derivatives_at_t(u)
 
-    def evaluate_second_derivatives(self, num: int) -> 'Vector2D':
+    def evaluate_second_derivatives(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_second_derivatives_at_t(u)
 
-    def evaluate_tangents(self, num: int) -> 'Vector2D':
+    def evaluate_tangents(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_tangents_at_t(u)
 
-    def evaluate_normals(self, num: int) -> 'Vector2D':
+    def evaluate_normals(self, num: int) -> Vector2D:
         u = self.evaluate_t(num)
         return self.evaluate_normals_at_t(u)
 

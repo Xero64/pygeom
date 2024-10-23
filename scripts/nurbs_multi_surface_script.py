@@ -1,12 +1,12 @@
 #%%
 # Import Dependencies
-from numpy import set_printoptions, sqrt, zeros
+from numpy import linspace, set_printoptions, sqrt, zeros
 
 from pygeom.geom3d import NurbsCurve, NurbsSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
                               k3d_surface_normals, k3d_surface_tangents)
-from pygeom.tools.solvers import cubic_bspline_fit_solver
+from pygeom.tools.solvers import cubic_pspline_fit_solver, cubic_bspline_from_pspline
 
 set_printoptions(suppress=True)
 
@@ -66,7 +66,9 @@ pntsS[:, 3] = ctlpnts4
 
 print(f'pntsS.shape = {pntsS.shape}')
 
-rmat = cubic_bspline_fit_solver(4, bc_type='quadratic')
+s = linspace(0.0, 1.0, 4)
+
+rmat = cubic_bspline_from_pspline(s, bctype='quadratic')
 
 print(f'rmat.shape = {rmat.shape}')
 

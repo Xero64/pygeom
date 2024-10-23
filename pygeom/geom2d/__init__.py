@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 from numpy import cos, sin
 
@@ -22,19 +22,19 @@ from .vector2d import Vector2D as Vector2D
 I2D = Vector2D(1.0, 0.0)
 J2D = Vector2D(0.0, 1.0)
 
-def vector2d_from_complex(cplx: complex) -> 'Vector2D':
+def vector2d_from_complex(cplx: complex) -> Vector2D:
     """Create a Vector2D from a complex number"""
     x = cplx.real
     y = cplx.imag
     return Vector2D(x, y)
 
-def vector2d_from_magang(mag: float, ang: float) -> 'Vector2D':
+def vector2d_from_magang(mag: float, ang: float) -> Vector2D:
     """Create a Vector2D from magnatude and angle from x direction"""
     x = mag*cos(ang)
     y = mag*sin(ang)
     return Vector2D(x, y)
 
-def vector2d_from_lists(x: list[float], y: list[float]) -> list['Vector2D']:
+def vector2d_from_lists(x: list[float], y: list[float]) -> list[Vector2D]:
     """Create a list of Vector2D objects"""
     n = len(x)
     if len(y) == n:
@@ -72,7 +72,7 @@ def coordinate2d_from_angle(pnt: 'Point2D', angle: float) -> 'Coordinate2D':
 
 def tensor2d_from_lists(xx: Iterable[float], xy: Iterable[float],
                         yx: Iterable[float],
-                        yy: Iterable[float]) -> list['Tensor2D']:
+                        yy: Iterable[float]) -> list[Tensor2D]:
     """Create a list of Tensor2D objects"""
     n = len(xx)
     if len(xy) == n and len(yx) == n and len(yy) == n:

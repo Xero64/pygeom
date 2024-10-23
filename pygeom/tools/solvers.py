@@ -223,7 +223,7 @@ def cubic_pspline_fit_solver(s: 'NDArray', bctype: 'BCLike' = None) -> 'NDArray'
 
 def cubic_bspline_from_pspline(s: 'NDArray', bctype: 'BCLike') -> 'NDArray':
 
-    gmat = cubic_pspline_fit_solver(s, bctype)
+    gmat: 'NDArray' = cubic_pspline_fit_solver(s, bctype)
 
     nump = s.size
 
@@ -240,7 +240,7 @@ def cubic_bspline_from_pspline(s: 'NDArray', bctype: 'BCLike') -> 'NDArray':
     dmat = nsmat2@(gmat[:-1, :]/18 + gmat[1:, :]/9)
     dmat[:, :nump] += fmat[:-1, :]/3 + 2*fmat[1:, :]/3
 
-    rmat = zeros((nump + 2*(nump-1), gmat.shape[1]))
+    rmat: 'NDArray' = zeros((nump + 2*(nump-1), gmat.shape[1]))
     rmat[::3, :nump] = fmat
     rmat[1::3, :] = cmat
     rmat[2::3, :] = dmat

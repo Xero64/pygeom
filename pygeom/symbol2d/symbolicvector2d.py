@@ -1,9 +1,10 @@
 from typing import Any
 
 from numpy import empty
-from pygeom.geom2d.vector2d import Vector2D
 from sympy import (Symbol, atan, cos, diff, expand, expand_trig, integrate,
                    simplify, sin, sqrt, trigsimp)
+
+from pygeom.geom2d import Vector2D
 
 
 class SymbolicVector2D(Vector2D):
@@ -139,7 +140,7 @@ class SymbolicVector2D(Vector2D):
         frmstr: str = '<{:'+ frm +'}, {:'+ frm +'}>'
         return frmstr.format(self.x, self.y)
 
-    def __eq__(self, obj: 'SymbolicVector2D') -> 'bool':
+    def __eq__(self, obj: 'SymbolicVector2D') -> bool:
         try:
             if obj.x == self.x and obj.y == self.y:
                 return True
@@ -148,7 +149,7 @@ class SymbolicVector2D(Vector2D):
         except AttributeError:
             return False
 
-    def __neq__(self, obj: 'SymbolicVector2D') -> 'bool':
+    def __neq__(self, obj: 'SymbolicVector2D') -> bool:
         try:
             if obj.x != self.x or obj.y != self.y:
                 return True

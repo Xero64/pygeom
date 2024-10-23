@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib.pyplot import figure
 from numpy import asarray, cos, linspace, pi, sqrt
+
 from pygeom.geom2d import (BezierCurve2D, BSplineCurve2D, NurbsCurve2D,
                            RationalBezierCurve2D, Vector2D)
 

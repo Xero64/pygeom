@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from numpy import all, argsort, asarray, concatenate, fromiter, unique, zeros
 from numpy.linalg import solve
