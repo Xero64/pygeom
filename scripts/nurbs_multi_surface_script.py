@@ -6,7 +6,8 @@ from pygeom.geom3d import NurbsCurve, NurbsSurface, Vector
 from pygeom.tools.k3d import (Plot, k3d_nurbs_control_points,
                               k3d_nurbs_control_polygon, k3d_surface,
                               k3d_surface_normals, k3d_surface_tangents)
-from pygeom.tools.solvers import cubic_pspline_fit_solver, cubic_bspline_from_pspline
+from pygeom.tools.solvers import (cubic_bspline_from_pspline,
+                                  cubic_pspline_fit_solver)
 
 set_printoptions(suppress=True)
 
