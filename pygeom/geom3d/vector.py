@@ -136,15 +136,15 @@ class Vector:
 
     def __repr__(self) -> str:
         if self.ndim == 0:
-            return f'<Vector: {self.x:}, {self.y:}, {self.z:}>'
+            return f'<{self.__class__.__qualname__:s}: {self.x:}, {self.y:}, {self.z:}>'
         else:
-            return f'<Vector shape: {self.shape:}, dtype: {self.dtype}>'
+            return f'<{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}>'
 
     def __str__(self) -> str:
         if self.ndim == 0:
             outstr = f'<{self.x:}, {self.y:}, {self.z:}>'
         else:
-            outstr = f'Vector shape: {self.shape:}, dtype: {self.dtype}\n'
+            outstr = f'{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}\n'
             outstr += f'x:\n{self.x:}\ny:\n{self.y:}\nz:\n{self.z:}\n'
         return outstr
 
@@ -152,7 +152,7 @@ class Vector:
         if self.ndim == 0:
             outstr = f'<{self.x:{frm}}, {self.y:{frm}}, {self.z:{frm}}>'
         else:
-            outstr = f'Vector shape: {self.shape:}, dtype: {self.dtype}\n'
+            outstr = f'{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}\n'
             frmstr = 'x:\n{:' + frm + '}\ny:\n{:' + frm + '}\nz:\n{:' + frm + '}\n'
             outstr += frmstr.format(self.x, self.y, self.z)
         return outstr

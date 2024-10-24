@@ -111,7 +111,7 @@ class Vector2D:
             y = self.y - obj.y
             return Vector2D(x, y)
         except AttributeError:
-            err = 'Vector2D object can only be subtracted from Vector2D object.'
+            err = f'{self.__class__.__qualname__:s} object can only be subtracted from Vector2D object.'
             raise TypeError(err)
 
     def __pos__(self) -> 'Vector2D':
@@ -122,15 +122,15 @@ class Vector2D:
 
     def __repr__(self) -> str:
         if self.ndim == 0:
-            return f'<Vector2D: {self.x:}, {self.y:}>'
+            return f'<{self.__class__.__qualname__:s}: {self.x:}, {self.y:}>'
         else:
-            return f'<Vector2D shape: {self.shape:}, dtype: {self.dtype}>'
+            return f'<{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}>'
 
     def __str__(self) -> str:
         if self.ndim == 0:
             outstr = f'<{self.x:}, {self.y:}>'
         else:
-            outstr = f'Vector2D shape: {self.shape:}, dtype: {self.dtype}\n'
+            outstr = f'{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}\n'
             outstr += f'x:\n{self.x:}\ny:\n{self.y:}\n'
         return outstr
 
@@ -138,7 +138,7 @@ class Vector2D:
         if self.ndim == 0:
             outstr = f'<{self.x:{frm}}, {self.y:{frm}}>'
         else:
-            outstr = f'Vector2D shape: {self.shape:}, dtype: {self.dtype}\n'
+            outstr = f'{self.__class__.__qualname__:s} shape: {self.shape:}, dtype: {self.dtype}\n'
             outstr += f'x:\n{self.x:{frm}}\ny:\n{self.y:{frm}}\n'
         return outstr
 
@@ -311,6 +311,18 @@ class Vector2D:
         for i, veci in enumerate(vecs):
             vector[i] = veci
         return vector
+
+    @classmethod
+    def fromcomplex(cls, cnums: 'NDArray') -> 'Vector2D':
+        x = cnums.real
+        y = cnums.imag
+        return cls(x, y)
+
+    @classmethod
+    def frompolar(cls, mags: 'NDArray', angs: 'NDArray') -> 'Vector2D':
+        x = mags*cos(angs)
+        y = mags*sin(angs)
+        return cls(x, y)
 
     @classmethod
     def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector2D':
