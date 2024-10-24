@@ -20,7 +20,7 @@ def semi_cosine_spacing(num: int) -> 'NDArray':
 
 def full_cosine_spacing(num: int) -> 'NDArray':
     th = linspace(pi, 0.0, num + 1)
-    spc = (cos(th)+1.0)/2
+    spc = (cos(th) + 1.0)/2
     return spc
 
 def equal_spacing(num: int) -> 'NDArray':
@@ -32,14 +32,14 @@ def linear_bias_left(spc: 'NDArray', ratio: float) -> 'NDArray':
     if ratio > 1.0:
         ratio = 1.0/ratio
     m = 1.0 - ratio
-    return asarray([s*(ratio + m*s) for s in spc])
+    return spc*(ratio + m*spc)
 
 def linear_bias_right(spc: 'NDArray', ratio: float) -> 'NDArray':
     ratio = abs(ratio)
     if ratio > 1.0:
         ratio = 1.0/ratio
     m = 1.0 - ratio
-    return asarray([1.0 - (1.0 - s)*(ratio + m*(1.0 - s)) for s in spc])
+    return 1.0 - (1.0 - spc)*(ratio + m*(1.0 - spc))
 
 def geometric_series_spacing_ratio(num: int, ratio: float) -> 'NDArray':
     if ratio == 1.0:
