@@ -360,6 +360,15 @@ class Vector:
         return vector
 
     @classmethod
+    def fromdict(cls, vector_dict: dict[str, 'NDArray']) -> 'Vector':
+        x = vector_dict.get('x', None)
+        y = vector_dict.get('y', None)
+        z = vector_dict.get('z', None)
+        if x is None or y is None or z is None:
+            raise ValueError('Vector x, y and z must be provided.')
+        return cls(x, y, z)
+
+    @classmethod
     def concatenate(cls, vecs: Iterable['Vector'], **kwargs: dict[str, Any]) -> 'Vector':
         x = concatenate([vec.x for vec in vecs], **kwargs)
         y = concatenate([vec.y for vec in vecs], **kwargs)

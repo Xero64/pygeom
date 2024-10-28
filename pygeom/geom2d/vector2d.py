@@ -351,6 +351,14 @@ class Vector2D:
         return vector
 
     @classmethod
+    def fromdict(cls, vector2d_dict: dict[str, 'NDArray']) -> 'Vector2D':
+        x = vector2d_dict.get('x', None)
+        y = vector2d_dict.get('y', None)
+        if x is None or y is None:
+            raise ValueError('Vector2D x and y must be provided.')
+        return cls(x, y)
+
+    @classmethod
     def concatenate(cls, vecs: Iterable['Vector2D'], **kwargs: dict[str, Any]) -> 'Vector2D':
         x = concatenate([vec.x for vec in vecs], **kwargs)
         y = concatenate([vec.y for vec in vecs], **kwargs)
