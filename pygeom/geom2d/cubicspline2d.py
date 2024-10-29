@@ -144,7 +144,7 @@ class CubicSpline2D():
     @property
     def d2r(self) -> Vector2D:
         if self._d2r is None:
-            self._d2r = self.input.rmatmul(self.gmat)
+            self._d2r = self.gmat@self.input
         return self._d2r
 
     def evaluate_points_at_t(self, s: 'NDArray') -> Vector2D:

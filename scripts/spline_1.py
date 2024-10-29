@@ -1,8 +1,7 @@
 #%%
 # Import Dependencies
 from numpy import cos, pi, sin
-
-from pygeom.geom2d import Vector2D, point2d_from_lists
+from pygeom.geom2d import Vector2D
 from pygeom.geom2d.spline2d import Spline2D
 
 #%%
@@ -13,7 +12,7 @@ th = [i/num*2*pi for i in range(num)]
 x = [R*cos(thi) for thi in th]
 y = [R*sin(thi) for thi in th]
 
-pnts = point2d_from_lists(x, y)
+pnts = Vector2D.from_iter([Vector2D(xi, yi) for xi, yi in zip(x, y)])
 
 TestSpline = Spline2D(pnts)
 ax = TestSpline.scatter(label=True)

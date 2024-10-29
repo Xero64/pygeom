@@ -1,14 +1,15 @@
 from collections.abc import Iterable
+from types import NotImplementedType
 from typing import TYPE_CHECKING, Any
 
 from numpy import (allclose, arctan2, concatenate, copy, cos, divide, full,
-                   hstack, isclose, logical_and, logical_or, ndim, ravel,
-                   repeat, reshape, result_type, shape, sin, size, split, sqrt,
-                   square, stack, sum, transpose, zeros)
+                   hstack, isclose, logical_and, logical_or, matmul, multiply,
+                   ndim, ravel, repeat, reshape, result_type, shape, sin, size,
+                   split, sqrt, square, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
-    from numpy import bool_
+    from numpy import bool_, ufunc
     from numpy.typing import DTypeLike, NDArray
 
 
@@ -160,10 +161,6 @@ class Vector2D:
             err = 'Vector2D object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
 
-    def rmatmul(self, mat: 'NDArray') -> 'Vector2D':
-        """Returns the right matrix multiplication of this vector."""
-        return self.__rmatmul__(mat)
-
     def __getitem__(self, key) -> 'Vector2D':
         x = self.x[key]
         y = self.y[key]
@@ -304,7 +301,7 @@ class Vector2D:
         return cls(x, y)
 
     @classmethod
-    def fromiter(cls, vecs: Iterable['Vector2D'],
+    def from_iter(cls, vecs: Iterable['Vector2D'],
                  **kwargs: dict[str, Any]) -> 'Vector2D':
         num = len(vecs)
         vector = cls.zeros(num, **kwargs)
@@ -313,19 +310,19 @@ class Vector2D:
         return vector
 
     @classmethod
-    def fromcomplex(cls, cnums: 'NDArray') -> 'Vector2D':
+    def from_complex(cls, cnums: 'NDArray') -> 'Vector2D':
         x = cnums.real
         y = cnums.imag
         return cls(x, y)
 
     @classmethod
-    def frompolar(cls, mags: 'NDArray', angs: 'NDArray') -> 'Vector2D':
+    def from_polar(cls, mags: 'NDArray', angs: 'NDArray') -> 'Vector2D':
         x = mags*cos(angs)
         y = mags*sin(angs)
         return cls(x, y)
 
     @classmethod
-    def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector2D':
+    def from_obj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector2D':
         cur_ndim = 0
         cur_shape = ()
         x, y = 0.0, 0.0
@@ -351,7 +348,7 @@ class Vector2D:
         return vector
 
     @classmethod
-    def fromdict(cls, vector2d_dict: dict[str, 'NDArray']) -> 'Vector2D':
+    def from_dict(cls, vector2d_dict: dict[str, 'NDArray']) -> 'Vector2D':
         x = vector2d_dict.get('x', None)
         y = vector2d_dict.get('y', None)
         if x is None or y is None:
@@ -370,12 +367,12 @@ class Vector2D:
         y = stack([vec.y for vec in vecs], **kwargs)
         return cls(x, y)
 
-    def isclose(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> 'NDArray[bool_]':
+    def is_close(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> 'NDArray[bool_]':
         xclose = isclose(self.x, obj.x, rtol=rtol, atol=atol)
         yclose = isclose(self.y, obj.y, rtol=rtol, atol=atol)
         return logical_and(xclose, yclose)
 
-    def allclose(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> bool:
+    def all_close(self, obj: 'Vector2D', rtol: float=1e-09, atol: float=0.0) -> bool:
         xclose = allclose(self.x, obj.x, rtol=rtol, atol=atol)
         yclose = allclose(self.y, obj.y, rtol=rtol, atol=atol)
         return xclose and yclose
@@ -394,3 +391,20 @@ class Vector2D:
         cmat = solve(amat, bmat)
         cvec = Vector2D(*split(cmat, 2, axis=1)).reshape(shp)
         return cvec
+
+    def __array_ufunc__(self, ufunc: 'ufunc', method: str,
+                        *inputs: tuple['NDArray | Vector2D', ...],
+                        **kwargs: dict[str, Any]) -> 'Vector2D | NotImplementedType':
+        if method == '__call__':
+            if ufunc is multiply:
+                if inputs[1] is self:
+                    return self.__rmul__(inputs[0], **kwargs)
+                else:
+                    return NotImplemented
+            elif ufunc is matmul:
+                if inputs[1] is self:
+                    return self.__rmatmul__(inputs[0], **kwargs)
+                else:
+                    return NotImplemented
+        else:
+            return NotImplemented

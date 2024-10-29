@@ -25,7 +25,7 @@ cspline = CubicSpline2D(pnts, bctype=bctype)
 
 rmat = cubic_bspline_from_pspline(cspline.s, bctype=bctype)
 
-ctlpnts = pnts.rmatmul(rmat)
+ctlpnts = rmat@pnts
 
 knots = knots_from_spacing(cspline.s, 3)
 

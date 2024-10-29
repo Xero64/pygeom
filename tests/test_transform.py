@@ -12,4 +12,4 @@ trans = Transform(vec, Vector(0.0, 0.0, 1.0))
 vecl = Vector(sqrt(x**2 + y**2 + z**2), 0.0, 0.0)
 
 def test_transform_to_local():
-    assert Vector.isclose(trans.vector_to_local(vec), vecl)
+    assert Vector.is_close(trans.vector_to_local(vec), vecl)

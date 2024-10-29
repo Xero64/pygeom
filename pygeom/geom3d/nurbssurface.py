@@ -88,7 +88,7 @@ class NurbsSurface():
 
     def evaluate_points_at_uv(self, u: 'NDArray', v: 'NDArray') -> Vector:
         Nu, Nv = self.basis_functions(u, v)
-        numer = self.wpoints.rmatmul(Nu.transpose())@Nv
+        numer = Nu.transpose()@self.wpoints@Nv
         if self.rational:
             denom = Nu.transpose()@self.weights@Nv
             points = numer/denom
@@ -121,10 +121,10 @@ class NurbsSurface():
                                 v: 'NDArray') -> tuple[Vector, Vector]:
         Nu, Nv = self.basis_functions(u, v)
         dNu, dNv = self.basis_first_derivatives(u, v)
-        dnumer_u = self.wpoints.rmatmul(dNu.transpose())@Nv
-        dnumer_v = self.wpoints.rmatmul(Nu.transpose())@dNv
+        dnumer_u = dNu.transpose()@self.wpoints@Nv
+        dnumer_v = Nu.transpose()@self.wpoints@dNv
         if self.rational:
-            numer = self.wpoints.rmatmul(Nu.transpose())@Nv
+            numer = Nu.transpose()@self.wpoints@Nv
             denom = Nu.transpose()@self.weights@Nv
             ddenom_u = dNu.transpose()@self.weights@Nv
             ddenom_v = Nu.transpose()@self.weights@dNv

@@ -105,7 +105,7 @@ nknots = knots_from_spacing(cubicspline.s, degree=2)
 
 rmat = cubic_bspline_from_pspline(cubicspline.s, bctype=bctype)
 
-ctlpnts = pnts.rmatmul(rmat)
+ctlpnts = rmat@pnts
 
 ctlpnts_corrected = cubic_bspline_correction(ctlpnts)
 

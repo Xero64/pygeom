@@ -1,14 +1,15 @@
 from collections.abc import Iterable
+from types import NotImplementedType
 from typing import TYPE_CHECKING, Any
 
 from numpy import (allclose, concatenate, copy, divide, full, hstack, isclose,
-                   logical_and, logical_or, ndim, ravel, repeat, reshape,
-                   result_type, shape, size, split, sqrt, square, stack, sum,
-                   transpose, zeros)
+                   logical_and, logical_or, matmul, multiply, ndim, ravel,
+                   repeat, reshape, result_type, shape, size, split, sqrt,
+                   square, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
-    from numpy import bool_
+    from numpy import bool_, ufunc
     from numpy.typing import DTypeLike, NDArray
 
 class Vector:
@@ -177,10 +178,6 @@ class Vector:
             err = 'Vector object can only be matrix multiplied by a numpy ndarray.'
             raise TypeError(err)
 
-    def rmatmul(self, mat: 'NDArray') -> 'Vector':
-        """Returns the right matrix multiplication of this array vector"""
-        return self.__rmatmul__(mat)
-
     def __getitem__(self, key) -> 'Vector':
         x = self.x[key]
         y = self.y[key]
@@ -316,8 +313,8 @@ class Vector:
         return cls(x, y, z)
 
     @classmethod
-    def fromiter(cls, vecs: Iterable['Vector'],
-                 **kwargs: dict[str, Any]) -> 'Vector':
+    def from_iter(cls, vecs: Iterable['Vector'],
+                  **kwargs: dict[str, Any]) -> 'Vector':
         num = len(vecs)
         vector = cls.zeros(num, **kwargs)
         for i, veci in enumerate(vecs):
@@ -325,7 +322,7 @@ class Vector:
         return vector
 
     @classmethod
-    def fromobj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector':
+    def from_obj(cls, obj: Any, **kwargs: dict[str, Any]) -> 'Vector':
         cur_ndim = 0
         cur_shape = ()
         x, y, z = 0.0, 0.0, 0.0
@@ -360,7 +357,7 @@ class Vector:
         return vector
 
     @classmethod
-    def fromdict(cls, vector_dict: dict[str, 'NDArray']) -> 'Vector':
+    def from_dict(cls, vector_dict: dict[str, 'NDArray']) -> 'Vector':
         x = vector_dict.get('x', None)
         y = vector_dict.get('y', None)
         z = vector_dict.get('z', None)
@@ -382,15 +379,15 @@ class Vector:
         z = stack([vec.z for vec in vecs], **kwargs)
         return cls(x, y, z)
 
-    def isclose(self, obj: 'Vector',
-                rtol: float=1e-09, atol: float=0.0) -> 'NDArray[bool_]':
+    def is_close(self, obj: 'Vector',
+                 rtol: float=1e-09, atol: float=0.0) -> 'NDArray[bool_]':
         xclose = isclose(self.x, obj.x, rtol=rtol, atol=atol)
         yclose = isclose(self.y, obj.y, rtol=rtol, atol=atol)
         zclose = isclose(self.z, obj.z, rtol=rtol, atol=atol)
         return logical_and(logical_and(xclose, yclose), zclose)
 
-    def allclose(self, obj: 'Vector',
-                 rtol: float=1e-09, atol: float=0.0) -> bool:
+    def all_close(self, obj: 'Vector',
+                  rtol: float=1e-09, atol: float=0.0) -> bool:
         xclose = allclose(self.x, obj.x, rtol=rtol, atol=atol)
         yclose = allclose(self.y, obj.y, rtol=rtol, atol=atol)
         zclose = allclose(self.z, obj.z, rtol=rtol, atol=atol)
@@ -410,3 +407,20 @@ class Vector:
         cmat = solve(amat, bmat)
         cvec = Vector(*split(cmat, 3, axis=1)).reshape(shp)
         return cvec
+
+    def __array_ufunc__(self, ufunc: 'ufunc', method: str,
+                        *inputs: tuple['NDArray | Vector', ...],
+                        **kwargs: dict[str, Any]) -> 'Vector | NotImplementedType':
+        if method == '__call__':
+            if ufunc is multiply:
+                if inputs[1] is self:
+                    return self.__rmul__(inputs[0], **kwargs)
+                else:
+                    return NotImplemented
+            elif ufunc is matmul:
+                if inputs[1] is self:
+                    return self.__rmatmul__(inputs[0], **kwargs)
+                else:
+                    return NotImplemented
+        else:
+            return NotImplemented

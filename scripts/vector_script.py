@@ -21,3 +21,11 @@ C = A@B
 print(f'A = \n{A}\n')
 print(f'B = \n{B}\n')
 print(f'C = \n{C}\n')
+
+D = B@A
+
+print(f'D = \n{D}\n')
+
+E = A.x*A
+
+print(f'E = \n{E}\n')
