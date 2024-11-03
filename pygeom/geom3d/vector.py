@@ -27,11 +27,7 @@ class Vector:
 
     def return_magnitude(self) -> 'NDArray':
         """Returns the magnitude array of this array vector"""
-        x2 = square(self.x)
-        y2 = square(self.y)
-        z2 = square(self.z)
-        r2 = x2 + y2 + z2
-        return sqrt(r2)
+        return sqrt(self.dot(self))
 
     def to_unit(self, return_magnitude: bool = False) -> 'Vector | tuple[Vector, NDArray]':
         """Returns the unit vector of this vector"""
@@ -65,13 +61,6 @@ class Vector:
             y = self.z*vector.x - self.x*vector.z
             z = self.x*vector.y - self.y*vector.x
             return Vector(x, y, z)
-        except AttributeError:
-            err = 'Vector cross product must be with Vector object.'
-            raise TypeError(err)
-
-    def rcross(self, vector: 'Vector') -> 'Vector':
-        try:
-            return vector.cross(self)
         except AttributeError:
             err = 'Vector cross product must be with Vector object.'
             raise TypeError(err)

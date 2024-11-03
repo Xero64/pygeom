@@ -26,10 +26,7 @@ class Vector2D:
 
     def return_magnitude(self) -> 'NDArray':
         """Returns the magnitude of this vector"""
-        x2 = square(self.x)
-        y2 = square(self.y)
-        r2 = x2 + y2
-        return sqrt(r2)
+        return sqrt(self.dot(self))
 
     def to_unit(self, return_magnitude: bool = False) -> 'Vector2D | tuple[Vector2D, NDArray]':
         """Returns the unit vector of this vector"""
@@ -58,13 +55,6 @@ class Vector2D:
     def cross(self, vector: 'Vector2D') -> 'NDArray':
         try:
             return self.x*vector.y - self.y*vector.x
-        except AttributeError:
-            err = 'Vector2D cross product must be with Vector2D object.'
-            raise TypeError(err)
-
-    def rcross(self, vector: 'Vector2D') -> 'Vector2D':
-        try:
-            return vector.cross(self)
         except AttributeError:
             err = 'Vector2D cross product must be with Vector2D object.'
             raise TypeError(err)
