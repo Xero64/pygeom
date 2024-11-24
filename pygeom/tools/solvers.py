@@ -336,3 +336,32 @@ def cubic_bspline_correction(ctlpnts: 'Vector | Vector2D') -> 'NDArray':
     ctlpnts_corrected[1::3] = pntsb
     ctlpnts_corrected[2::3] = pntsc
     return ctlpnts_corrected
+
+def solve_clsq(Amat: 'NDArray', Bmat: 'NDArray', Cmat: 'NDArray',
+               Dmat: 'NDArray') -> tuple['NDArray', 'NDArray']:
+
+    '''
+    Solve the constrained least squares problem:
+
+    min ||Amat*Xmat - Bmat||**2
+    s.t. Cmat*Xmat = Dmat
+    '''
+
+    n = Amat.shape[1]
+    m = Cmat.shape[0]
+
+    Emat = zeros((n + m, n + m))
+    Emat[:n, :n] = Amat.transpose()@Amat
+    Emat[:n, n:] = Cmat.transpose()
+    Emat[n:, :n] = Cmat
+
+    Fmat = zeros((n + m, 1))
+    Fmat[:n] = Amat.transpose()@Bmat
+    Fmat[n:] = Dmat
+
+    Gmat = solve(Emat, Fmat)
+
+    Xmat = Gmat[:n, 0]
+    Ymat = Gmat[n:, 0]
+
+    return Xmat, Ymat
