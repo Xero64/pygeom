@@ -7,7 +7,7 @@ from matplotlib.pyplot import figure
 
 #%%
 # Define the control points
-num = 5
+num = 4
 radius = 2.0
 degree = 3
 
@@ -52,9 +52,6 @@ while True:
     print(f'Iteration {count}\n')
 
     pnts = bspline.evaluate_points_at_t(t)
-    Nt = bspline.basis_functions(t).transpose()[:, 1:-1]
-
-    # print(f'Nt = \n{Nt}\n')
 
     dx = pnts.x - x_tgt
     dy = pnts.y - y_tgt
@@ -68,6 +65,9 @@ while True:
     if norm_f < 1e-6:
         print('Converged')
         break
+
+    Nt = bspline.basis_functions(t).transpose()[:, 1:-1]
+    # print(f'Nt = \n{Nt}\n')
 
     dxdX = Nt
     # print(f'dxdX = \n{dxdX}\n')
@@ -87,7 +87,7 @@ while True:
 
     dfdv = vstack((hstack((dxdX, dxdY, diag(dxdt))),
                    hstack((dydX, dydY, diag(dydt)))))
-    # print(f'dfdv = \n{dfdv}\n')
+    print(f'dfdv = \n{dfdv}\n')
 
     dv, residuals, rank_dfdv, s_vals = lstsq(dfdv, f, rcond=None)
     print(f'dv = {dv}\n')
