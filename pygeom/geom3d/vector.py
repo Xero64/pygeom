@@ -2,10 +2,10 @@ from collections.abc import Iterable
 from types import NotImplementedType
 from typing import TYPE_CHECKING, Any
 
-from numpy import (allclose, concatenate, copy, divide, full, hstack, isclose,
-                   logical_and, logical_or, matmul, multiply, ndim, ravel,
-                   repeat, reshape, result_type, shape, size, split, sqrt,
-                   square, stack, sum, transpose, zeros)
+from numpy import (allclose, asarray, concatenate, copy, divide, full, hstack,
+                   isclose, logical_and, logical_or, matmul, multiply, ndim,
+                   ravel, repeat, reshape, result_type, shape, size, split,
+                   sqrt, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -352,6 +352,13 @@ class Vector:
         z = vector_dict.get('z', None)
         if x is None or y is None or z is None:
             raise ValueError('Vector x, y and z must be provided.')
+        return cls(x, y, z)
+
+    @classmethod
+    def from_iter_xyz(cls, x: 'Iterable', y: 'Iterable', z: 'Iterable') -> 'Vector':
+        x = asarray(x)
+        y = asarray(y)
+        z = asarray(z)
         return cls(x, y, z)
 
     @classmethod

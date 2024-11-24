@@ -2,10 +2,10 @@ from collections.abc import Iterable
 from types import NotImplementedType
 from typing import TYPE_CHECKING, Any
 
-from numpy import (allclose, arctan2, concatenate, copy, cos, divide, full,
-                   hstack, isclose, logical_and, logical_or, matmul, multiply,
-                   ndim, ravel, repeat, reshape, result_type, shape, sin, size,
-                   split, sqrt, square, stack, sum, transpose, zeros)
+from numpy import (allclose, arctan2, asarray, concatenate, copy, cos, divide,
+                   full, hstack, isclose, logical_and, logical_or, matmul,
+                   multiply, ndim, ravel, repeat, reshape, result_type, shape,
+                   sin, size, split, sqrt, stack, sum, transpose, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -343,6 +343,12 @@ class Vector2D:
         y = vector2d_dict.get('y', None)
         if x is None or y is None:
             raise ValueError('Vector2D x and y must be provided.')
+        return cls(x, y)
+
+    @classmethod
+    def from_iter_xy(cls, x: 'Iterable', y: 'Iterable') -> 'Vector2D':
+        x = asarray(x)
+        y = asarray(y)
         return cls(x, y)
 
     @classmethod
