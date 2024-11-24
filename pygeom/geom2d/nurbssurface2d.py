@@ -41,6 +41,11 @@ class NurbsSurface2D():
         self.vknots = kwargs.get('vknots', default_knots(vsize, self.vdegree))
         self.vendpoint = kwargs.get('vendpoint', True)
 
+    def reset(self) -> None:
+        for attr in self.__dict__:
+            if attr.startswith('_'):
+                setattr(self, attr, None)
+
     @property
     def wpoints(self) -> Vector2D:
         if self._wpoints is None:

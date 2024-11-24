@@ -29,6 +29,11 @@ class NurbsCurve2D():
                                                        self.degree))
         self.endpoint = kwargs.get('endpoint', True)
 
+    def reset(self) -> None:
+        for attr in self.__dict__:
+            if attr.startswith('_'):
+                setattr(self, attr, None)
+
     @property
     def wpoints(self) -> Vector2D:
         if self._wpoints is None:
