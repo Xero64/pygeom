@@ -3,12 +3,13 @@
 from matplotlib.pyplot import figure
 from numpy import (concatenate, cos, diag, hstack, linspace, pi, sin, vstack,
                    zeros, ones)
-from numpy.linalg import lstsq, norm
+from numpy.linalg import norm
 from pygeom.geom2d import BSplineCurve2D, Vector2D
+from pygeom.tools.solvers import solve_clsq
 
 #%%
 # Define the control points
-num = 3
+num = 4
 radius = 2.0
 degree = 3
 
@@ -73,10 +74,14 @@ while True:
     Du = tgts.x - s*dx_tgt
     Dv = tgts.y - s*dy_tgt
 
-    f = concatenate((Dx, Dy, Du, Dv))
-    print(f'f = {f}\n')
+    fxy = concatenate((Dx, Dy))
+    print(f'fxy = {fxy}\n')
+    fuv = concatenate((Du, Dv))
+    print(f'fuv = {fuv}\n')
 
-    norm_f = norm(f)
+    # f = concatenate((fxy, fuv))
+
+    norm_f = norm(fxy) + norm(fuv)
     print(f'norm_f = {norm_f}\n')
 
     if norm_f < 1e-6:
@@ -120,13 +125,18 @@ while True:
     dDuds = -diag(dx_tgt)
     dDvds = -diag(dy_tgt)
 
-    dfdv = vstack((hstack((dDxdX, dDxdY, dDxdt, dDxds)),
-                   hstack((dDydX, dDydY, dDydt, dDyds)),
-                   hstack((dDudX, dDudY, dDudt, dDuds)),
-                   hstack((dDvdX, dDvdY, dDvdt, dDvds))))
-    print(f'dfdv = \n{dfdv}\n')
+    dfxydv = vstack((hstack((dDxdX, dDxdY, dDxdt, dDxds)),
+                     hstack((dDydX, dDydY, dDydt, dDyds))))
+    dfuvdv = vstack((hstack((dDudX, dDudY, dDudt, dDuds)),
+                     hstack((dDvdX, dDvdY, dDvdt, dDvds))))
+    print(f'dfxydv = \n{dfxydv}\n')
+    print(f'dfuvdv = \n{dfuvdv}\n')
 
-    dv, residuals, rank_dfdv, s_vals = lstsq(dfdv, f, rcond=None)
+    # dfdv = vstack((dfxydv, dfuvdv))
+
+    dv, dl = solve_clsq(dfxydv, fxy, dfuvdv, fuv)
+
+    # dv, residuals, rank_dfdv, s_vals = lstsq(dfdv, f, rcond=None)
     print(f'dv = {dv}\n')
 
     norm_dv = norm(dv)

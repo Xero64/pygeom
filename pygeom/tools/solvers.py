@@ -338,31 +338,39 @@ def cubic_bspline_correction(ctlpnts: 'Vector | Vector2D') -> 'NDArray':
     return ctlpnts_corrected
 
 
-def solve_clsq(Amat: 'NDArray', Bmat: 'NDArray', Cmat: 'NDArray',
-               Dmat: 'NDArray') -> tuple['NDArray', 'NDArray']:
+def solve_clsq(a: 'NDArray', b: 'NDArray', c: 'NDArray',
+               d: 'NDArray') -> tuple['NDArray', 'NDArray']:
 
     '''
     Solve the constrained least squares problem:
 
-    min ||Amat@Xmat - Bmat||**2
-    s.t. Cmat@Xmat = Dmat
+    min ||a @ x - b||**2
+    s.t. c @ x = d
     '''
 
-    n = Amat.shape[1]
-    m = Cmat.shape[0]
+    n = a.shape[1]
+    m = c.shape[0]
 
-    Emat = zeros((n + m, n + m))
-    Emat[:n, :n] = Amat.transpose()@Amat
-    Emat[:n, n:] = Cmat.transpose()
-    Emat[n:, :n] = Cmat
+    e = zeros((n + m, n + m))
+    e[:n, :n] = a.transpose()@a
+    e[:n, n:] = c.transpose()
+    e[n:, :n] = c
 
-    Fmat = zeros((n + m, 1))
-    Fmat[:n] = Amat.transpose()@Bmat
-    Fmat[n:] = Dmat
+    if b.ndim == 1 and d.ndim == 1:
+        f = zeros(n + m)
+    elif b.ndim == 1:
+        b = b.reshape((b.size, 1))
+        f = zeros((n + m, 1))
+    elif d.ndim == 1:
+        d = d.reshape((b.size, 1))
+        f = zeros((n + m, 1))
 
-    Gmat = solve(Emat, Fmat)
+    f[:n] = a.transpose()@b
+    f[n:] = d
 
-    Xmat = Gmat[:n, 0]
-    Ymat = Gmat[n:, 0]
+    g = solve(e, f)
 
-    return Xmat, Ymat
+    x = g[:n, ...]
+    y = g[n:, ...]
+
+    return x, y
