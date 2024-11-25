@@ -1,9 +1,10 @@
 #%%
 # Import Dependencies
-from numpy import linspace, pi, cos, sin, zeros, concatenate, vstack, hstack, diag
+from matplotlib.pyplot import figure
+from numpy import (concatenate, cos, diag, hstack, linspace, pi, sin, vstack,
+                   zeros, ones)
 from numpy.linalg import lstsq, norm
 from pygeom.geom2d import BSplineCurve2D, Vector2D
-from matplotlib.pyplot import figure
 
 #%%
 # Define the control points
@@ -17,7 +18,13 @@ numvar = degree - 1
 th = linspace(0, pi/2, num)[1:-1]
 x_tgt = radius*cos(th)
 y_tgt = radius*sin(th)
-t = linspace(0.0, 1.0, num)[1:-1]
+t = linspace(0.0, 1.0, num)
+t_e = t[[0, -1]]
+t = t[1:-1]
+
+dx_tgt, dy_tgt = Vector2D.from_iter_xy([0.0, -1.0], [1.0, 0.0]).to_xy()
+
+s = ones(t_e.shape)
 
 t_ctl = linspace(0.0, 1.0, degree + 1)
 x_ctl = radius*(1.0 - t_ctl)
@@ -38,8 +45,8 @@ ax.grid(True)
 ax.set_aspect('equal')
 ax.scatter(x_tgt, y_tgt, color='red', label='Target Points')
 ax.plot(pnts.x, pnts.y, color='blue', label='BSpline Curve')
-ax.scatter(bspline.ctlpnts.x, bspline.ctlpnts.y, color='green',
-           label='Control Points')
+ax.scatter(bspline.ctlpnts.x, bspline.ctlpnts.y,
+           color='green', label='Control Points')
 _ = ax.legend()
 
 #%%
@@ -52,11 +59,21 @@ while True:
     print(f'Iteration {count}\n')
 
     pnts = bspline.evaluate_points_at_t(t)
+    # print(f'pnts = \n{pnts}\n')
+    # print(f'x_tgt = \n{x_tgt}\n')
+    # print(f'y_tgt = \n{y_tgt}\n')
 
-    dx = pnts.x - x_tgt
-    dy = pnts.y - y_tgt
+    tgts = bspline.evaluate_first_derivatives_at_t(t_e)
+    # print(f'tgts = \n{tgts}\n')
+    # print(f'dx_tgt = \n{dx_tgt}\n')
+    # print(f'dy_tgt = \n{dy_tgt}\n')
 
-    f = concatenate((dx, dy))
+    Dx = pnts.x - x_tgt
+    Dy = pnts.y - y_tgt
+    Du = tgts.x - s*dx_tgt
+    Dv = tgts.y - s*dy_tgt
+
+    f = concatenate((Dx, Dy, Du, Dv))
     print(f'f = {f}\n')
 
     norm_f = norm(f)
@@ -67,26 +84,46 @@ while True:
         break
 
     Nt = bspline.basis_functions(t).transpose()[:, 1:-1]
+    dNt = bspline.basis_first_derivatives(t_e).transpose()[:, 1:-1]
     # print(f'Nt = \n{Nt}\n')
 
-    dxdX = Nt
-    # print(f'dxdX = \n{dxdX}\n')
+    dDxdX = Nt
+    dDydX = zeros(dDxdX.shape)
+    dDudX = dNt
+    dDvdX = zeros(dDudX.shape)
+    # print(f'dDxdX = \n{dDxdX}\n')
+    # print(f'dDydX = \n{dDydX}\n')
+    # print(f'dDudX = \n{dDudX}\n')
+    # print(f'dDvdX = \n{dDvdX}\n')
 
-    dydX = zeros(dxdX.shape)
-    # print(f'dydX = \n{dydX}\n')
+    dDydY = Nt
+    dDxdY = zeros(dDydY.shape)
+    dDvdY = dNt
+    dDudY = zeros(dDvdY.shape)
+    # print(f'dDydY = \n{dDydY}\n')
+    # print(f'dDxdY = \n{dDxdY}\n')
+    # print(f'dDudY = \n{dDudY}\n')
+    # print(f'dDvdY = \n{dDvdY}\n')
 
-    dydY = Nt
-    # print(f'dydY = \n{dydY}\n')
+    dDxdt, dDydt = bspline.evaluate_first_derivatives_at_t(t).to_xy()
+    dDxdt = diag(dDxdt)
+    dDydt = diag(dDydt)
+    dDudt = zeros((Du.size, t.size))
+    dDvdt = zeros((Dv.size, t.size))
+    # print(f'dDxdt = {dDxdt}\n')
+    # print(f'dDydt = {dDydt}\n')
+    # print(f'dDudt = {dDudt}\n')
+    # print(f'dDvdt = {dDvdt}\n')
 
-    dxdY = zeros(dydY.shape)
-    # print(f'dxdY = \n{dxdY}\n')
+    dDxds = zeros((Dx.size, s.size))
+    dDyds = zeros((Dy.size, s.size))
+    dDuds = -diag(dx_tgt)
+    dDvds = -diag(dy_tgt)
 
-    dxdt, dydt = bspline.evaluate_first_derivatives_at_t(t).to_xy()
-    # print(f'dxdt = {dxdt}\n')
-    # print(f'dydt = {dydt}\n')
-
-    dfdv = vstack((hstack((dxdX, dxdY, diag(dxdt))),
-                   hstack((dydX, dydY, diag(dydt)))))
+    dfdv = vstack((hstack((dDxdX, dDxdY, dDxdt, dDxds)),
+                   hstack((dDydX, dDydY, dDydt, dDyds)),
+                   hstack((dDudX, dDudY, dDudt, dDuds)),
+                   hstack((dDvdX, dDvdY, dDvdt, dDvds))))
     print(f'dfdv = \n{dfdv}\n')
 
     dv, residuals, rank_dfdv, s_vals = lstsq(dfdv, f, rcond=None)
@@ -103,11 +140,13 @@ while True:
     bspline.ctlpnts.y[1:-1] -= dv[numvar:2*numvar]
     bspline.reset()
 
-    t -= dv[2*numvar:]
+    t -= dv[2*numvar:2*numvar + t.size]
+    s -= dv[2*numvar + t.size:]
 
     print(f'X = {bspline.ctlpnts.x}\n')
     print(f'Y = {bspline.ctlpnts.y}\n')
     print(f't = {t}\n')
+    print(f's = {s}\n')
 
     count += 1
     if count > max_iter:
