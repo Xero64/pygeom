@@ -8,7 +8,7 @@ from pygeom.geom2d import BSplineCurve2D, Vector2D
 
 #%%
 # Define the control points
-num = 4
+num = 3
 radius = 2.0
 degree = 3
 
