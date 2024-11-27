@@ -34,6 +34,15 @@ class NurbsCurve2D():
             if attr.startswith('_'):
                 setattr(self, attr, None)
 
+    def copy(self) -> 'NurbsCurve2D':
+        ctlpnts = self.ctlpnts.copy()
+        weights = self.weights.copy()
+        degree = self.degree
+        knots = self.knots.copy()
+        endpoint = self.endpoint
+        return NurbsCurve2D(ctlpnts, weights=weights, degree=degree,
+                            knots=knots, endpoint=endpoint)
+
     @property
     def wpoints(self) -> Vector2D:
         if self._wpoints is None:
@@ -167,6 +176,14 @@ class BSplineCurve2D(NurbsCurve2D):
     def __init__(self, ctlpnts: Vector2D, **kwargs: dict[str, Any]) -> None:
         kwargs['weights'] = ones(ctlpnts.shape)
         super().__init__(ctlpnts, **kwargs)
+
+    def copy(self) -> 'BSplineCurve2D':
+        ctlpnts = self.ctlpnts.copy()
+        degree = self.degree
+        knots = self.knots.copy()
+        endpoint = self.endpoint
+        return BSplineCurve2D(ctlpnts, degree=degree, knots=knots,
+                              endpoint=endpoint)
 
     def __repr__(self) -> str:
         return f'<BSplineCurve2D: degree={self.degree:d}>'

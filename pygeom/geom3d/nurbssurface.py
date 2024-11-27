@@ -46,6 +46,19 @@ class NurbsSurface():
             if attr.startswith('_'):
                 setattr(self, attr, None)
 
+    def copy(self) -> 'NurbsSurface':
+        ctlpnts = self.ctlpnts.copy()
+        weights = self.weights.copy()
+        udegree = self.udegree
+        vdegree = self.vdegree
+        uknots = self.uknots.copy()
+        vknots = self.vknots.copy()
+        uendpoint = self.uendpoint
+        vendpoint = self.vendpoint
+        return NurbsSurface(ctlpnts, weights=weights, udegree=udegree,
+                            vdegree=vdegree, uknots=uknots, vknots=vknots,
+                            uendpoint=uendpoint, vendpoint=vendpoint)
+
     @property
     def wpoints(self) -> Vector:
         if self._wpoints is None:

@@ -46,6 +46,19 @@ class NurbsSurface2D():
             if attr.startswith('_'):
                 setattr(self, attr, None)
 
+    def copy(self) -> 'NurbsSurface2D':
+        ctlpnts = self.ctlpnts.copy()
+        weights = self.weights.copy()
+        udegree = self.udegree
+        vdegree = self.vdegree
+        uknots = self.uknots.copy()
+        vknots = self.vknots.copy()
+        uendpoint = self.uendpoint
+        vendpoint = self.vendpoint
+        return NurbsSurface2D(ctlpnts, weights=weights, udegree=udegree,
+                              vdegree=vdegree, uknots=uknots, vknots=vknots,
+                              uendpoint=uendpoint, vendpoint=vendpoint)
+
     @property
     def wpoints(self) -> Vector2D:
         if self._wpoints is None:
@@ -158,6 +171,18 @@ class BSplineSurface2D(NurbsSurface2D):
         kwargs['weights'] = ones(ctlpnts.shape)
         kwargs['rational'] = False
         super().__init__(ctlpnts, **kwargs)
+
+    def copy(self) -> 'BSplineSurface2D':
+        ctlpnts = self.ctlpnts.copy()
+        udegree = self.udegree
+        vdegree = self.vdegree
+        uknots = self.uknots.copy()
+        vknots = self.vknots.copy()
+        uendpoint = self.uendpoint
+        vendpoint = self.vendpoint
+        return BSplineSurface2D(ctlpnts, udegree=udegree, vdegree=vdegree,
+                                uknots=uknots, vknots=vknots, uendpoint=uendpoint,
+                                vendpoint=vendpoint)
 
     def __repr__(self) -> str:
         return f'<BSplineSurface2D: udegree={self.udegree:d}, vdegree={self.vdegree:d}>'

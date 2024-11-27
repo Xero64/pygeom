@@ -33,6 +33,15 @@ class NurbsCurve():
             if attr.startswith('_'):
                 setattr(self, attr, None)
 
+    def copy(self) -> 'NurbsCurve':
+        ctlpnts = self.ctlpnts.copy()
+        weights = self.weights.copy()
+        degree = self.degree
+        knots = self.knots.copy()
+        endpoint = self.endpoint
+        return NurbsCurve(ctlpnts, weights=weights, degree=degree,
+                          knots=knots, endpoint=endpoint)
+
     @property
     def wpoints(self) -> Vector:
         if self._wpoints is None:
