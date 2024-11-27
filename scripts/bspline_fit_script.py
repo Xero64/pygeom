@@ -1,17 +1,20 @@
 #%%
 # Import Dependencies
 from matplotlib.pyplot import figure
-from numpy import (concatenate, cos, diag, hstack, linspace, pi, sin, vstack,
-                   zeros, ones)
-from numpy.linalg import norm
+from numpy import (concatenate, cos, diag, hstack, linspace, ones, pi, sin,
+                   vstack, zeros)
+from numpy.linalg import lstsq, norm
 from pygeom.geom2d import BSplineCurve2D, Vector2D
 from pygeom.tools.solvers import solve_clsq
 
 #%%
 # Define the control points
-num = 4
-radius = 2.0
-degree = 3
+exponent = 0
+penalty = 10.0**exponent
+
+num = 12
+radius = 4.0
+degree = 9
 
 numtgt = num - 2
 numvar = degree - 1
@@ -52,7 +55,7 @@ _ = ax.legend()
 
 #%%
 # Fit the curve to the target points
-max_iter = 10
+max_iter = 20
 count = 0
 
 while True:
@@ -61,13 +64,9 @@ while True:
 
     pnts = bspline.evaluate_points_at_t(t)
     # print(f'pnts = \n{pnts}\n')
-    # print(f'x_tgt = \n{x_tgt}\n')
-    # print(f'y_tgt = \n{y_tgt}\n')
 
     tgts = bspline.evaluate_first_derivatives_at_t(t_e)
     # print(f'tgts = \n{tgts}\n')
-    # print(f'dx_tgt = \n{dx_tgt}\n')
-    # print(f'dy_tgt = \n{dy_tgt}\n')
 
     Dx = pnts.x - x_tgt
     Dy = pnts.y - y_tgt
@@ -89,73 +88,71 @@ while True:
         break
 
     Nt = bspline.basis_functions(t).transpose()[:, 1:-1]
-    dNt = bspline.basis_first_derivatives(t_e).transpose()[:, 1:-1]
     # print(f'Nt = \n{Nt}\n')
+
+    dNt = bspline.basis_first_derivatives(t_e).transpose()[:, 1:-1]
+    # print(f'dNt = \n{dNt}\n')
 
     dDxdX = Nt
     dDydX = zeros(dDxdX.shape)
     dDudX = dNt
     dDvdX = zeros(dDudX.shape)
-    # print(f'dDxdX = \n{dDxdX}\n')
-    # print(f'dDydX = \n{dDydX}\n')
-    # print(f'dDudX = \n{dDudX}\n')
-    # print(f'dDvdX = \n{dDvdX}\n')
 
     dDydY = Nt
     dDxdY = zeros(dDydY.shape)
     dDvdY = dNt
     dDudY = zeros(dDvdY.shape)
-    # print(f'dDydY = \n{dDydY}\n')
-    # print(f'dDxdY = \n{dDxdY}\n')
-    # print(f'dDudY = \n{dDudY}\n')
-    # print(f'dDvdY = \n{dDvdY}\n')
+
+    dDxds = zeros((Dx.size, s.size))
+    dDyds = zeros((Dy.size, s.size))
+    dDuds = -diag(dx_tgt)/penalty
+    dDvds = -diag(dy_tgt)/penalty
+
+    dfxydXYs = vstack((hstack((dDxdX, dDxdY, dDxds)),
+                       hstack((dDydX, dDydY, dDyds))))
+    dfuvdXYs = vstack((hstack((dDudX, dDudY, dDuds)),
+                       hstack((dDvdX, dDvdY, dDvds))))
+
+    dvXYs, dlXYs = solve_clsq(dfxydXYs, fxy, dfuvdXYs, fuv)
+
+    print(f'dvXYs = {dvXYs}\n')
+
+    bspline.ctlpnts.x[1:-1] -= dvXYs[0:numvar]
+    bspline.ctlpnts.y[1:-1] -= dvXYs[numvar:2*numvar]
+    bspline.reset()
+
+    s -= dvXYs[2*numvar:]
+
+    pnts = bspline.evaluate_points_at_t(t)
+    # print(f'pnts = \n{pnts}\n')
+
+    Dx = pnts.x - x_tgt
+    Dy = pnts.y - y_tgt
+
+    fxy = concatenate((Dx, Dy))
+    print(f'fxy = {fxy}\n')
 
     dDxdt, dDydt = bspline.evaluate_first_derivatives_at_t(t).to_xy()
     dDxdt = diag(dDxdt)
     dDydt = diag(dDydt)
-    dDudt = zeros((Du.size, t.size))
-    dDvdt = zeros((Dv.size, t.size))
-    # print(f'dDxdt = {dDxdt}\n')
-    # print(f'dDydt = {dDydt}\n')
-    # print(f'dDudt = {dDudt}\n')
-    # print(f'dDvdt = {dDvdt}\n')
+    dfxydt = vstack((dDxdt, dDydt))
 
-    dDxds = zeros((Dx.size, s.size))
-    dDyds = zeros((Dy.size, s.size))
-    dDuds = -diag(dx_tgt)
-    dDvds = -diag(dy_tgt)
+    dvt, _, _, _ = lstsq(dfxydt, fxy, rcond=None)
+    print(f'dvt = {dvt}\n')
 
-    dfxydv = vstack((hstack((dDxdX, dDxdY, dDxdt, dDxds)),
-                     hstack((dDydX, dDydY, dDydt, dDyds))))
-    dfuvdv = vstack((hstack((dDudX, dDudY, dDudt, dDuds)),
-                     hstack((dDvdX, dDvdY, dDvdt, dDvds))))
-    print(f'dfxydv = \n{dfxydv}\n')
-    print(f'dfuvdv = \n{dfuvdv}\n')
+    t -= dvt
 
-    # dfdv = vstack((dfxydv, dfuvdv))
-
-    dv, dl = solve_clsq(dfxydv, fxy, dfuvdv, fuv)
-
-    # dv, residuals, rank_dfdv, s_vals = lstsq(dfdv, f, rcond=None)
-    print(f'dv = {dv}\n')
-
-    norm_dv = norm(dv)
+    norm_dv = norm(dvXYs) + norm(dvt)
     print(f'norm_dv = {norm_dv}\n')
 
-    if norm_dv < 1e-6:
+    if norm_dv < 1e-12:
         print('Converged')
         break
-
-    bspline.ctlpnts.x[1:-1] -= dv[0:numvar]
-    bspline.ctlpnts.y[1:-1] -= dv[numvar:2*numvar]
-    bspline.reset()
-
-    t -= dv[2*numvar:2*numvar + t.size]
-    s -= dv[2*numvar + t.size:]
 
     print(f'X = {bspline.ctlpnts.x}\n')
     print(f'Y = {bspline.ctlpnts.y}\n')
     print(f't = {t}\n')
+    print(f't[1:] - t[:-1] = {t[1:] - t[:-1]}\n')
     print(f's = {s}\n')
 
     count += 1
