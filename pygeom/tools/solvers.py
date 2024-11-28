@@ -364,6 +364,8 @@ def solve_clsq(a: 'NDArray', b: 'NDArray', c: 'NDArray',
     elif d.ndim == 1:
         d = d.reshape((b.size, 1))
         f = zeros((n + m, 1))
+    else:
+        f = zeros((n + m, 1))
 
     f[:n] = a.transpose()@b
     f[n:] = d
