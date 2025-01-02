@@ -55,6 +55,13 @@ class Vector:
             err = 'Vector dot product must be with Vector object.'
             raise TypeError(err)
 
+    def matdot(self, vector: 'Vector') -> 'NDArray':
+        try:
+            return self.x@vector.x + self.y@vector.y + self.z@vector.z
+        except AttributeError:
+            err = 'Vector matrix dot product must be with Vector object.'
+            raise TypeError(err)
+
     def cross(self, vector: 'Vector') -> 'Vector':
         try:
             x = self.y*vector.z - self.z*vector.y
@@ -63,6 +70,16 @@ class Vector:
             return Vector(x, y, z)
         except AttributeError:
             err = 'Vector cross product must be with Vector object.'
+            raise TypeError(err)
+
+    def matcross(self, vector: 'Vector') -> 'Vector':
+        try:
+            x = self.y@vector.z - self.z@vector.y
+            y = self.z@vector.x - self.x@vector.z
+            z = self.x@vector.y - self.y@vector.x
+            return Vector(x, y, z)
+        except AttributeError:
+            err = 'Vector matrix cross product must be with Vector object.'
             raise TypeError(err)
 
     def __abs__(self) -> 'NDArray':

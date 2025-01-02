@@ -52,9 +52,23 @@ class Vector2D:
             err = 'Vector2D dot product must be with Vector2D object.'
             raise TypeError(err)
 
+    def matdot(self, vector: 'Vector2D') -> 'NDArray':
+        try:
+            return self.x@vector.x + self.y@vector.y
+        except AttributeError:
+            err = 'Vector2D dot product must be with Vector2D object.'
+            raise TypeError(err)
+
     def cross(self, vector: 'Vector2D') -> 'NDArray':
         try:
             return self.x*vector.y - self.y*vector.x
+        except AttributeError:
+            err = 'Vector2D cross product must be with Vector2D object.'
+            raise TypeError(err)
+
+    def matcross(self, vector: 'Vector2D') -> 'NDArray':
+        try:
+            return self.x@vector.y - self.y@vector.x
         except AttributeError:
             err = 'Vector2D cross product must be with Vector2D object.'
             raise TypeError(err)
