@@ -183,3 +183,71 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
             break
 
     return bspline
+
+class PolyFit:
+    x: 'NDArray'
+    y: 'NDArray'
+    deg: int
+    _coeffs: 'NDArray'
+    _residuals: 'NDArray'
+    _rank: int
+    _singvals: 'NDArray'
+
+    __slots__ = tuple(__annotations__)
+
+    def __init__(self, x: 'NDArray', y: 'NDArray', deg: int) -> None:
+        self.x = x
+        self.y = y
+        self.deg = deg
+        self.reset()
+
+    def reset(self) -> None:
+        for attr in self.__slots__:
+            if attr.startswith('_'):
+                setattr(self, attr, None)
+
+    def fit(self) -> None:
+        Amat = zeros((self.x.size, self.deg + 1))
+        for i in range(self.deg + 1):
+            Amat[:, i] = self.x**i
+        coeffs, residuals, rank, singvals = lstsq(Amat, self.y, rcond=None)
+        self._coeffs = coeffs
+        self._residuals = residuals
+        self._rank = rank
+        self._singvals = singvals
+
+    @property
+    def coeffs(self) -> 'NDArray':
+        if self._coeffs is None:
+            self.fit()
+        return self._coeffs
+
+    @property
+    def residuals(self) -> 'NDArray':
+        if self._residuals is None:
+            self.fit()
+        return self._residuals
+
+    @property
+    def rank(self) -> int:
+        if self._rank is None:
+            self.fit()
+        return self._rank
+
+    @property
+    def singvals(self) -> 'NDArray':
+        if self._singvals is None:
+            self.fit()
+        return self._singvals
+
+    def __call__(self, x: 'NDArray') -> 'NDArray':
+        y = zeros(x.size)
+        for i in range(self.deg + 1):
+            y += self.coeffs[i]*x**i
+        return y
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.x}, {self.y}, {self.deg})'
+
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self.x}, {self.y}, {self.deg})'
