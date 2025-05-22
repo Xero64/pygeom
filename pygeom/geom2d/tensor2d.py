@@ -1,9 +1,9 @@
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
-from numpy import (allclose, bool_, copy, full, isclose, logical_and,
+from numpy import (allclose, bool_, copy, cos, full, isclose, logical_and,
                    logical_or, ndim, ravel, repeat, reshape, result_type,
-                   shape, size, split, sum, transpose, zeros)
+                   shape, sin, size, split, sum, transpose, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
@@ -274,6 +274,20 @@ class Tensor2D():
             return logical_or(logical_or(logical_or(xxneq, xyneq), yxneq), yyneq)
         except AttributeError:
             return False
+
+    def rotate(self, rot: float) -> 'Tensor2D':
+        """Rotates this Tensor2D by an input angle in radians"""
+        txx, txy, tyx, tyy = self.to_xy()
+        c = cos(rot)
+        s = sin(rot)
+        c2 = c**2
+        s2 = s**2
+        cs = c*s
+        sxx = c2*txx - cs*(txy + tyx) + s2*tyy
+        sxy = c2*txy + cs*(txx - tyy) - s2*tyx
+        syx = c2*tyx + cs*(txx - tyy) - s2*txy
+        syy = c2*tyy + cs*(txy + tyx) + s2*txx
+        return Tensor2D(sxx, sxy, syx, syy)
 
     @classmethod
     def zeros(cls, shape: tuple[int, ...] = (),
