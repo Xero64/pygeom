@@ -16,7 +16,7 @@ class Coordinate(Transform):
         return pnt.__class__(pnts.x, pnts.y, pnts.z)
 
     def point_to_local(self, pnt: Vector) -> Vector:
-        """Transforms a point from global  to this local coordinate."""
+        """Transforms a point from global to this local coordinate."""
         pnts = self.vector_to_local(pnt - self.pnt)
         return pnt.__class__(pnts.x, pnts.y, pnts.z)
 
