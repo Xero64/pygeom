@@ -4,7 +4,7 @@ from numpy import empty
 from sympy import (Symbol, atan, cos, diff, expand, expand_trig, integrate,
                    simplify, sin, sqrt, trigsimp)
 
-from pygeom.geom2d import Vector2D
+from ..geom2d import Vector2D
 
 
 class SymbolicVector2D(Vector2D):

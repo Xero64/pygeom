@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any
 
 from numpy import arange, asarray, hstack, vstack, zeros
 
-from pygeom.geom2d import Vector2D
-from pygeom.geom3d import Vector
+from ..geom2d import Vector2D
+from ..geom3d import Vector
 
 try:
     from k3d import Plot as Plot

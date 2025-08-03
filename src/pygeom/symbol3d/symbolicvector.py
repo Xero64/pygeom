@@ -4,7 +4,7 @@ from numpy import empty
 from sympy import (Symbol, collect, diff, expand, expand_trig, integrate,
                    simplify, sqrt, trigsimp)
 
-from pygeom.geom3d import Vector
+from ..geom3d import Vector
 
 
 class SymbolicVector(Vector):

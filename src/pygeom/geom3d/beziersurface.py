@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from numpy import linspace
 
-from pygeom.tools.bernstein import (bernstein_first_derivatives,
+from ..tools.bernstein import (bernstein_first_derivatives,
                                     bernstein_polynomials)
 
 from .vector import Vector
