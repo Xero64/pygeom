@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
 from numpy import (arange, argsort, asarray, bool_, hstack, int64, logical_and,
-                   round, take_along_axis, unique, vstack, zeros)
+                   round, sort, take_along_axis, unique, vstack, zeros)
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
@@ -378,6 +378,113 @@ class MeshQuads(MeshElems):
     numg: int = 4
 
 
+class MeshEdges():
+    mesh: 'Mesh' = None
+    mode: str = None
+    _include: list[MeshElems] = None
+    _edges: 'NDArray[int64]' = None
+    _unique: 'NDArray[int64]' = None
+    _indices: 'NDArray[int64]' = None
+    _inverse: 'NDArray[int64]' = None
+    _counts: 'NDArray[int64]' = None
+    _free: 'NDArray[int64]' = None
+
+    def __init__(self, mesh: 'Mesh', mode: str = '3D') -> None:
+        self.mesh = mesh
+        self.mode = mode
+
+    @property
+    def include(self) -> list[MeshElems]:
+        if self._include is None:
+            if self.mode == '2D':
+                self._include = [self.mesh.trias, self.mesh.quads]
+            elif self.mode == '3D':
+                self._include = [self.mesh.lines, self.mesh.trias, self.mesh.quads]
+            else:
+                raise ValueError(f'Invalid mode: {self.mode}')
+        return self._include
+
+    @property
+    def edges(self) -> 'NDArray[int64]':
+        if self._edges is None:
+            numedges = 0
+            for item in self.include:
+                if isinstance(item, MeshLines):
+                    numedges += item.size
+                elif isinstance(item, MeshTrias):
+                    numedges += item.size * 3
+                elif isinstance(item, MeshQuads):
+                    numedges += item.size * 4
+            self._edges = zeros((numedges, 2), dtype=int64)
+            start = 0
+            for item in self.include:
+                if isinstance(item, MeshLines):
+                    if item.size > 0:
+                        slc = slice(start, start + item.size)
+                        self._edges[slc, ...] = item.grids[..., (0, 1)]
+                    start += item.size
+                elif isinstance(item, MeshTrias):
+                    if item.size > 0:
+                        for i in range(3):
+                            slc = slice(start + i*item.size, start + (i+1)*item.size)
+                            tup = (i-1, i)
+                            self._edges[slc, ...] = item.grids[..., tup]
+                    start += item.size * 3
+                elif isinstance(item, MeshQuads):
+                    if item.size > 0:
+                        for i in range(4):
+                            slc = slice(start + i*item.size, start + (i+1)*item.size)
+                            tup = (i-1, i)
+                            self._edges[slc, ...] = item.grids[..., tup]
+                    start += item.size * 4
+        return self._edges
+
+    def unique_edges(self) -> None:
+        sorted_edges = sort(self.edges, axis=1)
+        (unique_edges,
+         indices,
+         inverse,
+         counts) = unique(sorted_edges, axis=0,
+                          return_index=True,
+                          return_inverse=True,
+                          return_counts=True)
+        self._unique = unique_edges
+        self._indices = indices
+        self._inverse = inverse
+        self._counts = counts
+
+    @property
+    def unique(self) -> 'NDArray[int64]':
+        if self._unique is None:
+            self.unique_edges()
+        return self._unique
+
+    @property
+    def indices(self) -> 'NDArray[int64]':
+        if self._indices is None:
+            self.unique_edges()
+        return self._indices
+
+    @property
+    def inverse(self) -> 'NDArray[int64]':
+        if self._inverse is None:
+            self.unique_edges()
+        return self._inverse
+
+    @property
+    def counts(self) -> 'NDArray[int64]':
+        if self._counts is None:
+            self.unique_edges()
+        return self._counts
+
+    @property
+    def free(self) -> 'NDArray[int64]':
+        if self._free is None:
+            check = self.counts == 1
+            self._free = self.unique[check, :]
+        return self._free
+
+
 class Mesh():
     ndim: int = 3
     grids: MeshGrids = None
@@ -385,6 +492,8 @@ class Mesh():
     trias: MeshTrias = None
     quads: MeshQuads = None
     attrs: dict[str, MeshVectors] = None
+    _edges: MeshEdges = None
+    _edges2D: MeshEdges = None
 
     def __init__(self) -> None:
         if self.ndim == 3:
@@ -638,6 +747,18 @@ class Mesh():
                 return False
 
         return True
+
+    @property
+    def edges(self) -> MeshEdges:
+        if self._edges is None:
+            self._edges = MeshEdges(self)
+        return self._edges
+
+    @property
+    def edges2D(self) -> MeshEdges:
+        if self._edges2D is None:
+            self._edges2D = MeshEdges(self, mode='2D')
+        return self._edges2D
 
     @property
     def mesh_template(self) -> str:
