@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
-from numpy import asarray, diag, divide, eye, hstack, ndim, sqrt, vstack, zeros
+from numpy import (asarray, diag, divide, eye, hstack, ndim, sqrt, unique,
+                   vstack, zeros)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -32,16 +33,20 @@ def tridiag_solver(a: 'NDArray', b: 'NDArray', c: 'NDArray',
     return r
 
 
-def cubic_pspline_fit_solver(s: 'NDArray', bctype: 'BCLike' = None) -> 'NDArray':
+def cubic_pspline_fit_solver(s: 'NDArray',
+                             bctype: 'BCLike' = None) -> tuple['NDArray',
+                                                               'NDArray']:
 
-    if bctype is None:
-        bctype = 'quadratic'
+    s = asarray(s)
 
     if s.ndim != 1:
         raise ValueError('Input s must be 1D array.')
 
     if s.size < 2:
         raise ValueError('Input s must have a size of 2 or greater.')
+
+    if not all(unique(s) == s):
+        raise ValueError('Input s must be a sorted unique array.')
 
     num = s.size
 
@@ -53,177 +58,194 @@ def cubic_pspline_fit_solver(s: 'NDArray', bctype: 'BCLike' = None) -> 'NDArray'
     b[:-1] += bi
     b[1:] += bi
     d = zeros((num, num + 2))
+    p = zeros((num, num))
+    q = zeros((num, num))
     for i, dsi in enumerate(ds):
         d[i, i] += -1.0/dsi
         d[i, i+1] += 1.0/dsi
         d[i+1, i] += 1.0/dsi
         d[i+1, i+1] += -1.0/dsi
+        p[i, i] += -1.0/dsi
+        p[i, i+1] += 1.0/dsi
+        q[i, i] += -dsi/3.0
+        q[i, i+1] += -dsi/6.0
     d[0, -2] = -1.0
     d[-1, -1] = 1.0
+    p[-1, -1] = 1.0/dsi
+    p[-1, -2] = -1.0/dsi
+    q[-1, -1] = dsi/3.0
+    q[-1, -2] = dsi/6.0
 
     gmat = tridiag_solver(a, b, a, d)
 
-    fmat = gmat[:, :-2]
-    emat = gmat[:, -2:]
+    if bctype is not None:
 
-    if isinstance(bctype, str):
+        fmat = gmat[:, :-2]
+        emat = gmat[:, -2:]
 
-        if bctype == 'not-a-knot':
-            if num == 2:
+        if isinstance(bctype, str):
+
+            if bctype == 'not-a-knot':
+                if num == 2:
+                    bctype = ('natural', 'natural')
+                elif num == 3:
+                    bctype = ('quadratic', 'quadratic')
+                else:
+                    bctype = ('not-a-knot', 'not-a-knot')
+
+            elif bctype == 'natural':
                 bctype = ('natural', 'natural')
-            elif num == 3:
-                bctype = ('quadratic', 'quadratic')
-            else:
-                bctype = ('not-a-knot', 'not-a-knot')
 
-        elif bctype == 'natural':
-            bctype = ('natural', 'natural')
+            elif bctype == 'periodic':
+                gya = fmat[0, :]
+                gyb = fmat[-1, :]
+                gaa = emat[0, 0]
+                gba = emat[0, 1]
+                gab = emat[-1, 0]
+                gbb = emat[-1, 1]
+                hmat = (gya - gyb)/(gbb - gba + gab - gaa)
+                zmat = vstack((hmat, hmat))
+
+            elif bctype == 'clamped':
+                bctype = ('clamped', 'clamped')
+
+            elif bctype == 'quadratic':
+                if num == 2:
+                    bctype = ('natural', 'natural')
+                else:
+                    bctype = ('quadratic', 'quadratic')
+
+            else:
+                raise ValueError(f'Input bctype: {bctype} not recognised.')
+
+        if isinstance(bctype, tuple):
+
+            if len(bctype) != 2:
+                raise ValueError('Input bctype must be a tuple of length 2.')
+
+            end_a_cond = bctype[0]
+            if not isinstance(end_a_cond, (int, str)):
+                raise ValueError('Input bctype must be of type integer or string.')
+
+            end_b_cond = bctype[1]
+            if not isinstance(end_b_cond, (int, str)):
+                raise ValueError('Input bctype must be of type integer or string.')
+
+            if end_a_cond == 1:
+                imat_a = zeros(2)
+                imat_a[0] = -1.0
+                jmat_a = zeros(num)
+                kmat_a = zeros(2)
+                kmat_a[0] = 1.0
+            elif end_a_cond == 2:
+                imat_a = emat[0, :]
+                jmat_a = fmat[0, :]
+                kmat_a = zeros(2)
+                kmat_a[0] = -1.0
+            elif end_a_cond == 'quadratic':
+                imat_a = emat[1, :] - emat[0, :]
+                jmat_a = fmat[1, :] - fmat[0, :]
+                kmat_a = zeros(2)
+            elif end_a_cond == 'clamped':
+                imat_a = -ds[0]**2*(emat[0, :]/3 + emat[1, :]/6)
+                jmat_a = -ds[0]**2*(fmat[0, :]/3 + fmat[1, :]/6)
+                jmat_a[0] -= 1.0
+                jmat_a[1] += 1.0
+                kmat_a = zeros(2)
+            elif end_a_cond == 'natural':
+                imat_a = emat[0, :]
+                jmat_a = fmat[0, :]
+                kmat_a = zeros(2)
+            elif end_a_cond == 'not-a-knot':
+                if num > 2:
+                    imat_a = ds[1]*(emat[0, :] - emat[1, :])
+                    imat_a -= ds[0]*(emat[1, :] - emat[2, :])
+                    jmat_a = ds[1]*(fmat[0, :] - fmat[1, :])
+                    jmat_a -= ds[0]*(fmat[1, :] - fmat[2, :])
+                    kmat_a = zeros(2)
+                else:
+                    errstr = 'Condition "not-a-knot" requires minimum 3 points.'
+                    raise ValueError(errstr)
+            else:
+                errstr = 'Input bctype at start must be either 1, 2, '
+                errstr += 'quadratic, clamped, natural or not-a-knot.'
+                raise ValueError(errstr)
+
+            if end_b_cond == 1:
+                imat_b = zeros(2)
+                imat_b[1] = -1.0
+                jmat_b = zeros(num)
+                kmat_b = zeros(2)
+                kmat_b[1] = 1.0
+            elif end_b_cond == 2:
+                imat_b = emat[-1, :]
+                jmat_b = fmat[-1, :]
+                kmat_b = zeros(2)
+                kmat_b[1] = -1.0
+            elif end_b_cond == 'quadratic':
+                imat_b = emat[-1, :] - emat[-2, :]
+                jmat_b = fmat[-1, :] - fmat[-2, :]
+                kmat_b = zeros(2)
+            elif end_b_cond == 'clamped':
+                imat_b = ds[-1]**2*(emat[-2, :]/6 + emat[-1, :]/3)
+                jmat_b = ds[-1]**2*(fmat[-2, :]/6 + fmat[-1, :]/3)
+                jmat_b[-2] -= 1.0
+                jmat_b[-1] += 1.0
+                kmat_b = zeros(2)
+            elif end_b_cond == 'natural':
+                imat_b = emat[-1, :]
+                jmat_b = fmat[-1, :]
+                kmat_b = zeros(2)
+            elif end_b_cond == 'not-a-knot':
+                if num > 2:
+                    imat_b = ds[-1]*(emat[-3, :] - emat[-2, :])
+                    imat_b -= ds[-2]*(emat[-2, :] - emat[-1, :])
+                    jmat_b = ds[-1]*(fmat[-3, :] - fmat[-2, :])
+                    jmat_b -= ds[-2]*(fmat[-2, :] - fmat[-1, :])
+                    kmat_b = zeros(2)
+                else:
+                    errstr = 'Condition "not-a-knot" requires minimum 3 points.'
+                    raise ValueError(errstr)
+            else:
+                errstr = 'Input bctype at finish must be either 1, 2, '
+                errstr += 'quadratic, clamped, natural or not-a-knot.'
+                raise ValueError(errstr)
+
+            imat = vstack((imat_a, imat_b))
+            jmat = vstack((jmat_a, jmat_b))
+            kmat = vstack((kmat_a, kmat_b))
+
+            blst = [jmat]
+            if isinstance(end_a_cond, int):
+                blst.append(kmat[:, 0].reshape((2, 1)))
+            if isinstance(end_b_cond, int):
+                blst.append(kmat[:, 1].reshape((2, 1)))
+
+            amat = imat
+            bmat = hstack(tuple(blst))
+
+            zmat = -solve(amat, bmat)
 
         elif bctype == 'periodic':
-            gya = fmat[0, :]
-            gyb = fmat[-1, :]
-            gaa = emat[0, 0]
-            gba = emat[0, 1]
-            gab = emat[-1, 0]
-            gbb = emat[-1, 1]
-            hmat = (gya - gyb)/(gbb - gba + gab - gaa)
-            zmat = vstack((hmat, hmat))
-
-        elif bctype == 'clamped':
-            bctype = ('clamped', 'clamped')
-
-        elif bctype == 'quadratic':
-            if num == 2:
-                bctype = ('natural', 'natural')
-            else:
-                bctype = ('quadratic', 'quadratic')
-
+            pass
         else:
             raise ValueError(f'Input bctype: {bctype} not recognised.')
 
-    if isinstance(bctype, tuple):
+        gmat = emat@zmat
 
-        if len(bctype) != 2:
-            raise ValueError('Input bctype must be a tuple of length 2.')
+        gmat[:, :num] += fmat
 
-        end_a_cond = bctype[0]
-        if not isinstance(end_a_cond, (int, str)):
-            raise ValueError('Input bctype must be of type integer or string.')
+    hmat = q@gmat
+    hmat[:, :num] += p
 
-        end_b_cond = bctype[1]
-        if not isinstance(end_b_cond, (int, str)):
-            raise ValueError('Input bctype must be of type integer or string.')
-
-        if end_a_cond == 1:
-            imat_a = zeros(2)
-            imat_a[0] = -1.0
-            jmat_a = zeros(num)
-            kmat_a = zeros(2)
-            kmat_a[0] = 1.0
-        elif end_a_cond == 2:
-            imat_a = emat[0, :]
-            jmat_a = fmat[0, :]
-            kmat_a = zeros(2)
-            kmat_a[0] = -1.0
-        elif end_a_cond == 'quadratic':
-            imat_a = emat[1, :] - emat[0, :]
-            jmat_a = fmat[1, :] - fmat[0, :]
-            kmat_a = zeros(2)
-        elif end_a_cond == 'clamped':
-            imat_a = -ds[0]**2*(emat[0, :]/3 + emat[1, :]/6)
-            jmat_a = -ds[0]**2*(fmat[0, :]/3 + fmat[1, :]/6)
-            jmat_a[0] -= 1.0
-            jmat_a[1] += 1.0
-            kmat_a = zeros(2)
-        elif end_a_cond == 'natural':
-            imat_a = emat[0, :]
-            jmat_a = fmat[0, :]
-            kmat_a = zeros(2)
-        elif end_a_cond == 'not-a-knot':
-            if num > 2:
-                imat_a = ds[1]*(emat[0, :] - emat[1, :])
-                imat_a -= ds[0]*(emat[1, :] - emat[2, :])
-                jmat_a = ds[1]*(fmat[0, :] - fmat[1, :])
-                jmat_a -= ds[0]*(fmat[1, :] - fmat[2, :])
-                kmat_a = zeros(2)
-            else:
-                errstr = 'Condition "not-a-knot" requires minimum 3 points.'
-                raise ValueError(errstr)
-        else:
-            errstr = 'Input bctype at start must be either 1, 2, '
-            errstr += 'quadratic, clamped, natural or not-a-knot.'
-            raise ValueError(errstr)
-
-        if end_b_cond == 1:
-            imat_b = zeros(2)
-            imat_b[1] = -1.0
-            jmat_b = zeros(num)
-            kmat_b = zeros(2)
-            kmat_b[1] = 1.0
-        elif end_b_cond == 2:
-            imat_b = emat[-1, :]
-            jmat_b = fmat[-1, :]
-            kmat_b = zeros(2)
-            kmat_b[1] = -1.0
-        elif end_b_cond == 'quadratic':
-            imat_b = emat[-1, :] - emat[-2, :]
-            jmat_b = fmat[-1, :] - fmat[-2, :]
-            kmat_b = zeros(2)
-        elif end_b_cond == 'clamped':
-            imat_b = ds[-1]**2*(emat[-2, :]/6 + emat[-1, :]/3)
-            jmat_b = ds[-1]**2*(fmat[-2, :]/6 + fmat[-1, :]/3)
-            jmat_b[-2] -= 1.0
-            jmat_b[-1] += 1.0
-            kmat_b = zeros(2)
-        elif end_b_cond == 'natural':
-            imat_b = emat[-1, :]
-            jmat_b = fmat[-1, :]
-            kmat_b = zeros(2)
-        elif end_b_cond == 'not-a-knot':
-            if num > 2:
-                imat_b = ds[-1]*(emat[-3, :] - emat[-2, :])
-                imat_b -= ds[-2]*(emat[-2, :] - emat[-1, :])
-                jmat_b = ds[-1]*(fmat[-3, :] - fmat[-2, :])
-                jmat_b -= ds[-2]*(fmat[-2, :] - fmat[-1, :])
-                kmat_b = zeros(2)
-            else:
-                errstr = 'Condition "not-a-knot" requires minimum 3 points.'
-                raise ValueError(errstr)
-        else:
-            errstr = 'Input bctype at finish must be either 1, 2, '
-            errstr += 'quadratic, clamped, natural or not-a-knot.'
-            raise ValueError(errstr)
-
-        imat = vstack((imat_a, imat_b))
-        jmat = vstack((jmat_a, jmat_b))
-        kmat = vstack((kmat_a, kmat_b))
-
-        blst = [jmat]
-        if isinstance(end_a_cond, int):
-            blst.append(kmat[:, 0].reshape((2, 1)))
-        if isinstance(end_b_cond, int):
-            blst.append(kmat[:, 1].reshape((2, 1)))
-
-        amat = imat
-        bmat = hstack(tuple(blst))
-
-        zmat = -solve(amat, bmat)
-
-    elif bctype == 'periodic':
-        pass
-    else:
-        raise ValueError(f'Input bctype: {bctype} not recognised.')
-
-    gmat = emat@zmat
-
-    gmat[:, :num] += fmat
-
-    return gmat
+    return gmat, hmat
 
 
 def cubic_bspline_from_pspline(s: 'NDArray', bctype: 'BCLike') -> 'NDArray':
 
-    gmat: 'NDArray' = cubic_pspline_fit_solver(s, bctype)
+    output: tuple['NDArray', 'NDArray'] = cubic_pspline_fit_solver(s, bctype)
+
+    gmat, _ = output
 
     nump = s.size
 
