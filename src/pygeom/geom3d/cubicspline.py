@@ -22,6 +22,7 @@ class CubicSpline():
     _Ds: 'NDArray' = None
     _s: 'NDArray' = None
     _gmat: 'NDArray' = None
+    _hmat: 'NDArray' = None
     _d2r: Vector = None
 
     def __init__(self, points: Vector, bctype: 'BCLike' = 'quadratic',
@@ -122,24 +123,33 @@ class CubicSpline():
             self._s[1:] = cumsum(self.Ds)
         return self._s
 
+    def calculate(self) -> None:
+        if isinstance(self.bctype, str):
+            bctype = self.bctype
+        elif isinstance(self.bctype, tuple):
+            bctype = []
+            if isinstance(self.bctype[0], str):
+                bctype.append(self.bctype[0])
+            elif isinstance(self.bctype[0], tuple):
+                bctype.append(self.bctype[0][0])
+            if isinstance(self.bctype[1], str):
+                bctype.append(self.bctype[1])
+            elif isinstance(self.bctype[1], tuple):
+                bctype.append(self.bctype[1][0])
+            bctype = tuple(bctype)
+        self._gmat, self._hmat = cubic_pspline_fit_solver(self.s, bctype=bctype)
+
     @property
     def gmat(self) -> 'NDArray':
         if self._gmat is None:
-            if isinstance(self.bctype, str):
-                bctype = self.bctype
-            elif isinstance(self.bctype, tuple):
-                bctype = []
-                if isinstance(self.bctype[0], str):
-                    bctype.append(self.bctype[0])
-                elif isinstance(self.bctype[0], tuple):
-                    bctype.append(self.bctype[0][0])
-                if isinstance(self.bctype[1], str):
-                    bctype.append(self.bctype[1])
-                elif isinstance(self.bctype[1], tuple):
-                    bctype.append(self.bctype[1][0])
-                bctype = tuple(bctype)
-            self._gmat = cubic_pspline_fit_solver(self.s, bctype=bctype)
+            self.calculate()
         return self._gmat
+
+    @property
+    def hmat(self) -> 'NDArray':
+        if self._hmat is None:
+            self.calculate()
+        return self._hmat
 
     @property
     def d2r(self) -> Vector:
