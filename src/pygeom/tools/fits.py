@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
-                        **kwargs: dict[str, Any]) -> 'BSplineCurve2D':
+                        **kwargs: dict[str, Any]) -> 'BSplineCurve2D | tuple[BSplineCurve2D, dict[str, Any]]':
 
     # Sizes
     numtgt = pnts_target.size
@@ -38,6 +38,7 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
     tol_f: float = kwargs.get('tol_f', 1e-12)
     max_iter: int = kwargs.get('max_iter', 100)
     display: bool = kwargs.get('display', False)
+    allout: bool = kwargs.get('allout', False)
 
     # Initializations
     tgts_target = Vector2D.from_iter(tgts_dict.values())
@@ -49,6 +50,8 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
     ind_t_f = arange(1, numtgt - 1)
 
     count = 0
+
+    conv = False
 
     while True:
 
@@ -67,7 +70,10 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
 
         Dx_f, Dy_f = (pnts_f - pnts_target[ind_p_f]).to_xy()
 
-        t_d_c = t[ind_d_c]
+        if ind_d_c.size > 0:
+            t_d_c = t[ind_d_c]
+        else:
+            t_d_c = zeros(0)
 
         tgts_c = bspline.evaluate_first_derivatives_at_t(t_d_c)
 
@@ -85,6 +91,7 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
         if norm_f < tol_f:
             if display:
                 print('Converged')
+            conv = True
             break
 
         t_f = t[ind_t_f]
@@ -112,17 +119,25 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
         dDxds_c = zeros((Dx_c.size, s.size))
         dDyds_c = zeros((Dy_c.size, s.size))
 
-        dDudX_c = dNt[ind_d_c, ...]
-        dDvdX_c = zeros((Dv_c.size, numctl))
-        dDudY_c = zeros((Du_c.size, numctl))
-        dDvdY_c = dNt[ind_d_c, ...]
-        dDuds_c = -diag(tgts_target.x)
-        dDvds_c = -diag(tgts_target.y)
+        if ind_d_c.size > 0:
+            dDudX_c = dNt[ind_d_c, ...]
+            dDvdX_c = zeros((Dv_c.size, numctl))
+            dDudY_c = zeros((Du_c.size, numctl))
+            dDvdY_c = dNt[ind_d_c, ...]
+            dDuds_c = -diag(tgts_target.x)
+            dDvds_c = -diag(tgts_target.y)
+        else:
+            dDudX_c = zeros((0, numctl))
+            dDvdX_c = zeros((0, numctl))
+            dDudY_c = zeros((0, numctl))
+            dDvdY_c = zeros((0, numctl))
+            dDuds_c = zeros((0, s.size))
+            dDvds_c = zeros((0, s.size))
 
         dfdXYs_c = vstack((hstack((dDxdX_c, dDxdY_c, dDxds_c)),
-                        hstack((dDydX_c, dDydY_c, dDyds_c)),
-                        hstack((dDudX_c, dDudY_c, dDuds_c)),
-                        hstack((dDvdX_c, dDvdY_c, dDvds_c))))
+                           hstack((dDydX_c, dDydY_c, dDyds_c)),
+                           hstack((dDudX_c, dDudY_c, dDuds_c)),
+                           hstack((dDvdX_c, dDvdY_c, dDvds_c))))
 
         dvXYs, _ = solve_clsq(dfdXYs_f, f_f, dfdXYs_c, f_c)
 
@@ -167,6 +182,7 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
         if norm_dv < tol_dv:
             if display:
                 print('Converged')
+            conv = True
             break
 
         if display:
@@ -182,7 +198,13 @@ def bspline2d_lstsq_fit(bspline: 'BSplineCurve2D', pnts_target: Vector2D,
                 print('Max Iterations Reached')
             break
 
-    return bspline
+    if allout:
+        return bspline, {'t': t, 's': s,
+                         'norm_f': norm_f, 'norm_dv': norm_dv,
+                         'count': count, 'conv': conv}
+    else:
+        return bspline
+
 
 class PolyFit:
     x: 'NDArray'
