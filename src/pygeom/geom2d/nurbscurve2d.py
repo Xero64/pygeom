@@ -127,9 +127,9 @@ class NurbsCurve2D():
         return tangent
 
     def evaluate_normals_at_t(self, u: 'NDArray') -> Vector2D:
-        deriv2 = self.evaluate_second_derivatives_at_t(u)
-        normal = deriv2.to_unit()
-        return normal
+        tangents = self.evaluate_tangents_at_t(u)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.knots)
@@ -155,8 +155,9 @@ class NurbsCurve2D():
         return self.evaluate_tangents_at_t(u)
 
     def evaluate_normals(self, num: int) -> Vector2D:
-        u = self.evaluate_t(num)
-        return self.evaluate_normals_at_t(u)
+        tangents = self.evaluate_tangents(num)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def __repr__(self) -> str:
         return f'<NurbsCurve2D: degree={self.degree:d}>'

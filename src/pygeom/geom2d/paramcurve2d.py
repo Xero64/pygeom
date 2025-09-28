@@ -38,7 +38,9 @@ class ParamCurve2D():
         return self.evaluate_first_derivatives_at_t(u).to_unit()
 
     def evaluate_normals_at_t(self, u: 'NDArray') -> Vector2D:
-        return self.evaluate_second_derivatives_at_t(u).to_unit()
+        tangents = self.evaluate_tangents_at_t(u)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def evaluate_curvatures_at_t(self, u: 'NDArray') -> 'NDArray':
         drdu = self.evaluate_first_derivatives_at_t(u)
@@ -65,8 +67,9 @@ class ParamCurve2D():
         return self.evaluate_tangents_at_t(u)
 
     def evaluate_normals(self, num: int) -> Vector2D:
-        u = self.evaluate_t(num)
-        return self.evaluate_normals_at_t(u)
+        tangents = self.evaluate_tangents(num)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def evaluate_curvatures(self, num: int) -> 'NDArray':
         u = self.evaluate_t(num)

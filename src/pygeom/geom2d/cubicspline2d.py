@@ -233,14 +233,14 @@ class CubicSpline2D():
     def evaluate_tangents_at_t(self, s: 'NDArray') -> Vector2D:
         u"""This function evaluates the tangent of the spline at a given s."""
         deriv1 = self.evaluate_first_derivatives_at_t(s)
-        tangent = deriv1.to_unit()
-        return tangent
+        tangents = deriv1.to_unit()
+        return tangents
 
     def evaluate_normals_at_t(self, s: 'NDArray') -> Vector2D:
         u"""This function evaluates the normal of the spline at a given s."""
-        deriv2 = self.evaluate_second_derivatives_at_t(s)
-        normal = deriv2.to_unit()
-        return normal
+        tangents = self.evaluate_tangents_at_t(s)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def evaluate_t(self, num: int) -> 'NDArray':
         return knot_linspace(num, self.s)
@@ -262,18 +262,18 @@ class CubicSpline2D():
 
     def evaluate_curvatures(self, num: int) -> 'NDArray':
         s = self.evaluate_t(num)
-        curvature = self.evaluate_curvatures_at_t(s)
-        return curvature
+        curvatures = self.evaluate_curvatures_at_t(s)
+        return curvatures
 
     def evaluate_tangents(self, num: int) -> Vector2D:
         s = self.evaluate_t(num)
-        tangent = self.evaluate_tangents_at_t(s)
-        return tangent
+        tangents = self.evaluate_tangents_at_t(s)
+        return tangents
 
     def evaluate_normals(self, num: int) -> Vector2D:
-        s = self.evaluate_t(num)
-        normal = self.evaluate_normals_at_t(s)
-        return normal
+        tangents = self.evaluate_tangents(num)
+        normals = Vector2D(-tangents.y, tangents.x)
+        return normals
 
     def __repr__(self):
         return '<CubicSpline2D>'
