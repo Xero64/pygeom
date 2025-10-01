@@ -1,7 +1,7 @@
 from numbers import Number
 from typing import TYPE_CHECKING
 
-from numpy import asarray, full, logical_and, ndarray, zeros
+from numpy import asarray, full, logical_and, zeros
 
 from ..tools.basis import knot_linspace
 from ..tools.solvers import cubic_pspline_fit_solver
@@ -29,20 +29,16 @@ class CubicSpline1D():
                  bctype: 'BCLike' = 'quadratic',
                  validate: bool = True) -> None:
         u"""This function initialises the object."""
-        self.s = s
-        self.r = r
+        self.s = asarray(s)
+        self.r = asarray(r)
         self.bctype = bctype
         if validate:
             self.validate()
 
     def validate(self) -> None:
         u"""This function validates the object."""
-        if not isinstance(self.s, ndarray):
-            raise ValueError('Input s must be a ndarray.')
         if self.s.ndim != 1:
             raise ValueError('Input s must be a 1D ndarray.')
-        if not isinstance(self.r, ndarray):
-            raise ValueError('Input r must be a ndarray.')
         if self.r.ndim != 1:
             raise ValueError('Input r must be a 1D ndarray.')
         if isinstance(self.bctype, str):

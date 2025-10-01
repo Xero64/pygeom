@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy import full, logical_and, ndarray
+from numpy import asarray, full, logical_and
 
 from ..tools.basis import knot_linspace
 
@@ -21,19 +21,15 @@ class LinearSpline1D():
     def __init__(self, s: 'NDArray', r: 'NDArray',
                  validate: bool = True) -> None:
         u"""This function initialises the object."""
-        self.s = s
-        self.r = r
+        self.s = asarray(s)
+        self.r = asarray(r)
         if validate:
             self.validate()
 
     def validate(self) -> None:
         u"""This function validates the object."""
-        if not isinstance(self.s, ndarray):
-            raise ValueError('Input s must be a ndarray.')
         if self.s.ndim != 1:
             raise ValueError('Input s must be a 1D ndarray.')
-        if not isinstance(self.r, ndarray):
-            raise ValueError('Input r must be a ndarray.')
         if self.r.ndim != 1:
             raise ValueError('Input r must be a 1D ndarray.')
 
@@ -51,6 +47,7 @@ class LinearSpline1D():
 
     def evaluate_points_at_t(self, s: 'NDArray') -> 'NDArray':
         u"""This function evaluates the spline at a given s."""
+        s = asarray(s)
         r = full(s.shape, float('nan'))
         for i, Dsi in enumerate(self.Ds):
             a = i
