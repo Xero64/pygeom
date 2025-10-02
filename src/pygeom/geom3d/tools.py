@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from numpy import absolute, argwhere, divide, full, logical_and
+from numpy import absolute, arctan2, argwhere, divide, full, logical_and
 
 from .lines import Lines
 from .triangles import Triangles
@@ -8,6 +8,7 @@ from .vector import Vector
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
 
 def intersection_lines_and_triangles(lines: Lines, triangles: Triangles,
                                      tolerance: float = 1e-12) -> tuple[Vector,
@@ -66,3 +67,9 @@ def intersection_lines_and_triangles(lines: Lines, triangles: Triangles,
     inds = iind[indchk, :]
 
     return pnts, inds
+
+
+def angle_between_vectors(veca: Vector, vecb: Vector) -> float:
+    adb = veca.dot(vecb)
+    axbm = veca.cross(vecb).return_magnitude()
+    return arctan2(axbm, adb)
