@@ -9,7 +9,7 @@ from numpy import (allclose, arctan2, asarray, concatenate, copy, cos, divide,
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
-    from numpy import bool_, ufunc
+    from numpy import bool_, complex128, ufunc
     from numpy.typing import DTypeLike, NDArray
 
 
@@ -293,7 +293,7 @@ class Vector2D:
         y = self.x
         return Vector2D(x, y)
 
-    def to_complex(self) -> 'NDArray':
+    def to_complex(self) -> 'NDArray[complex128]':
         """Returns the complex number of this Vector2D"""
         return self.x + 1j*self.y
 
@@ -314,7 +314,7 @@ class Vector2D:
         return vector
 
     @classmethod
-    def from_complex(cls, cnums: 'NDArray') -> 'Vector2D':
+    def from_complex(cls, cnums: 'NDArray[complex128]') -> 'Vector2D':
         x = cnums.real
         y = cnums.imag
         return cls(x, y)
