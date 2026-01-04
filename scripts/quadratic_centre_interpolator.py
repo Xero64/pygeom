@@ -1,12 +1,17 @@
 #%%
 # Import Dependencies
 from matplotlib.pyplot import figure
-from numpy import asarray, divide, zeros
+from numpy import asarray, concatenate, divide, zeros
 from numpy.linalg import solve
 from scipy.interpolate import interp1d
 
 from pygeom.interp1d.quadraticinterp import (QuadraticCentreInterp,
                                              QuadraticCentreInterpSolver)
+
+from pygeom.tools.solvers import quadratic_pspline_fit_solver
+
+from pymath.quadraticinterpolator import QuadraticInterpolationSolver
+
 
 #%%
 # Create Arrays
@@ -18,6 +23,10 @@ yc = asarray([-1.24, -0.05, -1.97, -2.7])
 qis = QuadraticCentreInterpSolver(x)
 
 dymat = qis.zmatop@yc
+# dymat = qis.zmateq@yc
+
+print(f'dymat = \n{dymat}\n')
+# print(f'dymat_eq = \n{dymat_eq}\n')
 
 dya = dymat[0]
 dyb = dymat[1]
@@ -96,3 +105,32 @@ _ = ax.legend()
 # ax.grid(True)
 # _ = ax.plot(xv, iyvc, label='Quadratic Interpolator')
 # _ = ax.legend()
+
+#%%
+# Show Plots
+qis = QuadraticInterpolationSolver(x)
+
+gmat, hmat = quadratic_pspline_fit_solver(x)#, bctype='equal')
+
+print(f'qis.gmat = \n{qis.gmat}\n')
+print(f'qis.hmat = \n{qis.hmat}\n')
+print(f'qis.zmatop = \n{qis.zmatop}\n')
+# print(f'qis.zmateq = \n{qis.zmateq}\n')
+
+print(f'gmat = \n{gmat}\n')
+print(f'hmat = \n{hmat}\n')
+
+y = qci.y
+dya = qci.dydx[0]
+r = concatenate((y, asarray(dya).reshape(1)))
+# r = y
+
+yc = qci.yc
+print(f'{yc = }\n')
+print(f'{gmat@r = }\n')
+
+dy = qci.dydx
+print(f'{dy = }\n')
+print(f'{hmat@r = }\n')
+
+# %%

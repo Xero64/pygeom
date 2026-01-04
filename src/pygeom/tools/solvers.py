@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from numpy import (asarray, diag, divide, eye, hstack, ndim, sqrt, unique,
-                   vstack, zeros)
+from numpy import (asarray, diag, divide, eye, hstack, ndim, reciprocal, sqrt,
+                   unique, vstack, zeros, fill_diagonal)
 from numpy.linalg import solve
 
 if TYPE_CHECKING:
@@ -398,3 +398,87 @@ def solve_clsq(a: 'NDArray', b: 'NDArray', c: 'NDArray',
     y = g[n:, ...]
 
     return x, y
+
+def quadratic_pspline_fit_solver(s: 'NDArray',
+                                 bctype: 'BCLike' = None) -> tuple['NDArray',
+                                                                   'NDArray']:
+
+    s = asarray(s)
+
+    if s.ndim != 1:
+        raise ValueError('Input s must be 1D array.')
+
+    if s.size < 2:
+        raise ValueError('Input s must have a size of 2 or greater.')
+
+    if not all(unique(s) == s):
+        raise ValueError('Input s must be a sorted unique array.')
+
+    num = s.size
+
+    ds = zeros(num - 1, dtype=s.dtype)
+    ds[:] = s[1:] - s[:-1]
+    dsr = reciprocal(ds)
+    dsrx3 = dsr*3.0
+    dsrx4 = dsr*4.0
+
+    # yc = G@<y, dya>
+    # [ABC]@<yc> = [D]@<y, dya> # Tridiagonal system
+    # [G] = [A]^{-1}@[D]
+
+    a = dsrx4[:-1]
+    b = dsrx4
+    c = zeros(num - 1, dtype=s.dtype)
+    d = zeros((num - 1, num + 1), dtype=s.dtype)
+    d[0, -1] = 1.0
+    d[0, 0] = dsrx3[0]
+    d[0, 1] = dsr[0]
+    fill_diagonal(d[1:, :-2], dsr[:-1])
+    fill_diagonal(d[1:, 1:-1], dsrx3[:-1] + dsrx3[1:])
+    fill_diagonal(d[1:, 2:], dsr[1:])
+
+    gmat = tridiag_solver(a, b, c, d)
+
+    # dy = [E]@<y, dya> + [F]@<yc>
+    emat = zeros((num, num), dtype=s.dtype)
+    emat[0, 0] = -dsrx3[0]
+    emat[0, 1] = -dsr[0]
+    fill_diagonal(emat[1:, :-1], dsr)
+    fill_diagonal(emat[1:, 1:], dsrx3)
+
+    fmat = zeros((num, num - 1), dtype=s.dtype)
+    fmat[0, 0] = dsrx4[0]
+    fill_diagonal(fmat[1:, :], -dsrx4)
+
+    hmat = fmat @ gmat
+    hmat[:, :num] += emat
+
+    eb = gmat[-1, :]
+    fb = fmat[-1, :]
+
+    if isinstance(bctype, str):
+
+        eb = emat[-1, :]
+        fb = fmat[-1, :]
+
+        gy = gmat[:, :-1]
+        ga = gmat[:, -1]
+
+        if bctype == 'periodic' or bctype == 'equal':
+            zmat = -(eb + fb@gy)/(fb@ga + 1.0)
+        elif bctype == 'opposite':
+            zmat = -(eb + fb@gy)/(fb@ga - 1.0)
+        else:
+            raise ValueError(f'Input bctype: {bctype} not recognised.')
+
+        za = zmat.reshape((1, num))
+
+        gy = gmat[:, :-1].reshape((num - 1, num))
+        ga = gmat[:, -1].reshape((num - 1, 1))
+        hy = hmat[:, :-1].reshape((num, num))
+        ha = hmat[:, -1].reshape((num, 1))
+
+        gmat = ga@za + gy
+        hmat = ha@za + hy
+
+    return gmat, hmat
