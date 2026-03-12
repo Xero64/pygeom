@@ -215,7 +215,7 @@ class PolyFit:
     _rank: int
     _singvals: 'NDArray'
 
-    __slots__ = tuple(__annotations__)
+    __slots__ = ('x', 'y', 'deg', '_coeffs', '_residuals', '_rank', '_singvals')
 
     def __init__(self, x: 'NDArray', y: 'NDArray', deg: int) -> None:
         self.x = x

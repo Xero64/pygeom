@@ -18,7 +18,7 @@ class Vector2D:
     x: 'NDArray'
     y: 'NDArray'
 
-    __slots__ = tuple(__annotations__)
+    __slots__ = ('x', 'y')
 
     def __init__(self, x: 'NDArray', y: 'NDArray') -> None:
         self.x = x
