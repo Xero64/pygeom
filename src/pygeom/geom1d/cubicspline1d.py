@@ -1,9 +1,10 @@
 from numbers import Number
 from typing import TYPE_CHECKING
 
-from numpy import asarray, full, logical_and, zeros
+from numpy import asarray, full, logical_and, unique, zeros
 
 from ..tools.basis import knot_linspace
+from ..tools.roots import cubic_roots
 from ..tools.solvers import cubic_pspline_fit_solver
 
 if TYPE_CHECKING:
@@ -149,7 +150,7 @@ class CubicSpline1D():
     @property
     def d2r(self) -> 'NDArray':
         if self._d2r is None:
-            self._d2r = self.gmat@self.input
+            self._d2r = self.gmat @ self.input
         return self._d2r
 
     def evaluate_points_at_t(self, s: 'NDArray') -> 'NDArray':
@@ -241,6 +242,64 @@ class CubicSpline1D():
         s = self.evaluate_t(num)
         curvature = self.evaluate_curvatures_at_t(s)
         return curvature
+
+    def evaluate_integrals_at_t(self, s: 'NDArray') -> 'NDArray':
+        u"""This function evaluates the integrals of the spline at a given s."""
+        s = asarray(s)
+        Ir = full(s.shape, float('nan'))
+        Iv = 0.0
+        for i, Dsi in enumerate(self.Ds):
+            a = i
+            b = i + 1
+            sa = self.s[a]
+            sb = self.s[b]
+            ra = self.r[a]
+            rb = self.r[b]
+            d2ra = self.d2r[a]
+            d2rb = self.d2r[b]
+            s_check = logical_and(s >= sa, s <= sb)
+            sv = s[s_check]
+            Ai = -(sv - sb - Dsi)*(sv - sb + Dsi)/(2*Dsi)
+            Bi = (sv - sa)**2/(2*Dsi)
+            Ci = -(sv - sb - Dsi)**2*(sv - sb + Dsi)**2/(24*Dsi)
+            Di = (sv - sa)**2*(sv**2 - 2*sv*sa + sa**2 - 2*Dsi**2)/(24*Dsi)
+            Ir[s_check] = Iv + ra*Ai + rb*Bi + d2ra*Ci + d2rb*Di
+            Iv += (ra + rb) *Dsi/2 - (d2ra + d2rb)*Dsi**3/24
+        return Ir
+
+    def evaluate_integrals(self, num: int) -> 'NDArray':
+        s = self.evaluate_t(num)
+        integrals = self.evaluate_integrals_at_t(s)
+        return integrals
+
+    def copy_with_new_input(self, new_input: 'NDArray') -> 'CubicSpline1D':
+        new_spline = CubicSpline1D(self.s, new_input, bctype=self.bctype, validate=False)
+        new_spline._gmat = self._gmat
+        new_spline._hmat = self._hmat
+        return new_spline
+
+    def find_intercepts(self, value: float) -> 'NDArray':
+        s_int = []
+        for i in range(self.r.size - 1):
+            ra = self.r[i]
+            rb = self.r[i + 1]
+            if value >= ra and value <= rb or value <= ra and value >= rb:
+                ra = ra - value
+                rb = rb - value
+                sa = self.s[i]
+                sb = self.s[i + 1]
+                Ds = self.Ds[i]
+                d2ra = self.d2r[i]
+                d2rb = self.d2r[i + 1]
+                a = (-d2ra + d2rb)/(6*Ds)
+                b = (d2ra*sb - d2rb*sa)/(2*Ds)
+                c = (-3*d2ra*sb**2 + d2ra*Ds**2 + 3*d2rb*sa**2 - d2rb*Ds**2 - 6*ra + 6*rb)/(6*Ds)
+                d = (d2ra*sb**3 - d2ra*sb*Ds**2 - d2rb*sa**3 + d2rb*sa*Ds**2 - 6*sa*rb + 6*sb*ra)/(6*Ds)
+                roots = cubic_roots(a, b, c, d)
+                for root in roots:
+                    if root.imag == 0.0 and root.real >= sa and root.real < sb:
+                        s_int.append(root.real)
+        return unique(asarray(s_int))
 
     def __repr__(self):
         return '<CubicSpline1D>'
