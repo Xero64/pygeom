@@ -24,7 +24,9 @@ class CubicSpline1D():
     _Ds: 'NDArray' = None
     _gmat: 'NDArray' = None
     _hmat: 'NDArray' = None
+    _imat: 'NDArray' = None
     _d2r: 'NDArray' = None
+    _Ir: 'NDArray' = None
 
     def __init__(self, s: 'NDArray', r: 'NDArray',
                  bctype: 'BCLike' = 'quadratic',
@@ -152,6 +154,31 @@ class CubicSpline1D():
         if self._d2r is None:
             self._d2r = self.gmat @ self.input
         return self._d2r
+
+    def calculate_integral_matrix(self) -> None:
+        jmat = zeros((self.r.size, self.r.size))
+        kmat = zeros((self.r.size, self.r.size))
+        for i, Dsi in enumerate(self.Ds, start=1):
+            jmat[i, :] = jmat[i - 1, :]
+            jmat[i, i - 1] += Dsi/2
+            jmat[i, i] += Dsi/2
+            kmat[i, :] = kmat[i - 1, :]
+            kmat[i, i - 1] -= Dsi**3/24
+            kmat[i, i] -= Dsi**3/24
+        self._imat = kmat @ self.gmat
+        self._imat[:, :jmat.shape[1]] += jmat
+
+    @property
+    def imat(self) -> 'NDArray':
+        if self._imat is None:
+            self.calculate_integral_matrix()
+        return self._imat
+
+    @property
+    def Ir(self) -> 'NDArray':
+        if self._Ir is None:
+            self._Ir = self.imat @ self.input
+        return self._Ir
 
     def evaluate_points_at_t(self, s: 'NDArray') -> 'NDArray':
         u"""This function evaluates the spline at a given s."""
