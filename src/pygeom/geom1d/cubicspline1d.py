@@ -14,36 +14,25 @@ if TYPE_CHECKING:
 BCSTR1 = ('quadratic', 'not-a-knot', 'natural', 'clamped', 'periodic')
 BCSTR2 = ('quadratic', 'not-a-knot', 'natural', 'clamped')
 
-class CubicSpline1D():
-    u"""This class stores a parametric cubic spline."""
+
+class CubicSpline1DSolver():
+    u"""This class solves for the cubic spline coefficients."""
     s: 'NDArray' = None
-    r: 'NDArray' = None
     bctype: 'BCLike' = None
-    _input: 'NDArray' = None
-    _Dr: 'NDArray' = None
     _Ds: 'NDArray' = None
     _gmat: 'NDArray' = None
     _hmat: 'NDArray' = None
     _imat: 'NDArray' = None
-    _d2r: 'NDArray' = None
-    _Ir: 'NDArray' = None
 
-    def __init__(self, s: 'NDArray', r: 'NDArray',
-                 bctype: 'BCLike' = 'quadratic',
-                 validate: bool = True) -> None:
+    def __init__(self, s: 'NDArray', bctype: 'BCLike' = 'quadratic') -> None:
         u"""This function initialises the object."""
         self.s = asarray(s)
-        self.r = asarray(r)
         self.bctype = bctype
-        if validate:
-            self.validate()
 
     def validate(self) -> None:
         u"""This function validates the object."""
         if self.s.ndim != 1:
             raise ValueError('Input s must be a 1D ndarray.')
-        if self.r.ndim != 1:
-            raise ValueError('Input r must be a 1D ndarray.')
         if isinstance(self.bctype, str):
             if self.bctype not in BCSTR1:
                 errstr = 'Input bctype must be one of:'
@@ -88,34 +77,6 @@ class CubicSpline1D():
             raise ValueError('Input bctype must be a string or a tuple of tuples.')
 
     @property
-    def input(self) -> 'NDArray':
-        if self._input is None:
-            if isinstance(self.bctype, tuple):
-                numcond = 0
-                if not isinstance(self.bctype[0], str):
-                    numcond += 1
-                if not isinstance(self.bctype[1], str):
-                    numcond += 1
-                self._input = zeros(self.r.size + numcond,
-                                    dtype=self.r.dtype)
-                self._input[:self.r.size] = self.r
-                count = 0
-                if not isinstance(self.bctype[0], str):
-                    self._input[self.r.size + count] = self.bctype[0][1]
-                    count += 1
-                if not isinstance(self.bctype[1], str):
-                    self._input[self.r.size + count] = self.bctype[1][1]
-            else:
-                self._input = self.r
-        return self._input
-
-    @property
-    def Dr(self) -> 'NDArray':
-        if self._Dr is None:
-            self._Dr = self.r[1:] - self.r[:-1]
-        return self._Dr
-
-    @property
     def Ds(self) -> 'NDArray':
         if self._Ds is None:
             self._Ds = self.s[1:] - self.s[:-1]
@@ -149,15 +110,9 @@ class CubicSpline1D():
             self.calculate()
         return self._hmat
 
-    @property
-    def d2r(self) -> 'NDArray':
-        if self._d2r is None:
-            self._d2r = self.gmat @ self.input
-        return self._d2r
-
     def calculate_integral_matrix(self) -> None:
-        jmat = zeros((self.r.size, self.r.size))
-        kmat = zeros((self.r.size, self.r.size))
+        jmat = zeros((self.s.size, self.s.size))
+        kmat = zeros((self.s.size, self.s.size))
         for i, Dsi in enumerate(self.Ds, start=1):
             jmat[i, :] = jmat[i - 1, :]
             jmat[i, i - 1] += Dsi/2
@@ -173,6 +128,91 @@ class CubicSpline1D():
         if self._imat is None:
             self.calculate_integral_matrix()
         return self._imat
+
+    def evaluate_integral_matrix_at_t(self, s: 'NDArray') -> 'NDArray':
+        u"""This function evaluates the integrals of the spline at a given s."""
+        s = asarray(s)
+        imat = zeros((*s.shape, self.s.size))
+        for i, Dsi in enumerate(self.Ds):
+            a = i
+            b = i + 1
+            sa = self.s[a]
+            sb = self.s[b]
+            s_check = logical_and(s >= sa, s <= sb)
+            sv = s[s_check]
+            ABi = zeros((sv.size, 2))
+            CDi = zeros((sv.size, 2))
+            ABi[:, 0] = -(sv - sb - Dsi) * (sv - sb + Dsi) / (2.0 * Dsi)
+            ABi[:, 1] = (sv - sa)**2 / (2.0 * Dsi)
+            CDi[:, 0] = -(sv - sb - Dsi)**2*(sv - sb + Dsi)**2 / (24.0 * Dsi)
+            CDi[:, 1] = (sv - sa)**2 * (sv**2 - 2.0 * sv * sa + sa**2 - 2.0 * Dsi**2)/(24.0 * Dsi)
+            imat[s_check, :] = self.imat[i, :]
+            imat[s_check, a] += ABi[:, 0]
+            imat[s_check, b] += ABi[:, 1]
+            imat[s_check, :] += CDi @ self.gmat[(a, b), :]
+        return imat
+
+    def __repr__(self):
+        return '<CubicSpline1DSolver>'
+
+
+class CubicSpline1D(CubicSpline1DSolver):
+    u"""This class stores a parametric cubic spline."""
+    r: 'NDArray' = None
+    _input: 'NDArray' = None
+    _Dr: 'NDArray' = None
+    _d2r: 'NDArray' = None
+    _Ir: 'NDArray' = None
+
+    def __init__(self, s: 'NDArray', r: 'NDArray',
+                 bctype: 'BCLike' = 'quadratic',
+                 validate: bool = True) -> None:
+        u"""This function initialises the object."""
+        super().__init__(s, bctype)
+        self.r = asarray(r)
+        if validate:
+            self.validate()
+
+    def validate(self) -> None:
+        u"""This function validates the object."""
+        if self.r.ndim != 1:
+            raise ValueError('Input r must be a 1D ndarray.')
+        if self.r.size != self.s.size:
+            raise ValueError('Input r must have the same size as s.')
+
+    @property
+    def input(self) -> 'NDArray':
+        if self._input is None:
+            if isinstance(self.bctype, tuple):
+                numcond = 0
+                if not isinstance(self.bctype[0], str):
+                    numcond += 1
+                if not isinstance(self.bctype[1], str):
+                    numcond += 1
+                self._input = zeros(self.r.size + numcond,
+                                    dtype=self.r.dtype)
+                self._input[:self.r.size] = self.r
+                count = 0
+                if not isinstance(self.bctype[0], str):
+                    self._input[self.r.size + count] = self.bctype[0][1]
+                    count += 1
+                if not isinstance(self.bctype[1], str):
+                    self._input[self.r.size + count] = self.bctype[1][1]
+            else:
+                self._input = self.r
+        return self._input
+
+    @property
+    def Dr(self) -> 'NDArray':
+        if self._Dr is None:
+            self._Dr = self.r[1:] - self.r[:-1]
+        return self._Dr
+
+    @property
+    def d2r(self) -> 'NDArray':
+        if self._d2r is None:
+            self._d2r = self.gmat @ self.input
+        return self._d2r
 
     @property
     def Ir(self) -> 'NDArray':
@@ -274,7 +314,6 @@ class CubicSpline1D():
         u"""This function evaluates the integrals of the spline at a given s."""
         s = asarray(s)
         Ir = full(s.shape, float('nan'))
-        Iv = 0.0
         for i, Dsi in enumerate(self.Ds):
             a = i
             b = i + 1
@@ -286,12 +325,12 @@ class CubicSpline1D():
             d2rb = self.d2r[b]
             s_check = logical_and(s >= sa, s <= sb)
             sv = s[s_check]
-            Ai = -(sv - sb - Dsi)*(sv - sb + Dsi)/(2*Dsi)
-            Bi = (sv - sa)**2/(2*Dsi)
-            Ci = -(sv - sb - Dsi)**2*(sv - sb + Dsi)**2/(24*Dsi)
-            Di = (sv - sa)**2*(sv**2 - 2*sv*sa + sa**2 - 2*Dsi**2)/(24*Dsi)
+            Ai = -(sv - sb - Dsi) * (sv - sb + Dsi) / (2.0 * Dsi)
+            Bi = (sv - sa)**2 / (2.0 * Dsi)
+            Ci = -(sv - sb - Dsi)**2*(sv - sb + Dsi)**2 / (24.0 * Dsi)
+            Di = (sv - sa)**2 * (sv**2 - 2.0 * sv * sa + sa**2 - 2.0 * Dsi**2)/(24.0 * Dsi)
+            Iv = self.Ir[a]
             Ir[s_check] = Iv + ra*Ai + rb*Bi + d2ra*Ci + d2rb*Di
-            Iv += (ra + rb) *Dsi/2 - (d2ra + d2rb)*Dsi**3/24
         return Ir
 
     def evaluate_integrals(self, num: int) -> 'NDArray':
