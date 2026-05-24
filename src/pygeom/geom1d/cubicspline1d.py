@@ -20,9 +20,9 @@ class CubicSpline1DSolver():
     s: 'NDArray' = None
     bctype: 'BCLike' = None
     _Ds: 'NDArray' = None
-    _gmat: 'NDArray' = None
-    _hmat: 'NDArray' = None
-    _imat: 'NDArray' = None
+    _garr: 'NDArray' = None
+    _harr: 'NDArray' = None
+    _iarr: 'NDArray' = None
 
     def __init__(self, s: 'NDArray', bctype: 'BCLike' = 'quadratic') -> None:
         u"""This function initialises the object."""
@@ -96,43 +96,90 @@ class CubicSpline1DSolver():
             elif isinstance(self.bctype[1], tuple):
                 bctype.append(self.bctype[1][0])
             bctype = tuple(bctype)
-        self._gmat, self._hmat = cubic_pspline_fit_solver(self.s, bctype=bctype)
+        self._garr, self._harr = cubic_pspline_fit_solver(self.s, bctype=bctype)
 
     @property
-    def gmat(self) -> 'NDArray':
-        if self._gmat is None:
+    def garr(self) -> 'NDArray':
+        if self._garr is None:
             self.calculate()
-        return self._gmat
+        return self._garr
 
     @property
-    def hmat(self) -> 'NDArray':
-        if self._hmat is None:
+    def harr(self) -> 'NDArray':
+        if self._harr is None:
             self.calculate()
-        return self._hmat
+        return self._harr
 
-    def calculate_integral_matrix(self) -> None:
-        jmat = zeros((self.s.size, self.s.size))
-        kmat = zeros((self.s.size, self.s.size))
+    def calculate_integral_array(self) -> None:
+        jarr = zeros((self.s.size, self.s.size))
+        karr = zeros((self.s.size, self.s.size))
         for i, Dsi in enumerate(self.Ds, start=1):
-            jmat[i, :] = jmat[i - 1, :]
-            jmat[i, i - 1] += Dsi/2
-            jmat[i, i] += Dsi/2
-            kmat[i, :] = kmat[i - 1, :]
-            kmat[i, i - 1] -= Dsi**3/24
-            kmat[i, i] -= Dsi**3/24
-        self._imat = kmat @ self.gmat
-        self._imat[:, :jmat.shape[1]] += jmat
+            jarr[i, :] = jarr[i - 1, :]
+            jarr[i, i - 1] += Dsi / 2.0
+            jarr[i, i] += Dsi / 2.0
+            karr[i, :] = karr[i - 1, :]
+            karr[i, i - 1] -= Dsi**3 / 24.0
+            karr[i, i] -= Dsi**3 / 24.0
+        self._iarr = karr @ self.garr
+        self._iarr[:, :jarr.shape[1]] += jarr
 
     @property
-    def imat(self) -> 'NDArray':
-        if self._imat is None:
-            self.calculate_integral_matrix()
-        return self._imat
+    def iarr(self) -> 'NDArray':
+        if self._iarr is None:
+            self.calculate_integral_array()
+        return self._iarr
 
-    def evaluate_integral_matrix_at_t(self, s: 'NDArray') -> 'NDArray':
+    def evaluate_points_array_at_t(self, s: 'NDArray') -> 'NDArray':
+        u"""This function evaluates the spline at a given s."""
+        s = asarray(s)
+        rmat = zeros((*s.shape, self.s.size))
+        for i, Dsi in enumerate(self.Ds):
+            a = i
+            b = i + 1
+            sa = self.s[a]
+            sb = self.s[b]
+            s_check = logical_and(s >= sa, s <= sb)
+            sv = s[s_check]
+            ABi = zeros((sv.size, 2))
+            CDi = zeros((sv.size, 2))
+            ABi[:, 0] = (sb - sv)/Dsi
+            ABi[:, 1] = (sv - sa)/Dsi
+            CDi[:, 0] = ((sb - sv)**3 - (sb - sv)) * Dsi**2 / 6.0
+            CDi[:, 1] = ((sv - sa)**3 - (sv - sa)) * Dsi**2 / 6.0
+            rmat[s_check, :] = CDi @ self.garr[[a, b], :]
+            rmat[s_check, a] += ABi[:, 0]
+            rmat[s_check, b] += ABi[:, 1]
+
+        return rmat
+
+    def evaluate_first_derivatives_array_at_t(self, s: 'NDArray') -> 'NDArray':
+        u"""This function evaluates the first derivatives of the spline at a given s."""
+        s = asarray(s)
+        drmat = zeros((*s.shape, self.s.size))
+        for i, Dsi in enumerate(self.Ds):
+            a = i
+            b = i + 1
+            sa = self.s[a]
+            sb = self.s[b]
+            s_check = logical_and(s >= sa, s <= sb)
+            sv = s[s_check]
+            Av = (sb - sv) / Dsi
+            Bv = (sv - sa) / Dsi
+            ABi = zeros((sv.size, 2))
+            ABi[:, 0] = 1.0 / Dsi
+            ABi[:, 1] = -1.0 / Dsi
+            CDi = zeros((sv.size, 2))
+            CDi[s_check, 0] = (1.0 - 3.0 * Av**2) / 6.0 * Dsi
+            CDi[s_check, 1] = (3.0 * Bv**2 - 1.0) / 6.0 * Dsi
+            drmat[s_check, :] = CDi @ self.garr[[a, b], :]
+            drmat[s_check, a] += ABi[:, 0]
+            drmat[s_check, b] += ABi[:, 1]
+        return drmat
+
+    def evaluate_integral_array_at_t(self, s: 'NDArray') -> 'NDArray':
         u"""This function evaluates the integrals of the spline at a given s."""
         s = asarray(s)
-        imat = zeros((*s.shape, self.s.size))
+        iarr = zeros((*s.shape, self.s.size))
         for i, Dsi in enumerate(self.Ds):
             a = i
             b = i + 1
@@ -144,13 +191,21 @@ class CubicSpline1DSolver():
             CDi = zeros((sv.size, 2))
             ABi[:, 0] = -(sv - sb - Dsi) * (sv - sb + Dsi) / (2.0 * Dsi)
             ABi[:, 1] = (sv - sa)**2 / (2.0 * Dsi)
-            CDi[:, 0] = -(sv - sb - Dsi)**2*(sv - sb + Dsi)**2 / (24.0 * Dsi)
-            CDi[:, 1] = (sv - sa)**2 * (sv**2 - 2.0 * sv * sa + sa**2 - 2.0 * Dsi**2)/(24.0 * Dsi)
-            imat[s_check, :] = self.imat[i, :]
-            imat[s_check, a] += ABi[:, 0]
-            imat[s_check, b] += ABi[:, 1]
-            imat[s_check, :] += CDi @ self.gmat[(a, b), :]
-        return imat
+            CDi[:, 0] = -(sv - sb - Dsi)**2 * (sv - sb + Dsi)**2 / (24.0 * Dsi)
+            CDi[:, 1] = (sv - sa)**2 * (sv**2 - 2.0 * sv * sa + sa**2 - 2.0 * Dsi**2) / (24.0 * Dsi)
+            iarr[s_check, :] = self.iarr[i, :]
+            iarr[s_check, a] += ABi[:, 0]
+            iarr[s_check, b] += ABi[:, 1]
+            iarr[s_check, :] += CDi @ self.garr[(a, b), :]
+        return iarr
+
+    def to_cubic_spline_1d(self, r: 'NDArray', validate: bool = True) -> 'CubicSpline1D':
+        u"""This function creates a CubicSpline1D object from the solver."""
+        cs1d = CubicSpline1D(self.s, r, bctype=self.bctype, validate=validate)
+        cs1d._garr = self._garr
+        cs1d._harr = self._harr
+        cs1d._iarr = self._iarr
+        return cs1d
 
     def __repr__(self):
         return '<CubicSpline1DSolver>'
@@ -211,13 +266,13 @@ class CubicSpline1D(CubicSpline1DSolver):
     @property
     def d2r(self) -> 'NDArray':
         if self._d2r is None:
-            self._d2r = self.gmat @ self.input
+            self._d2r = self.garr @ self.input
         return self._d2r
 
     @property
     def Ir(self) -> 'NDArray':
         if self._Ir is None:
-            self._Ir = self.imat @ self.input
+            self._Ir = self.iarr @ self.input
         return self._Ir
 
     def evaluate_points_at_t(self, s: 'NDArray') -> 'NDArray':
@@ -340,8 +395,8 @@ class CubicSpline1D(CubicSpline1DSolver):
 
     def copy_with_new_input(self, new_input: 'NDArray') -> 'CubicSpline1D':
         new_spline = CubicSpline1D(self.s, new_input, bctype=self.bctype, validate=False)
-        new_spline._gmat = self._gmat
-        new_spline._hmat = self._hmat
+        new_spline._garr = self._garr
+        new_spline._harr = self._harr
         return new_spline
 
     def find_intercepts(self, value: float) -> 'NDArray':
