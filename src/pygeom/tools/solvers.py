@@ -399,9 +399,8 @@ def solve_clsq(a: 'NDArray', b: 'NDArray', c: 'NDArray',
 
     return x, y
 
-def quadratic_pspline_fit_solver(s: 'NDArray',
-                                 bctype: 'BCLike' = None) -> tuple['NDArray',
-                                                                   'NDArray']:
+
+def quadratic_pspline_fit_solver(s: 'NDArray') -> 'NDArray':
 
     s = asarray(s)
 
@@ -414,71 +413,132 @@ def quadratic_pspline_fit_solver(s: 'NDArray',
     if not all(unique(s) == s):
         raise ValueError('Input s must be a sorted unique array.')
 
-    num = s.size
+    sall = zeros((s.size * 2 - 3,))
+    sall[0] = s[0]
+    sall[-1] = s[-1]
+    sall[1:-1:2] = s[1:-1]
+    sall[2:-2:2] = (s[1:-2] + s[2:-1]) / 2.0
 
-    ds = zeros(num - 1, dtype=s.dtype)
-    ds[:] = s[1:] - s[:-1]
-    dsr = reciprocal(ds)
-    dsrx3 = dsr*3.0
-    dsrx4 = dsr*4.0
+    sa = sall[0:-2:2]
+    sb = sall[1:-1:2]
+    sc = sall[2::2]
 
-    # yc = G@<y, dya>
-    # [ABC]@<yc> = [D]@<y, dya> # Tridiagonal system
-    # [G] = [A]^{-1}@[D]
+    sbc = sb - sc
+    sca = sc - sa
+    sab = sa - sb
+    jac = sa**2 * sbc + sb**2 * sca + sc**2 * sab
 
-    a = dsrx4[:-1]
-    b = dsrx4
-    c = zeros(num - 1, dtype=s.dtype)
-    d = zeros((num - 1, num + 1), dtype=s.dtype)
-    d[0, -1] = 1.0
-    d[0, 0] = dsrx3[0]
-    d[0, 1] = dsr[0]
-    fill_diagonal(d[1:, :-2], dsr[:-1])
-    fill_diagonal(d[1:, 1:-1], dsrx3[:-1] + dsrx3[1:])
-    fill_diagonal(d[1:, 2:], dsr[1:])
+    a2 = sbc / jac
+    a1 = -a2 * (sc + sb)
+    b2 = sca / jac
+    b1 = -b2 * (sa + sc)
+    c2 = sab / jac
+    c1 = -c2 * (sb + sa)
 
-    gmat = tridiag_solver(a, b, c, d)
+    a1_1 = a1[0:-1]
+    a2_1 = a2[0:-1]
+    b1_1 = b1[0:-1]
+    b2_1 = b2[0:-1]
+    c1_1 = c1[0:-1]
+    c2_1 = c2[0:-1]
 
-    # dy = [E]@<y, dya> + [F]@<yc>
-    emat = zeros((num, num), dtype=s.dtype)
-    emat[0, 0] = -dsrx3[0]
-    emat[0, 1] = -dsr[0]
-    fill_diagonal(emat[1:, :-1], dsr)
-    fill_diagonal(emat[1:, 1:], dsrx3)
+    c1_2 = a1[1:]
+    c2_2 = a2[1:]
+    d1_2 = b1[1:]
+    d2_2 = b2[1:]
+    e1_2 = c1[1:]
+    e2_2 = c2[1:]
 
-    fmat = zeros((num, num - 1), dtype=s.dtype)
-    fmat[0, 0] = dsrx4[0]
-    fill_diagonal(fmat[1:, :], -dsrx4)
+    smi = sall[2:-2:2]
 
-    hmat = fmat @ gmat
-    hmat[:, :num] += emat
+    cdyc_a = a1_1 + a2_1 * smi * 2.0
+    cdyc_b = b1_1 + b2_1 * smi * 2.0
+    cdyc_c = c1_1 + c2_1 * smi * 2.0
 
-    eb = gmat[-1, :]
-    fb = fmat[-1, :]
+    cdya_c = c1_2 + c2_2 * smi * 2.0
+    cdya_d = d1_2 + d2_2 * smi * 2.0
+    cdya_e = e1_2 + e2_2 * smi * 2.0
 
-    if isinstance(bctype, str):
+    a = cdyc_a[1:]
+    b = cdyc_c - cdya_c
+    c = -cdya_e[:-1]
 
-        eb = emat[-1, :]
-        fb = fmat[-1, :]
+    d = zeros((s.size - 3, s.size))
+    fill_diagonal(d[:, 1:-2], -cdyc_b)
+    fill_diagonal(d[:, 2:-1], cdya_d)
+    d[0, 0] = -cdyc_a[0]
+    d[-1, -1] = cdya_e[-1]
 
-        gy = gmat[:, :-1]
-        ga = gmat[:, -1]
+    farr = tridiag_solver(a, b, c, d)
 
-        if bctype == 'periodic' or bctype == 'equal':
-            zmat = -(eb + fb@gy)/(fb@ga + 1.0)
-        elif bctype == 'opposite':
-            zmat = -(eb + fb@gy)/(fb@ga - 1.0)
-        else:
-            raise ValueError(f'Input bctype: {bctype} not recognised.')
+    sai = sall[0]
+    sbi = sall[1:-1:2]
+    sci = sall[-1]
 
-        za = zmat.reshape((1, num))
+    cdya_a = a1[0] + a2[0] * sai * 2.0
+    cdya_b = b1[0] + b2[0] * sai * 2.0
+    cdya_c = c1[0] + c2[0] * sai * 2.0
 
-        gy = gmat[:, :-1].reshape((num - 1, num))
-        ga = gmat[:, -1].reshape((num - 1, 1))
-        hy = hmat[:, :-1].reshape((num, num))
-        ha = hmat[:, -1].reshape((num, 1))
+    cdyb_a = a1 + a2 * sbi * 2.0
+    cdyb_b = b1 + b2 * sbi * 2.0
+    cdyb_c = c1 + c2 * sbi * 2.0
 
-        gmat = ga@za + gy
-        hmat = ha@za + hy
+    cdyc_a = a1[-1] + a2[-1] * sci * 2.0
+    cdyc_b = b1[-1] + b2[-1] * sci * 2.0
+    cdyc_c = c1[-1] + c2[-1] * sci * 2.0
 
-    return gmat, hmat
+    cd2ya_a = a2[0] * 2.0
+    cd2ya_b = b2[0] * 2.0
+    cd2ya_c = c2[0] * 2.0
+
+    cd2yb_a = a2 * 2.0
+    cd2yb_b = b2 * 2.0
+    cd2yb_c = c2 * 2.0
+
+    cd2yc_a = a2[-1] * 2.0
+    cd2yc_b = b2[-1] * 2.0
+    cd2yc_c = c2[-1] * 2.0
+
+    iarr = zeros((s.size, s.size * 2 - 3))
+
+    iarr[0, 0] = cdya_a
+    iarr[0, 1] = cdya_b
+    iarr[0, 2] = cdya_c
+    iarr[-1, -3] = cdyc_a
+    iarr[-1, -2] = cdyc_b
+    iarr[-1, -1] = cdyc_c
+
+    fill_diagonal(iarr[1:-1, :-2:2], cdyb_a)
+    fill_diagonal(iarr[1:-1, 1:-1:2], cdyb_b)
+    fill_diagonal(iarr[1:-1, 2::2], cdyb_c)
+
+    jarr = zeros((s.size, s.size))
+    jarr[:, 0] = iarr[:, 0]
+    jarr[:, 1:-1] = iarr[:, 1:-1:2]
+    jarr[:, -1] = iarr[:, -1]
+    iarr = iarr[:, 2:-2:2]
+
+    harr = iarr @ farr + jarr
+
+    karr = zeros((s.size, s.size * 2 - 3))
+
+    karr[0, 0] = cd2ya_a
+    karr[0, 1] = cd2ya_b
+    karr[0, 2] = cd2ya_c
+    karr[-1, -3] = cd2yc_a
+    karr[-1, -2] = cd2yc_b
+    karr[-1, -1] = cd2yc_c
+
+    fill_diagonal(karr[1:-1, :-2:2], cd2yb_a)
+    fill_diagonal(karr[1:-1, 1:-1:2], cd2yb_b)
+    fill_diagonal(karr[1:-1, 2::2], cd2yb_c)
+
+    larr = zeros((s.size, s.size))
+    larr[:, 0] = karr[:, 0]
+    larr[:, 1:-1] = karr[:, 1:-1:2]
+    larr[:, -1] = karr[:, -1]
+    karr = karr[:, 2:-2:2]
+
+    garr = karr @ farr + larr
+
+    return farr, garr, harr
