@@ -399,7 +399,7 @@ class CubicSpline1D(CubicSpline1DSolver):
         new_spline._harr = self._harr
         return new_spline
 
-    def find_intercepts(self, value: float) -> 'NDArray':
+    def find_intercepts(self, value: float, tol: float = 1e-12) -> 'NDArray':
         s_int = []
         for i in range(self.r.size - 1):
             ra = self.r[i]
@@ -418,7 +418,7 @@ class CubicSpline1D(CubicSpline1DSolver):
                 d = (d2ra*sb**3 - d2ra*sb*Ds**2 - d2rb*sa**3 + d2rb*sa*Ds**2 - 6*sa*rb + 6*sb*ra)/(6*Ds)
                 roots = cubic_roots(a, b, c, d)
                 for root in roots:
-                    if root.imag == 0.0 and root.real >= sa and root.real < sb:
+                    if abs(root.imag) < tol and root.real - sa >= -tol and root.real - sb <= tol:
                         s_int.append(root.real)
         return unique(asarray(s_int))
 
