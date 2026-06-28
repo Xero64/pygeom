@@ -33,6 +33,20 @@ def tridiag_solver(a: 'NDArray', b: 'NDArray', c: 'NDArray',
     return r
 
 
+def bidiag_solver(a: 'NDArray', b: 'NDArray',
+                  d: 'NDArray') -> 'NDArray':
+
+    num = b.size
+    r = zeros(d.shape)
+
+    r[0, :] = (d[0, :] - a[0]*r[0, :])/b[0]
+
+    for i in range(1, num):
+        r[i, :] = (d[i, :] - a[i-1]*r[i-1, :])/b[i]
+
+    return r
+
+
 def cubic_pspline_fit_solver(s: 'NDArray',
                              bctype: 'BCLike' = None) -> tuple['NDArray',
                                                                'NDArray']:
