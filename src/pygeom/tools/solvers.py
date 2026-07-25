@@ -414,7 +414,9 @@ def solve_clsq(a: 'NDArray', b: 'NDArray', c: 'NDArray',
     return x, y
 
 
-def quadratic_pspline_fit_solver(s: 'NDArray') -> 'NDArray':
+def quadratic_pspline_fit_solver(s: 'NDArray',
+                                 return_coeff: bool = False) -> tuple['NDArray',
+                                                                      tuple['NDArray', ...]]:
 
     s = asarray(s)
 
@@ -485,74 +487,7 @@ def quadratic_pspline_fit_solver(s: 'NDArray') -> 'NDArray':
 
     farr = tridiag_solver(a, b, c, d)
 
-    sai = sall[0]
-    sbi = sall[1:-1:2]
-    sci = sall[-1]
-
-    cdya_a = a1[0] + a2[0] * sai * 2.0
-    cdya_b = b1[0] + b2[0] * sai * 2.0
-    cdya_c = c1[0] + c2[0] * sai * 2.0
-
-    cdyb_a = a1 + a2 * sbi * 2.0
-    cdyb_b = b1 + b2 * sbi * 2.0
-    cdyb_c = c1 + c2 * sbi * 2.0
-
-    cdyc_a = a1[-1] + a2[-1] * sci * 2.0
-    cdyc_b = b1[-1] + b2[-1] * sci * 2.0
-    cdyc_c = c1[-1] + c2[-1] * sci * 2.0
-
-    cd2ya_a = a2[0] * 2.0
-    cd2ya_b = b2[0] * 2.0
-    cd2ya_c = c2[0] * 2.0
-
-    cd2yb_a = a2 * 2.0
-    cd2yb_b = b2 * 2.0
-    cd2yb_c = c2 * 2.0
-
-    cd2yc_a = a2[-1] * 2.0
-    cd2yc_b = b2[-1] * 2.0
-    cd2yc_c = c2[-1] * 2.0
-
-    iarr = zeros((s.size, s.size * 2 - 3))
-
-    iarr[0, 0] = cdya_a
-    iarr[0, 1] = cdya_b
-    iarr[0, 2] = cdya_c
-    iarr[-1, -3] = cdyc_a
-    iarr[-1, -2] = cdyc_b
-    iarr[-1, -1] = cdyc_c
-
-    fill_diagonal(iarr[1:-1, :-2:2], cdyb_a)
-    fill_diagonal(iarr[1:-1, 1:-1:2], cdyb_b)
-    fill_diagonal(iarr[1:-1, 2::2], cdyb_c)
-
-    jarr = zeros((s.size, s.size))
-    jarr[:, 0] = iarr[:, 0]
-    jarr[:, 1:-1] = iarr[:, 1:-1:2]
-    jarr[:, -1] = iarr[:, -1]
-    iarr = iarr[:, 2:-2:2]
-
-    harr = iarr @ farr + jarr
-
-    karr = zeros((s.size, s.size * 2 - 3))
-
-    karr[0, 0] = cd2ya_a
-    karr[0, 1] = cd2ya_b
-    karr[0, 2] = cd2ya_c
-    karr[-1, -3] = cd2yc_a
-    karr[-1, -2] = cd2yc_b
-    karr[-1, -1] = cd2yc_c
-
-    fill_diagonal(karr[1:-1, :-2:2], cd2yb_a)
-    fill_diagonal(karr[1:-1, 1:-1:2], cd2yb_b)
-    fill_diagonal(karr[1:-1, 2::2], cd2yb_c)
-
-    larr = zeros((s.size, s.size))
-    larr[:, 0] = karr[:, 0]
-    larr[:, 1:-1] = karr[:, 1:-1:2]
-    larr[:, -1] = karr[:, -1]
-    karr = karr[:, 2:-2:2]
-
-    garr = karr @ farr + larr
-
-    return farr, garr, harr
+    if return_coeff:
+        return farr, (sall, sa, sb, sc, a1, a2, b1, b2, c1, c2)
+    else:
+        return farr
