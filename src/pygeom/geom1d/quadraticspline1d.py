@@ -16,6 +16,9 @@ class QuadraticSpline1DSolver():
     s: 'NDArray' = None
     _marr: 'NDArray' = None
     _sall: 'NDArray' = None
+    _sa: 'NDArray' = None
+    _sb: 'NDArray' = None
+    _sc: 'NDArray' = None
     _a2: 'NDArray' = None
     _b2: 'NDArray' = None
     _c2: 'NDArray' = None
@@ -133,14 +136,14 @@ class QuadraticSpline1DSolver():
     def calculate_gradient_array(self) -> None:
 
         s = self.s
-        sall = self._sall
-        marr = self._marr
-        a1 = self._a1
-        a2 = self._a2
-        b1 = self._b1
-        b2 = self._b2
-        c1 = self._c1
-        c2 = self._c2
+        sall = self.sall
+        marr = self.marr
+        a1 = self.a1
+        a2 = self.a2
+        b1 = self.b1
+        b2 = self.b2
+        c1 = self.c1
+        c2 = self.c2
 
         sai = sall[0]
         sbi = sall[1:-1:2]
