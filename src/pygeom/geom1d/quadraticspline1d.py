@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from numpy import (absolute, asarray, cumsum, fill_diagonal, full, isnan,
-                   logical_and, logical_or, ones_like, unique, zeros)
+from numpy import (absolute, asarray, cumsum, fill_diagonal, full, imag, isnan,
+                   logical_and, logical_or, ones_like, real, unique, zeros)
 
 from ..tools.basis import knot_linspace
 from ..tools.roots import quadratic_roots
@@ -32,14 +32,19 @@ class QuadraticSpline1DSolver():
     _garr: 'NDArray' = None
     _iarr: 'NDArray' = None
 
-    def __init__(self, s: 'NDArray') -> None:
+    def __init__(self, s: 'NDArray', validate: bool = True) -> None:
         u"""This function initialises the object."""
         self.s = asarray(s)
+        if validate:
+            self.validate()
 
     def validate(self) -> None:
         u"""This function validates the object."""
         if self.s.ndim != 1:
             raise ValueError('Input s must be a 1D ndarray.')
+
+    def evaluate_t(self, num: int) -> 'NDArray':
+        return knot_linspace(num, self.sall)
 
     def calculate(self):
         self._marr, params = quadratic_pspline_fit_solver(self.s, True)
@@ -427,13 +432,14 @@ class QuadraticSpline1D(QuadraticSpline1DSolver):
     def __init__(self, s: 'NDArray', r: 'NDArray',
                  validate: bool = True) -> None:
         u"""This function initialises the object."""
-        super().__init__(s)
+        super().__init__(s, validate=False)
         self.r = asarray(r)
         if validate:
             self.validate()
 
     def validate(self) -> None:
         u"""This function validates the object."""
+        super().validate()
         if self.r.ndim != 1:
             raise ValueError('Input r must be a 1D ndarray.')
         if self.r.size != self.s.size:
@@ -442,10 +448,10 @@ class QuadraticSpline1D(QuadraticSpline1DSolver):
     def calc_rall(self) -> None:
         rm = self.marr @ self.r
         self._rall = zeros(self.sall.size)
-        self._rall[2:-2:2] = rm
-        self._rall[1:-1:2] = self.r[1:-1]
-        self._rall[0] = self.r[0]
-        self._rall[-1] = self.r[-1]
+        self._rall[2:-2:2] = real(rm)
+        self._rall[1:-1:2] = real(self.r[1:-1])
+        self._rall[0] = real(self.r[0])
+        self._rall[-1] = real(self.r[-1])
 
     @property
     def rall(self) -> 'NDArray':
@@ -561,9 +567,6 @@ class QuadraticSpline1D(QuadraticSpline1DSolver):
         k = d2r / (dr**2.0 + 1.0)**1.5
         return k
 
-    def evaluate_t(self, num: int) -> 'NDArray':
-        return knot_linspace(num, self.sall)
-
     def evaluate_points(self, num: int) -> 'NDArray':
         s = self.evaluate_t(num)
         points = self.evaluate_points_at_t(s)
@@ -613,7 +616,7 @@ class QuadraticSpline1D(QuadraticSpline1DSolver):
         return integrals
 
     def copy_with_new_input(self, new_input: 'NDArray') -> 'QuadraticSpline1D':
-        new_spline = QuadraticSpline1D(self.s, new_input, bctype=self.bctype, validate=False)
+        new_spline = QuadraticSpline1D(self.s, new_input, validate=False)
         new_spline._marr = self._marr
         new_spline._sall = self._sall
         new_spline._a2 = self._a2
@@ -645,8 +648,15 @@ class QuadraticSpline1D(QuadraticSpline1DSolver):
             c = (sa**2*sb*rc - sa**2*sc*rb - sa*sb**2*rc + sa*sc**2*rb + sb**2*sc*ra - sb*sc**2*ra) / jac
             roots = quadratic_roots(a, b, c)
             for root in roots:
-                if abs(root.imag) < tol and root.real - sa >= -tol and root.real - sc <= tol:
-                    s_int.append(root.real)
+                if abs(imag(root)) < tol:
+                    root_sa = real(root) - sa
+                    root_sc = real(root) - sc
+                    if root_sa >= 0.0 and root_sc <= 0.0:
+                        s_int.append(real(root))
+                    elif root_sa >= -tol and root_sa < 0.0:
+                        s_int.append(real(sa))
+                    elif root_sc <= tol and root_sc > 0.0:
+                        s_int.append(real(sc))
         return unique(asarray(s_int))
 
     def __repr__(self):

@@ -13,6 +13,8 @@ set_printoptions(precision=8, suppress=True)
 x = asarray([1.0, 2.2, 3.0, 4.1, 5.0, 6.0])
 y = asarray([-4.0, 0.0, -0.8, -3.9, -2.6, -7.0])
 
+xc = asarray([1.8, 2.8, 3.7, 5.8])
+
 #%%
 # Create Quadratic Interpolator
 spl = interp1d(x, y, kind='quadratic')
@@ -24,8 +26,6 @@ ym = qss.marr @ y
 dy = qss.harr @ y
 d2y = qss.garr @ y
 Iy = qss.iarr @ y
-
-xc = asarray([1.8, 2.8, 3.7, 5.8])
 
 qs = qss.to_quadratic_spline_1d(y)
 
@@ -58,7 +58,7 @@ _ = ax.plot(xv, yv, '--', label='SciPy - Quadratic')
 _ = ax.legend()
 
 #%%
-# Derivative Plot
+# First Derivative Plots
 x1 = (xv[1:] + xv[:-1]) / 2.0
 dyv = divide(yv[1:] - yv[:-1], xv[1:] - xv[:-1])
 drarrc = qss.evaluate_first_derivatives_array_at_t(xc)
@@ -77,7 +77,7 @@ _ = ax.plot(x1, dyv, '--', label='SciPy - Quadratic')
 _ = ax.legend()
 
 #%%
-# Derivative Plot
+# Second Derivative Plots
 x2 = xv[1:-1]
 d2yv = divide(dyv[1:] - dyv[:-1], x1[1:] - x1[:-1])
 d2yf = qs.evaluate_second_derivatives_at_t(xc)
@@ -96,7 +96,7 @@ _ = ax.plot(x2, d2yv, '--', label='SciPy - Quadratic')
 _ = ax.legend()
 
 #%%
-# Integrals
+# Integral Plots
 int_yv = cumulative_simpson(yv, x=xv, initial=0.0)
 Iarrc = qss.evaluate_integral_array_at_t(xc)
 Iyc = Iarrc @ y
