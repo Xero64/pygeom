@@ -1,9 +1,16 @@
-from math import acos, copysign, cos, pi, sqrt
+from numpy import acos, copysign, cos, pi, sqrt
 
 TWOPIO3 = 2*pi/3
 
 
+def linear_roots(a: float, b: float) -> float | complex:
+    # y = a * x + b
+    xr = -b / a
+    return xr
+
+
 def quadratic_roots(a: float, b: float, c: float) -> tuple[float | complex, float | complex]:
+    # y = a * x**2 + b * x + c
     dx = b**2 - 4*a*c
     if dx < 0.0:
         q = -0.5*complex(b, copysign(sqrt(-dx), b))
@@ -13,6 +20,7 @@ def quadratic_roots(a: float, b: float, c: float) -> tuple[float | complex, floa
 
 
 def cubic_roots(a: float, b: float, c: float, d: float) -> tuple[float | complex, float | complex, float | complex]:
+    # y = a * x**3 + b * x**2 + c * x + d
     tmp = a
     a = b/tmp
     b = c/tmp
